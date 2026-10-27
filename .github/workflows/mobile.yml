@@ -1,0 +1,128 @@
+name: Mobile app
+
+# The Android and iOS app in mobile/ (Capacitor). Every change builds a debug
+# APK (an artifact you can install); a release tag also builds the release
+# APK and the AAB for Google Play when the keystore secrets exist, and attaches
+# them to the GitHub release. Without the secrets the release gets the debug
+# APK instead (dia-<version>-android-debug.apk, for testing only). iOS is compiled (no signing: archiving
+# for the App Store happens in Xcode with your Apple account, docs/MOBILE.md).
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+    paths: ["mobile/**", "src/dia/ui/static/icons/**", ".github/workflows/mobile.yml"]
+  pull_request:
+    paths: ["mobile/**", ".github/workflows/mobile.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  android:
+    # Release builds happen in the public repository only.
+    if: github.repository == 'Solar9/Dia' || !startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+      - run: npm ci
+      - run: npx cap sync android
+      - name: APK verification tools
+        uses: android-actions/setup-android@v3
+        with:
+          packages: 'platform-tools build-tools;36.0.0'
+      - name: Version from the tag
+        run: |
+          version="$(node -p 'require("./package.json").version')"
+          echo "DIA_VERSION_NAME=$version" >> "$GITHUB_ENV"
+          echo "DIA_VERSION_CODE=${{ github.run_number }}" >> "$GITHUB_ENV"
+      - name: Debug APK
+        run: |
+          cd android && ./gradlew --no-daemon assembleDebug
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose app/build/outputs/apk/debug/app-debug.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dia-debug-apk
+          path: mobile/android/app/build/outputs/apk/debug/*.apk
+      - name: Release signing secrets present?
+        id: signing
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          KEYSTORE_BASE64: ${{ secrets.DIA_ANDROID_KEYSTORE_BASE64 }}
+          DIA_KEYSTORE_PASSWORD: ${{ secrets.DIA_ANDROID_KEYSTORE_PASSWORD }}
+          DIA_KEY_ALIAS: ${{ secrets.DIA_ANDROID_KEY_ALIAS }}
+          DIA_KEY_PASSWORD: ${{ secrets.DIA_ANDROID_KEY_PASSWORD }}
+        run: |
+          # All or nothing: a half-configured keystore is an error, not a fallback.
+          set=0
+          for name in KEYSTORE_BASE64 DIA_KEYSTORE_PASSWORD DIA_KEY_ALIAS DIA_KEY_PASSWORD; do
+            [ -n "${!name}" ] && set=$((set + 1))
+          done
+          if [ "$set" = 4 ]; then
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          elif [ "$set" = 0 ]; then
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::No Android signing secrets: the release gets the debug APK (testing only), no AAB."
+          else
+            echo "::error::Only some Android signing secrets are set. Configure all DIA_ANDROID_* secrets (docs/MOBILE.md) or none."
+            exit 1
+          fi
+      - name: Debug APK for the release (no signing secrets)
+        if: startsWith(github.ref, 'refs/tags/v') && steps.signing.outputs.available == 'false'
+        run: |
+          mkdir -p dist
+          cp android/app/build/outputs/apk/debug/app-debug.apk "dist/dia-$DIA_VERSION_NAME-android-debug.apk"
+      - name: Release keystore (secret)
+        if: startsWith(github.ref, 'refs/tags/v') && steps.signing.outputs.available == 'true'
+        env:
+          KEYSTORE_BASE64: ${{ secrets.DIA_ANDROID_KEYSTORE_BASE64 }}
+          DIA_KEYSTORE_PASSWORD: ${{ secrets.DIA_ANDROID_KEYSTORE_PASSWORD }}
+          DIA_KEY_ALIAS: ${{ secrets.DIA_ANDROID_KEY_ALIAS }}
+          DIA_KEY_PASSWORD: ${{ secrets.DIA_ANDROID_KEY_PASSWORD }}
+        run: bash scripts/prepare-release-signing.sh
+      - name: Release APK and AAB
+        if: startsWith(github.ref, 'refs/tags/v') && steps.signing.outputs.available == 'true'
+        env:
+          DIA_KEYSTORE_PASSWORD: ${{ secrets.DIA_ANDROID_KEYSTORE_PASSWORD }}
+          DIA_KEY_ALIAS: ${{ secrets.DIA_ANDROID_KEY_ALIAS }}
+          DIA_KEY_PASSWORD: ${{ secrets.DIA_ANDROID_KEY_PASSWORD }}
+        run: |
+          cd android && ./gradlew --no-daemon assembleRelease bundleRelease
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose app/build/outputs/apk/release/app-release.apk
+          mkdir -p ../dist
+          cp app/build/outputs/apk/release/app-release.apk "../dist/dia-$DIA_VERSION_NAME-android.apk"
+          cp app/build/outputs/bundle/release/app-release.aab "../dist/dia-$DIA_VERSION_NAME-android.aab"
+      - uses: softprops/action-gh-release@v2.2.1
+        if: startsWith(github.ref, 'refs/tags/v')
+        with:
+          files: mobile/dist/*
+
+  ios:
+    if: github.repository == 'Solar9/Dia' && (startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch')
+    runs-on: macos-latest
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: npm ci
+      - run: npx cap sync ios
+      - name: Compile for the simulator (no signing)
+        run: |
+          xcodebuild -project ios/App/App.xcodeproj -scheme App -sdk iphonesimulator \
+            -configuration Debug CODE_SIGNING_ALLOWED=NO build | tail -20

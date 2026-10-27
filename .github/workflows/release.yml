@@ -1,0 +1,58 @@
+name: Release
+
+# A tag v0.1.0 (pushed, or created with a GitHub release) builds the release:
+# the wheel and sdist, the installers and checksums, attached to the release.
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Existing tag to (re)build, e.g. v0.1.0"
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    # Releases are built in the public repository; the development repository
+    # only publishes to it (see publish.yml).
+    if: github.repository == 'Solar9/Dia'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.tag || github.ref }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: The tag matches the version
+        run: |
+          tag="${{ github.event.inputs.tag || github.ref_name }}"
+          version="$(python -c 'import tomllib; print(tomllib.load(open("pyproject.toml", "rb"))["project"]["version"])')"
+          test "v$version" = "$tag" || { echo "tag $tag but pyproject says $version"; exit 1; }
+          echo "VERSION=$version" >> "$GITHUB_ENV"
+      - run: pip install build
+      - run: python -m build
+      - name: Installers and checksums
+        run: |
+          cp scripts/install.sh scripts/install.ps1 dist/
+          sed "s/@VERSION@/$VERSION/; s/@SHA256@/$(sha256sum dist/dia-$VERSION.tar.gz | cut -d' ' -f1)/" \
+            packaging/arch/PKGBUILD > dist/PKGBUILD
+          cd dist && sha256sum * > SHA256SUMS
+      - name: Smoke test the wheel
+        run: |
+          python -m venv /tmp/v && /tmp/v/bin/pip install "dist/dia-$VERSION-py3-none-any.whl[ui]"
+          /tmp/v/bin/dia --version | grep -q "$VERSION"
+      - name: Release notes from the changelog
+        run: |
+          awk -v v="$VERSION" '/^## \[/ { on = index($0, "[" v "]") } on' CHANGELOG.md > /tmp/notes.md
+          test -s /tmp/notes.md || { echo "no CHANGELOG section for $VERSION"; exit 1; }
+      - uses: softprops/action-gh-release@v2.2.1
+        with:
+          tag_name: ${{ github.event.inputs.tag || github.ref_name }}
+          name: Dia ${{ env.VERSION }}
+          body_path: /tmp/notes.md
+          generate_release_notes: true  # the merged PRs are appended below the changelog
+          files: dist/*

@@ -1,0 +1,24 @@
+{
+  "name": "dia-mobile",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Dia for Android and iOS: Dia's interface in a native app that pairs with your Dia",
+  "license": "PolyForm-Noncommercial-1.0.0",
+  "scripts": {
+    "sync": "cap sync",
+    "android": "cap open android",
+    "ios": "cap open ios",
+    "assets": "npx @capacitor/assets@3.0.5 generate --assetPath resources --iconBackgroundColor '#ffffff' --splashBackgroundColor '#ffffff' --splashBackgroundColorDark '#0b0b12'"
+  },
+  "dependencies": {
+    "@capacitor/android": "8.5.3",
+    "@capacitor/barcode-scanner": "3.1.3",
+    "@capacitor/core": "8.5.3",
+    "@capacitor/ios": "8.5.3",
+    "@capacitor/splash-screen": "8.0.2",
+    "@capacitor/status-bar": "8.0.4"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "8.5.3"
+  }
+}

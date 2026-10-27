@@ -1,0 +1,50 @@
+# Dia for Arch Linux. The release attaches this file with the version and
+# checksum filled in: makepkg -si
+pkgname=dia-assistant
+pkgver=@VERSION@
+pkgrel=1
+pkgdesc="Personal AI assistant that orchestrates coding agents (Claude Code, Codex, Cursor)"
+arch=('any')
+url="https://github.com/Solar9/Dia"
+license=('LicenseRef-PolyForm-Noncommercial-1.0.0')
+depends=('python>=3.11' 'python-aiohttp' 'git')
+makedepends=('python-build' 'python-installer' 'python-hatchling')
+optdepends=(
+  'bubblewrap: run agents in a sandbox'
+  'pyside6: Dia in its own window, with a tray icon'
+  'qt6-webengine: Dia in its own window, with a tray icon'
+  'python-pywebview: Dia in its own window (without Qt)'
+  'python-qrcode: pair the phone by QR code'
+  'ollama: a free local brain'
+  'piper-tts: speech'
+)
+source=("https://github.com/Solar9/Dia/releases/download/v$pkgver/dia-$pkgver.tar.gz")
+sha256sums=('@SHA256@')
+
+build() {
+  cd "dia-$pkgver"
+  python -m build --wheel --no-isolation
+}
+
+package() {
+  cd "dia-$pkgver"
+  python -m installer --destdir="$pkgdir" dist/*.whl
+  install -Dm644 src/dia/ui/static/icons/dia.svg "$pkgdir/usr/share/icons/hicolor/scalable/apps/io.github.solar9.dia.svg"
+  for size in 16 32 48 64 128 256 512; do
+    install -Dm644 "src/dia/ui/static/icons/dia-$size.png" \
+      "$pkgdir/usr/share/icons/hicolor/${size}x${size}/apps/io.github.solar9.dia.png"
+  done
+  install -Dm644 /dev/stdin "$pkgdir/usr/share/applications/dia.desktop" <<DESKTOP
+[Desktop Entry]
+Type=Application
+Name=Dia
+GenericName=AI assistant
+Comment=Your assistant for coding agents, games and the computer
+Exec=dia app
+Icon=io.github.solar9.dia
+Terminal=false
+Categories=Utility;Development;
+StartupWMClass=Dia
+DESKTOP
+  install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+}

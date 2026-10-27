@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0b0b0f">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Dia</title>
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="icon" href="/static/icons/dia.svg" type="image/svg+xml">
+  <link rel="icon" href="/static/icons/dia-32.png" sizes="32x32" type="image/png">
+  <link rel="apple-touch-icon" href="/static/icons/apple-touch-icon.png">
+  <script type="importmap">
+    { "imports": {
+        "preact": "/static/vendor/preact.module.js",
+        "preact/hooks": "/static/vendor/hooks.module.js",
+        "htm": "/static/vendor/htm.module.js" } }
+  </script>
+  <link rel="stylesheet" href="/static/themes/dark.css" id="theme">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <div id="app"></div>
+  <script src="/static/vendor/prism.bundle.js"></script>
+  <script type="module" src="/static/app.js"></script>
+</body>
+</html>

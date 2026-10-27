@@ -1,0 +1,31 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.11", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      # The minimal install on purpose: optional extras (voice, wake) must not be
+      # needed for the test suite to pass.
+      - run: pip install -e '.[dev]'
+      # The agent sandbox and red-team tests need bubblewrap; Ubuntu runners
+      # restrict unprivileged user namespaces unless told otherwise.
+      - run: |
+          sudo apt-get install -y -q bubblewrap
+          sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0 || true
+      - run: ruff check .
+      - run: ruff format --check .
+      - run: pytest -q

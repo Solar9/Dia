@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0b0b12">
+  <title>Dia</title>
+  <style>
+    :root { color-scheme: dark; --bg: #0b0b12; --card: #15151f; --text: #ececf4; --muted: #9a9ab0;
+            --accent: #8a2be2; --danger: #ff6b81; }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; background: var(--bg); color: var(--text);
+           font: 16px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+           display: flex; align-items: center; justify-content: center;
+           padding: max(24px, env(safe-area-inset-top)) 20px max(24px, env(safe-area-inset-bottom)); }
+    main { width: 100%; max-width: 420px; display: flex; flex-direction: column; gap: 16px; text-align: center; }
+    img { width: 96px; height: 96px; margin: 0 auto; }
+    h1 { margin: 0; font-size: 26px; }
+    p { margin: 0; color: var(--muted); }
+    .card { background: var(--card); border-radius: 16px; padding: 18px; display: flex; flex-direction: column; gap: 12px; text-align: left; }
+    input { width: 100%; padding: 12px 14px; border-radius: 10px; border: 1px solid #2a2a3a; background: #0f0f18;
+            color: var(--text); font-size: 15px; }
+    button { padding: 13px 16px; border: 0; border-radius: 10px; font-size: 16px; font-weight: 600;
+             background: var(--accent); color: #fff; }
+    button.ghost { background: transparent; color: var(--text); border: 1px solid #2a2a3a; }
+    .error { color: var(--danger); min-height: 1.4em; }
+    .hidden { display: none; }
+    small { color: var(--muted); }
+  </style>
+</head>
+<body>
+<main>
+  <img src="dia.svg" alt="">
+  <h1>Dia</h1>
+  <section id="connecting" class="hidden"><p id="connecting-text"></p></section>
+  <section id="pair" class="card hidden">
+    <p id="pair-help"></p>
+    <button id="scan"></button>
+    <input id="link" type="url" inputmode="url" autocomplete="off" autocapitalize="off" spellcheck="false">
+    <button id="connect" class="ghost"></button>
+    <div class="error" id="error"></div>
+    <small id="where"></small>
+  </section>
+</main>
+<script>
+  // Dia's interface lives on your Dia (your computer); this app pairs with it
+  // and opens it. The pairing link is what Dia shows in Settings → Devices
+  // (also as a QR code): https://your-dia.example/#token=...
+  const pl = (navigator.language || "").toLowerCase().startsWith("pl");
+  const T = pl ? {
+    connecting: "Łączę z Dia…", help: "Połącz aplikację ze swoją Dia: zeskanuj kod QR z Ustawienia → Urządzenia, albo wklej link parowania.",
+    scan: "Zeskanuj kod QR", connect: "Połącz", link: "https://…/#token=…", bad: "To nie jest link parowania Dia (brak #token=).",
+    unreachable: "Nie mogę połączyć się z {url}. Czy Dia działa i telefon ma do niej dostęp (ta sama sieć, VPN, tunel)?",
+    where: "Ostatnio: {url}", scanning: "Skieruj aparat na kod QR w Dia", retry: "Spróbuj ponownie",
+  } : {
+    connecting: "Connecting to Dia…", help: "Pair the app with your Dia: scan the QR code from Settings → Devices, or paste the pairing link.",
+    scan: "Scan the QR code", connect: "Connect", link: "https://…/#token=…", bad: "That is not a Dia pairing link (no #token=).",
+    unreachable: "Cannot reach {url}. Is Dia running, and can the phone reach it (same network, VPN, tunnel)?",
+    where: "Last used: {url}", scanning: "Point the camera at the QR code in Dia", retry: "Try again",
+  };
+  const $ = (id) => document.getElementById(id);
+  const KEY = "dia-server";
+
+  function parse(text) {
+    try {
+      const url = new URL(text.trim());
+      const token = new URLSearchParams(url.hash.slice(1)).get("token");
+      if (!token || !/^https?:$/.test(url.protocol)) return null;
+      return { origin: url.origin + url.pathname.replace(/\/?$/, "/"), token };
+    } catch { return null; }
+  }
+
+  async function reachable(origin) {
+    const ctl = new AbortController();
+    const timer = setTimeout(() => ctl.abort(), 6000);
+    try { await fetch(origin + "manifest.webmanifest", { signal: ctl.signal, mode: "no-cors" }); return true; }
+    catch { return false; }
+    finally { clearTimeout(timer); }
+  }
+
+  async function open(server, fromPairing) {
+    $("pair").classList.add("hidden");
+    $("connecting").classList.remove("hidden");
+    $("connecting-text").textContent = T.connecting;
+    if (!(await reachable(server.origin))) {
+      showPair(T.unreachable.replace("{url}", server.origin), server);
+      return;
+    }
+    localStorage.setItem(KEY, JSON.stringify(server));
+    // Dia's own interface takes over; it signs in with the token in the link.
+    window.location.replace(`${server.origin}#token=${encodeURIComponent(server.token)}`);
+  }
+
+  function showPair(error = "", last = null) {
+    $("connecting").classList.add("hidden");
+    $("pair").classList.remove("hidden");
+    $("error").textContent = error;
+    $("where").textContent = last ? T.where.replace("{url}", last.origin) : "";
+    if (last) $("link").value = `${last.origin}#token=${last.token}`;
+  }
+
+  $("pair-help").textContent = T.help;
+  $("scan").textContent = T.scan;
+  $("connect").textContent = T.connect;
+  $("link").placeholder = T.link;
+  $("connect").onclick = () => {
+    const server = parse($("link").value);
+    server ? open(server, true) : showPair(T.bad);
+  };
+  $("scan").onclick = async () => {
+    const scanner = window.Capacitor?.Plugins?.CapacitorBarcodeScanner;
+    if (!scanner) { $("link").focus(); return; }
+    try {
+      const result = await scanner.scanBarcode({
+        hint: 0, scanInstructions: T.scanning, scanButton: false, scanText: " ",
+        cameraDirection: 1, scanOrientation: 3,
+      });
+      const server = parse(result.ScanResult || "");
+      server ? open(server, true) : showPair(T.bad);
+    } catch (e) { showPair(String(e.message || e)); }
+  };
+
+  const params = new URLSearchParams(location.search);
+  if (params.has("reset")) localStorage.removeItem(KEY);   // "Change server" in Dia's settings
+  let saved = null;
+  try { saved = JSON.parse(localStorage.getItem(KEY) || "null"); } catch {}
+  saved && !params.has("reset") ? open(saved, false) : showPair("", saved);
+</script>
+</body>
+</html>

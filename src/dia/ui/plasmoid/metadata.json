@@ -1,0 +1,15 @@
+{
+    "KPlugin": {
+        "Id": "org.dia.plasmoid",
+        "Name": "Dia",
+        "Description": "Talk or write to Dia; what waits for your decision, recent tasks, quick actions",
+        "Icon": "io.github.solar9.dia",
+        "Authors": [{ "Name": "Dia contributors" }],
+        "Category": "Utilities",
+        "License": "PolyForm-Noncommercial-1.0.0",
+        "Version": "0.1.0",
+        "Website": "https://github.com/Solar9/Dia"
+    },
+    "X-Plasma-API-Minimum-Version": "6.0",
+    "KPackageStructure": "Plasma/Applet"
+}

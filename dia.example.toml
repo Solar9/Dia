@@ -1,0 +1,398 @@
+# Dia configuration. Copy to ./dia.toml or ~/.config/dia/config.toml.
+# Nothing here is required by the core: pick any agents and any repositories.
+
+[dia]
+# data_dir = "~/.local/share/dia"   # task history (SQLite) and worktrees
+default_agent = "claude"
+# language = "pl"                   # Dia's own messages and spoken replies (pl, en)
+# max_parallel_tasks = 2            # more tasks wait in a queue (usage limits, CPU)
+# brain = ["rules", "local", "claude-brain"]   # tried in order; see [brains.*] below
+
+# Most of this can also be changed in the UI (Settings); those changes are
+# kept in settings.json next to this file and override it.
+
+# ------------------------------------------------------------- assistant ---
+# Who Dia is and what it can do besides coding. See docs/ASSISTANT.md.
+
+# [assistant]
+# name = "Dia"
+# user_name = "..."                  # how Dia addresses you
+# personality = "friendly"           # friendly | butler | concise | buddy | mentor | your own text
+# skills = ["weather", "news", "stocks", "crypto", "briefing"]   # default: all installed
+# history_turns = 6                  # follow-ups: remembered turns per conversation
+# history_minutes = 30               # ...forgotten after this much silence
+# preferences = ["Uses Godot 4.x"]   # also: "Dia, zapamiętaj, że wolę ..."
+# learn_preferences = false          # propose preferences noticed in conversations
+# log_intents = true                 # keep requests for `dia brains --replay`
+# one_conversation = true            # your devices and channels share one conversation
+# owner_ids = ["123456789012345678"] # your Discord id / speaker name (UI, devices: automatic)
+
+# [skills.weather]
+# place = "Kraków"                   # Open-Meteo, no key
+# [skills.news]
+# feeds = ["https://tvn24.pl/najnowsze.xml"]
+# [skills.stocks]
+# symbols = ["AAPL", "CDR.WA", "^GSPC"]   # Yahoo symbols (source = "stooq" for Stooq)
+# [skills.crypto]
+# coins = ["btc", "eth", "sol"]          # tickers or CoinGecko ids
+# currency = "pln"                       # default: usd
+# [skills.briefing]
+# sections = ["weather", "work", "news", "stocks", "crypto"]
+
+# Recurring jobs in `dia serve` (also: dia schedule add, the UI, or ask Dia).
+# [[schedule]]
+# cron = "30 7 * * 1-5"              # minute hour day month weekday (local time)
+# text = "briefing"                  # what to ask Dia
+# speak = true                       # also read the answer aloud
+# [[schedule]]
+# cron = "0 3 * * *"
+# action = "task"
+# project = "example"
+# prompt = "Update the dependencies and run the tests"
+
+# ---------------------------------------------------------------- agents ---
+# [agents.<your-name>] with type = <plugin>. Run `dia agents` for plugins.
+# The same plugin can be configured several times (e.g. two models).
+
+[agents.claude]
+type = "claude-code"          # uses your logged-in `claude` CLI (subscription or API key)
+# role = "architect, careful implementer"   # tells the planner what this agent is good at
+# model = "sonnet"
+# In edit tasks Claude may edit files but not run commands. Let it run your
+# tests/checks itself (Dia runs them after the agent anyway):
+# allowed_tools = ["Bash(godot:*)", "Bash(npm test:*)"]
+
+[agents.codex]
+type = "codex"                # uses your logged-in `codex` CLI
+# model = "gpt-5-codex"
+
+[agents.cursor]
+type = "cursor"
+# command = "agent"           # auto-detected: `cursor-agent`, then `agent`,
+                              # on PATH or in ~/.local/bin (aliases are not visible)
+# trust = true                # pass --trust for the Dia-created worktree
+
+# Any other CLI agent, no code required:
+# [agents.aider]
+# type = "command"
+# argv = ["aider", "--yes-always", "--message", "{prompt}"]
+
+# ----------------------------------------------------------------- plans ---
+# Multi-step work: several agents one after another on the same branch.
+# `dia plan <project> "<goal>"` asks the planner agent for steps (you confirm);
+# `--pipeline <name>` uses a fixed recipe instead. Discord: /plan.
+
+# [plans]
+# planner = "claude"    # default: the default agent
+# max_steps = 4
+
+# [pipelines.feature]
+# steps = [
+#   { title = "Design", agent = "claude", prompt = "Design {goal}. Write the design to DESIGN.md; do not implement it yet." },
+#   { title = "Build", agent = "codex", prompt = "Implement DESIGN.md: {goal}. Add tests." },
+#   { title = "UI", agent = "cursor", prompt = "Build the user interface parts of {goal}, following DESIGN.md." },
+# ]
+
+# ---------------------------------------------------------------- review ---
+# Cross-review: another agent reviews an edit task's changes; on "changes
+# requested" the author fixes them, tests rerun, and the reviewer looks again.
+# Use `dia run --review`, `dia review <task>`, or the Review button in Discord.
+
+# [review]
+# auto = false          # review every edit task automatically
+# reviewer = "codex"    # default: the first configured agent other than the author
+# fix_rounds = 1        # 0 = review only, no automatic fixes
+
+# -------------------------------------------------------------------- ci ---
+# While `dia serve` runs, published tasks' CI is watched (GitHub via gh,
+# GitLab via glab) and results are sent to Discord / announced by voice.
+
+# [ci]
+# watch = true          # in `dia serve`
+# interval = 60         # seconds between checks
+# autofix = false       # on failure, give the log to the author and push its fix
+# fix_rounds = 1        # automatic fixes per task (also per project: ci_autofix = true)
+# watch_comments = true      # report new review comments on published PRs/MRs
+# autofix_comments = false   # let the author address them without asking
+
+# -------------------------------------------------------------- computer ---
+# Alerts while `dia serve` runs; screen awareness is off until you switch it
+# on in the app (👁) or say "możesz patrzeć na ekran". See docs/COMPUTER.md.
+# [system]
+# cpu_temp = 90
+# disk_used = 90
+# battery_low = 15
+# check_urls = ["https://my-server.example"]
+# [screen]
+# agent = "claude"
+# [camera]                           # off until you switch it on (📷, "włącz kamerę")
+# device = "/dev/video0"
+# [builds]
+# presets = ["Linux", "Windows Desktop"]   # Godot export presets (default: all)
+
+# ---------------------------------------------------- security, integrations ---
+# docs/SECURITY.md, docs/INTEGRATIONS.md. Secrets: dia secret set DIA_CALENDAR_URL,
+# DIA_MAIL_PASSWORD, HA_TOKEN, BUTLER_API_KEY.
+# [security]
+# hosts = ["192.168.1.10"]          # yours: the only hosts Dia may scan
+# networks = ["192.168.1.0/24"]     # yours: Dia looks for (new) devices on them
+# [skills.mail]
+# host = "imap.gmail.com"
+# user = "you@gmail.com"
+# [skills.home]
+# url = "http://homeassistant.local:8123"
+# [skills.notion]                  # secret: NOTION_TOKEN
+# parent = "<page id for new notes>"
+# [builds]
+# itch = "yourname/nova"
+# [builds.steam]                    # steamcmd; never live on the default branch
+# app_id = 1234560
+# depots = { "Linux" = 1234561 }
+# username = "your_build_account"
+# branch = "beta"
+
+# AI Council: dia council [project] "question". Default: every agent, the
+# default agent moderates.
+# [council]
+# members = ["claude", "codex", "cursor"]
+# moderator = "claude"
+
+# Quiet hours and a daily push budget; held notifications come as a summary.
+# [notifications]
+# quiet_hours = "22:00-07:30"
+# budget = 20
+# [tidy]                            # "posprzątaj pobrane": preview, then your yes
+# folders = ["~/Pobrane"]
+# [research]                        # "zrób research ...": an agent with web access
+# agent = "claude"
+
+# Agents run in a sandbox where bubblewrap works (docs/SECURITY.md).
+# [sandbox]
+# enabled = "auto"                  # "auto" | true (required) | false
+# allow_read = []                   # extra paths agents may read
+# decoys = true                     # fake secrets that catch an agent looking
+# [lab]                             # dia lab: throwaway containers
+# engine = "podman"
+
+# Limits per task (all off by default). Per project: task_limits = { ... }.
+# [task_limits]
+# minutes = 60
+# calls = 12
+# nice = 10                         # agents and tests at a lower CPU priority
+# Who takes a task when you don't name an agent.
+# [routing]
+# rules = [{ match = "test|gut|testy", agent = "codex" }]
+# auto = true                       # else: the best record (quality) on the project
+
+# Goals, work profiles, suggestions (docs/GOALS.md).
+# [goals]
+# review_days = 7
+# [profiles.starfall]
+# project = "uv"
+# apps = ["godot4 --editor --path ~/games/uv", "code ~/games/uv"]
+# names = ["starfall", "ultra"]
+# [suggestions]
+# per_day = 1
+# repeat_days = 14
+
+# Quality guards (docs/QUALITY.md).
+# [verification]
+# min_lines = 150                   # check the agent's assumptions after larger changes
+# always = false
+# [debt]
+# function_lines = 60
+# nesting = 5
+# file_lines = 600
+# [debug]
+# agents = ["claude", "codex"]      # the debugging swarm (default: all agents)
+# max_checks = 3
+
+# Your working style, drafted from your decisions (docs/DECISIONS.md).
+# [profile]
+# agent = "claude"                  # who drafts it (default: the default agent)
+# [contradictions]
+# agent = "claude"                  # who checks notes against the code
+
+# Experiments: one change tried several ways, each measured (docs/MEASUREMENT.md).
+# [experiments]
+# max_variants = 3
+# agents = ["claude", "codex"]      # default variants: one per agent
+
+# When something fails (all 0 by default). Per project: retry = { ... }.
+# [retry]
+# agent_errors = 1                  # another attempt when an agent fails
+# switch_agent = true               # ... by another agent
+# test_fixes = 1                    # failed tests go back to the author
+
+# -------------------------------------------------------------- missions ---
+# A goal split into a graph of steps that run in parallel where they can.
+# See docs/MISSIONS.md. dia mission <project> "<goal>", or the Missions view.
+# [missions]
+# planner = "claude"
+# max_steps = 6
+# budget_calls = 30            # a mission pauses when its budget is used up
+# budget_minutes = 180
+# step_tests = false           # true: also test every step, not only the result
+
+# ---------------------------------------------------------------- issues ---
+# Open issues with the label become plans waiting for your approval.
+# [issues]
+# label = "dia"
+# planner = false                  # true: split issues into steps with the planner
+# interval = 600
+
+# ------------------------------------------------------------------ push ---
+# Push notifications to the installed app (pip install 'dia[push]', HTTPS).
+# [push]
+# events = ["task", "ci", "watch", "review", "learn", "limit", "schedule", "issue"]
+# subject = "mailto:you@example.com"
+
+# ----------------------------------------------------------------- watch ---
+# While `dia serve` runs, test every new commit of your projects (yours or
+# pulled from others) in a separate worktree. A failure is announced (Discord,
+# voice, UI) with a "Fix" button that gives the test log to an agent as a task.
+# By hand: `dia check <project> [ref]`, then `dia fix-build <task>`.
+
+# [watch]
+# enabled = true
+# interval = 300                   # seconds between looks
+# projects = ["nova"]              # default: every project (per project: watch = false)
+# branch = "main"                  # default: the project's base_branch, else the checkout's
+
+# ---------------------------------------------------------------- limits ---
+# When an agent's plan runs out ("usage limit reached", 429...), Dia notes when
+# it resets (`dia limits`), gives the step to another agent and, when every
+# agent is out, waits for the soonest reset (task status "waiting").
+
+# [limits]
+# fallback = ["codex", "cursor"]   # who takes over, in order; default: every other
+#                                  # configured agent; false = never switch agents
+# wait = true                      # wait for a reset instead of failing the task
+# max_wait_hours = 6
+# cooldown_minutes = 60            # when the message does not say when it resets
+
+# ---------------------------------------------------------------- memory ---
+# Optional. Without this section Dia simply runs without extra context.
+# A folder of Markdown notes, e.g. an Obsidian vault (Obsidian Sync works).
+# Dia writes only inside <vault>/<folder>:
+#   Profile.md          about you, added to every task (you write it)
+#   Projects/<name>.md  per-project knowledge, created as a template (you fill it)
+#   Journal/<date>.md   what the agents did (Dia only appends)
+
+# [memory]
+# type = "obsidian"            # same as "markdown"
+# vault = "~/Obsidian/MyVault"
+# folder = "Dia"
+# projects_dir = "Projects"    # e.g. "Projekty"
+# journal_dir = "Journal"      # e.g. "Dziennik"
+# profile_note = "Profile.md"  # e.g. "O mnie.md"
+# max_context_chars = 8000
+#
+# Which notes may be searched for context related to each task:
+#   "folder" (default) only <vault>/<folder>; "vault" every note; "off" none.
+# Hidden folders (.obsidian, .trash) and notes whose frontmatter says
+# `dia: private` are never read. Matching excerpts are sent to the agent.
+# search = "vault"
+# exclude = ["Private", "Journal/Personal/*", "*.secret.md"]
+# search_results = 5
+#
+# Learning: after a successful task a cheap model call proposes up to 3 facts
+# worth keeping (conventions, pitfalls...). Nothing is written until you accept
+# them (UI, Discord button, `dia learned`); accepted facts are appended to the
+# project note under "## Learned by Dia". `dia remember <project> "<fact>"`
+# adds one yourself.
+# learn = true
+# learn_agent = "claude"       # default: the project's default agent
+# learn_model = "haiku"        # a small model is enough
+#
+# Semantic search (by meaning), embeddings by a local Ollama:
+#   ollama pull nomic-embed-text; dia memory index
+# semantic = { model = "nomic-embed-text" }   # base_url = "http://localhost:11434/v1"
+
+# ---------------------------------------------------------------- brains ---
+# Brains turn free-form requests (`dia say`, Discord DMs, voice) into actions.
+# They are tried in the order of [dia] brain until one answers. Default:
+# "rules" (fixed phrases, no model), then the default agent as brain.
+
+# A local model: private and free. Ollama, LM Studio, llama.cpp, vLLM...
+# (sudo pacman -S ollama; ollama pull qwen2.5:3b; test: dia brains --test "...")
+# [brains.local]
+# type = "ollama"                   # or "openai" with base_url = "http://localhost:1234/v1"
+# model = "qwen2.5:3b"              # small models are enough for routing, even on a CPU
+
+# Any configured agent, on its subscription (Claude runs without tools here):
+# [brains.claude-brain]
+# type = "agent"
+# agent = "claude"
+# model = "haiku"
+
+# -------------------------------------------------------------- channels ---
+# Interfaces started by `dia serve`. See docs/DISCORD.md.
+
+# [channels.discord]
+# type = "discord"
+# allowed_users = [123456789012345678]   # your Discord user id (required)
+# guild_id = 987654321098765432          # your server, for instant slash commands
+# token_env = "DIA_DISCORD_TOKEN"        # env var holding the bot token
+# notify_channel_id = 1234567890         # where CI news goes (default: DM to you)
+
+# The local web UI / API of `dia serve` (used by `dia app` and the KDE widget).
+# See docs/UI.md.
+# [app]                             # Dia's own window (dia app, with Qt)
+# tray = true                       # an icon in the tray
+# minimize_to_tray = true           # minimizing hides the window there
+# check_updates = true              # look for a new release every few hours (installed only on your click)
+# close_to_tray = true              # so does its X; quit from the tray menu
+# custom_titlebar = true            # Dia's own title bar instead of the system's
+
+# [ui]
+# enabled = true
+# port = 8765
+# Your phone (see docs/MOBILE.md): paired devices only, best over Tailscale.
+# remote = true
+# public_url = "https://laptop.tail1234.ts.net"
+# hosts = ["laptop.tail1234.ts.net"]
+
+# Local voice: bind `dia voice toggle` to a desktop shortcut. See docs/VOICE.md.
+# [channels.voice]
+# type = "voice"
+# language = "pl"
+# stt = { type = "faster-whisper", model = "small" }
+# tts = { type = "piper", voice = "pl_PL-gosia-medium" }
+# An ElevenLabs voice (dia secret set ELEVENLABS_API_KEY), Piper when offline:
+# tts = { type = "elevenlabs", voice_id = "...", fallback = "piper" }
+# wake = { type = "openwakeword", model = "hey_jarvis" }   # hands-free; or your "hey dia" .onnx
+# wake = { type = "whisper-keyword" }                      # "Hej Dia" without a trained model
+# Who is speaking (dia voice enroll NAME); unknown voices may ask for little:
+# speaker = { type = "sherpa-onnx", model = "~/.local/share/dia/speaker.onnx" }
+
+# -------------------------------------------------------------- projects ---
+# Any git repository, any host (GitHub, GitLab, local-only) and any stack.
+
+[projects.example]
+path = "~/projects/example"
+# base_branch = "main"                     # default: the repo's current branch
+# test_command = "pytest -q"               # run in the task's worktree after the agent edits
+# default_agent = "codex"
+# reviewer = "claude"                      # per-project reviewer; auto_review = true
+# forge = "auto"                           # where `dia publish` goes: auto (from the
+#                                          # remote URL), github (gh), gitlab (glab or
+#                                          # push options), git (push only)
+# forge_options = { remote = "origin", draft = true }
+# note = "Example"                         # memory note name, default: the project name
+# benchmark = "python bench.py"            # prints metrics: JSON or "frame_ms: 12.4" lines;
+#                                          # run after every merge, a regression is reported
+# benchmark_runs = 3                       # median of several runs
+# benchmark_better = { fps = "higher" }    # default: lower is better
+# benchmark_tolerance = 0.05               # changes under 5 % are noise
+# architecture = "ARCHITECTURE.md"         # rules the reviewer checks (the default)
+# architecture_forbid = [ { from = "ui/**", to = "data/**", why = "UI never talks to data" } ]
+
+# A Godot 4 project needs no test_command: it is detected from project.godot
+# and tested headless (import, then GUT / gdUnit4 if present, else a smoke run
+# of the main scene; script errors fail the run). `dia launch mygame` runs it.
+# [projects.mygame]
+# path = "~/games/mygame"
+# toolchain = "auto"                       # or "godot", or "none"
+# toolchain_options = { command = "godot4", smoke_frames = 120, launch_editor = false }
+# # also: reuse_import_cache = true, timeout = 600, import_args, error_patterns

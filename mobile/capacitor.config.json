@@ -1,0 +1,16 @@
+{
+  "appId": "io.github.solar9.dia",
+  "appName": "Dia",
+  "webDir": "www",
+  "appendUserAgent": "DiaApp",
+  "backgroundColor": "#0b0b12",
+  "server": {
+    "androidScheme": "https",
+    "allowNavigation": ["*"],
+    "cleartext": true
+  },
+  "android": { "allowMixedContent": true },
+  "plugins": {
+    "SplashScreen": { "launchShowDuration": 600, "backgroundColor": "#0b0b12", "showSpinner": false }
+  }
+}

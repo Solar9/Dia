@@ -1,0 +1,119 @@
+[build-system]
+requires = ["hatchling>=1.24"]
+build-backend = "hatchling.build"
+
+[project]
+name = "dia"
+version = "0.1.0"
+description = "A personal, pluggable AI assistant that orchestrates coding agents (Claude Code, Codex, Cursor, ...) across your repositories."
+readme = "README.md"
+license = "PolyForm-Noncommercial-1.0.0"
+license-files = ["LICENSE", "COMMERCIAL-LICENSE.md"]
+requires-python = ">=3.11"
+dependencies = []
+
+[project.optional-dependencies]
+discord = ["discord.py>=2.4"]
+voice = ["faster-whisper>=1.0", "piper-tts>=1.3"]
+ui = ["aiohttp>=3.9"]
+app = ["aiohttp>=3.9", "pywebview>=5"]
+# Dia's own window with a tray icon (Qt WebEngine); takes precedence over pywebview
+qt = ["aiohttp>=3.9", "PySide6>=6.6"]
+mobile = ["aiohttp>=3.9", "qrcode>=7.4", "pywebpush>=2"]
+push = ["pywebpush>=2"]
+# Plain chat with Claude through the API (subscriptions via the CLIs need nothing)
+chat = ["anthropic>=2.3"]
+# openwakeword itself: see docs/VOICE.md (its tflite dependency has no Python 3.13 wheels)
+wake = ["onnxruntime>=1.16", "numpy>=1.24", "scipy", "scikit-learn", "tqdm", "requests"]
+dev = ["pytest>=8", "pytest-asyncio>=0.23", "ruff>=0.6", "discord.py>=2.4", "aiohttp>=3.9", "pywebpush>=2", "pytest-timeout>=2"]
+
+[project.scripts]
+dia = "dia.cli:main"
+
+# Built-in plugins are registered exactly like third-party ones would be.
+# A separate package can add its own agent by declaring an entry point in
+# the "dia.agents" group.
+[project.entry-points."dia.agents"]
+claude-code = "dia.agents.claude_code:ClaudeCodeAgent"
+codex = "dia.agents.codex:CodexAgent"
+cursor = "dia.agents.cursor:CursorAgent"
+command = "dia.agents.command:CommandAgent"
+
+[project.entry-points."dia.brains"]
+rules = "dia.brains.rules:RulesBrain"
+agent = "dia.brains.agent_brain:AgentBrain"
+openai = "dia.brains.openai_compat:OpenAICompatBrain"
+ollama = "dia.brains.openai_compat:OllamaBrain"
+
+[project.entry-points."dia.channels"]
+discord = "dia.channels.discord_bot:DiscordChannel"
+voice = "dia.channels.voice:VoiceChannel"
+
+[project.entry-points."dia.forges"]
+git = "dia.forges.builtin:GitForge"
+github = "dia.forges.builtin:GitHubForge"
+gitlab = "dia.forges.builtin:GitLabForge"
+
+[project.entry-points."dia.toolchains"]
+godot = "dia.toolchains.godot:GodotToolchain"
+
+[project.entry-points."dia.wake"]
+openwakeword = "dia.voice.wake:OpenWakeWord"
+whisper-keyword = "dia.voice.wake:KeywordWake"
+
+[project.entry-points."dia.stt"]
+faster-whisper = "dia.voice.stt:FasterWhisperSTT"
+command = "dia.voice.stt:CommandSTT"
+
+[project.entry-points."dia.tts"]
+piper = "dia.voice.tts:PiperTTS"
+command = "dia.voice.tts:CommandTTS"
+elevenlabs = "dia.voice.tts:ElevenLabsTTS"
+
+[project.entry-points."dia.memory"]
+markdown = "dia.memory.markdown:MarkdownMemory"
+obsidian = "dia.memory.markdown:MarkdownMemory"
+
+[project.entry-points."dia.speakers"]
+sherpa-onnx = "dia.voice.speaker:SherpaEmbedder"
+
+[project.entry-points."dia.skills"]
+weather = "dia.skills.builtin:WeatherSkill"
+news = "dia.skills.builtin:NewsSkill"
+stocks = "dia.skills.builtin:StocksSkill"
+crypto = "dia.skills.builtin:CryptoSkill"
+briefing = "dia.skills.builtin:BriefingSkill"
+system = "dia.skills.builtin:SystemSkill"
+services = "dia.skills.builtin:ServicesSkill"
+updates = "dia.skills.builtin:UpdatesSkill"
+screen = "dia.skills.builtin:ScreenSkill"
+security = "dia.skills.builtin:SecuritySkill"
+calendar = "dia.skills.integrations:CalendarSkill"
+mail = "dia.skills.integrations:MailSkill"
+home = "dia.skills.integrations:HomeSkill"
+camera = "dia.skills.builtin:CameraSkill"
+tidy = "dia.skills.builtin:TidySkill"
+clipboard = "dia.skills.builtin:ClipboardSkill"
+analyze = "dia.skills.builtin:AnalyzeSkill"
+balance = "dia.skills.builtin:BalanceSkill"
+notion = "dia.skills.integrations:NotionSkill"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/dia"]
+
+[tool.hatch.build.targets.sdist]
+# The mobile app is its own project (npm, Gradle, Xcode), not part of the Python package.
+exclude = ["mobile/"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+# A hung test fails with its stack trace instead of stalling the run.
+timeout = 120
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
