@@ -5,6 +5,26 @@ before 1.0 a minor version may change the configuration.
 
 ## [Unreleased]
 
+## [0.1.1] — 2026-10-28
+
+### Added
+- UI 2.0: Inbox start view, Settings side-nav groups, Research from the composer,
+  themes shared with the phone and Plasma widget, task detail with a decision bar,
+  Ctrl+K, and CLI sessions (start, take over, release) in the app.
+- Release hygiene: one version source (`scripts/bump-version`), CI on Python 3.11 /
+  3.13 / 3.14 plus a Qt job, publish only after green CI, `docs/RELEASING.md`.
+- Local brain recommendation: `qwen3.5:4b` (best measured 25.10.2026).
+
+### Fixed
+- Tasks started together on one repository (experiments, missions) no longer fail now
+  and then because `git worktree add`, `remove` and branch deletion raced on git's own
+  files; they now take turns per repository.
+- Codex / Cursor auto-context no longer appears as a fake user message in CLI sessions.
+- Pacman installs are never updated with `pip`; the tray points at the package manager.
+- Pre-reset private builds numbered 0.1.0–0.2.3 see ≥0.1.1 as a newer release.
+- Merge / push / discard wording no longer becomes an agent `run` task.
+- Loud warning when agents would run without a sandbox.
+
 ## [0.1.0] — 2026-10-27
 
 The first public release, under the PolyForm Noncommercial License 1.0.0;

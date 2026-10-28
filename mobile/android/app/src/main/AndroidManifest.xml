@@ -34,6 +34,10 @@
     <!-- Scanning the pairing QR code; nothing else uses the camera. -->
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-feature android:name="android.hardware.camera" android:required="false" />
+    <!-- Talking to Dia: the phone records you and sends it to your own Dia (docs/MOBILE.md). -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+    <uses-feature android:name="android.hardware.microphone" android:required="false" />
 
     <!-- Permissions -->
 

@@ -102,3 +102,15 @@ def test_resuming_a_session_adds_the_resume_arguments(tmp_path: Path) -> None:
     assert ["--resume", "sid"] == ClaudeCodeAgent("x", {}).build_argv(req, tmp_path)[3:5] or (
         "--resume" in ClaudeCodeAgent("x", {}).build_argv(req, tmp_path)
     )
+
+
+def test_codex_reports_its_conversation_id(tmp_path: Path) -> None:
+    """`codex exec` prints the id in its header: Dia keeps it to continue the conversation."""
+    agent = CodexAgent("x")
+    req = AgentRequest(prompt="p", cwd=tmp_path)
+    header = (
+        "OpenAI Codex v0.46\n--------\nworkdir: /x\nmodel: gpt-5\n"
+        "session id: 0199a2b3-c4d5-7e6f\n--------\n"
+    )
+    assert agent.parse(req, tmp_path, 0, "", header).session_id == "0199a2b3-c4d5-7e6f"
+    assert agent.parse(req, tmp_path, 0, "", "no header").session_id is None

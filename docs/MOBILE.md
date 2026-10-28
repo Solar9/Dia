@@ -58,6 +58,21 @@ microphone, or pair and revoke devices: those only work on the computer
 itself, with the owner token. The owner token is refused when a request
 does not come from this computer, even through `tailscale serve`.
 
+**Talking on the phone**: the microphone button in the middle of the phone's
+bottom bar opens a conversation that uses the phone's own microphone, never
+the computer's. The phone records you (16 kHz WAV, up to 30 s, it stops when
+you pause) and sends the recording to your Dia (`POST /api/talk`); Dia's own
+speech recognition hears it, the text goes to Dia like a chat message (in the
+current chat session), and the answer comes back as text and as speech in
+Dia's own voice, played on the phone (text only in quiet mode). It uses the
+`stt` and `tts` of `[channels.voice]` (local Whisper and Piper by default,
+docs/VOICE.md), so nothing leaves your computer; it works without the voice
+channel itself running, with `pip install 'dia[voice]'`. Without speech
+recognition on the computer the phone falls back to the browser's own
+dictation where there is one (Chrome and Safari send it to Google or Apple),
+and otherwise offers "Write instead". The app asks for the microphone the
+first time (Android: RECORD_AUDIO; iOS: NSMicrophoneUsageDescription).
+
 **Full access** for your own phone: Settings → Devices → "full access" next
 to it (set on the computer only). Such a phone also changes settings,
 projects and agents, edits the config file and runs Dia's tools (Status →

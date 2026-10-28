@@ -94,7 +94,7 @@ subscription model stays as a fallback. On Arch:
 
 ```sh
 sudo pacman -S ollama && sudo systemctl enable --now ollama
-ollama pull qwen2.5:3b          # routing (about 2 GB)
+ollama pull qwen3.5:4b          # routing (best measured 25.10.2026: 8/9; ~2–3 GB)
 ollama pull nomic-embed-text    # semantic memory search (optional)
 ```
 
@@ -106,7 +106,7 @@ brain = ["rules", "local", "default-agent"]
 
 [brains.local]
 type = "ollama"
-model = "qwen2.5:3b"
+model = "qwen3.5:4b"
 ```
 
 `dia brains --test "jaka pogoda w Krakowie"` shows what each brain makes of a
@@ -236,7 +236,7 @@ mode ("tryb cichy"). The sidebar shows 🌙 during quiet hours.
 ## Research reports
 
 "Dia, zrób research: jak gry roguelike robią sieć dla co-opa?" (or `dia
-research [project] "topic"`, Status → Research) has an agent with web access
+research [project] "topic"`, Inbox/Tasks → Research in the composer) has an agent with web access
 (Claude Code's WebSearch/WebFetch, Codex's web search) read sources and write
 a report with links: summary, findings, what it means for the project, open
 questions. It is a task, and with memory on also a note in

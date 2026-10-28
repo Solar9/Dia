@@ -179,9 +179,22 @@ fix goes through the usual review and merge approvals.
 `ApiChannel` (aiohttp) runs inside `dia serve` on 127.0.0.1: a JSON API over
 the same core calls the other channels use, a WebSocket that pushes task
 updates (`TaskStore.listeners`) and events (CI, review, voice state), and the
-static web UI (Preact + htm, vendored, no build step). The desktop app is that
-UI in a pywebview window; the KDE widget is QML using the same API. Auth is a
-local token plus a Host-header check.
+static web UI (Preact + htm, vendored, no build step). Auth is a local token
+plus a Host-header check.
+
+**Desktop window and tray.** Prefer `dia app` with the optional Qt extras
+(`pip install -e '.[qt]'`): a PySide6 / Qt WebEngine window that loads the same
+UI, with Dia's own title bar, a system tray icon (raise window, tabs, quiet
+mode, Dia/Ollama service control, updates), and an offline page when the
+backend is down. Without Qt, the same UI falls back to pywebview, then a
+Chromium app window, then the browser. The Plasma 6 plasmoid (`src/dia/ui/plasmoid`)
+is QML against the same API.
+
+**CLI sessions.** `dia.sessions` lists Claude Code, Codex and Cursor Agent
+processes from `/proc`, reads their transcripts read-only, and can start a new
+headless session or take one over (`POST /api/cli-captured`). Auto-injected CLI
+context (AGENTS.md, Cursor `<user_info>` / rules without `<user_query>`) is
+stripped so the UI shows only what you typed.
 
 The same UI is an installable PWA (manifest, service worker caching only the
 app shell) with a phone layout. With `[ui] remote = true`, requests for the

@@ -71,9 +71,9 @@ def test_qml_parses_as_far_as_brackets_go() -> None:
 def test_widget_ships_its_icons() -> None:
     images = plasmoid_install.PACKAGE / "contents" / "images"
     qml = (plasmoid_install.PACKAGE / "contents" / "ui" / "main.qml").read_text()
-    for name in ("dia.svg", "dia-idle.svg"):
-        assert (images / name).is_file()
-        assert f"../images/{name}" in qml
+    assert (images / "dia-idle.svg").is_file() and "../images/dia-idle.svg" in qml
+    # Lit, Dia's icon is drawn in the theme's accent, like the app draws it.
+    assert "root.lit ? root.litIcon" in qml and 'stroke="url(#dia)"' in qml
     assert "audio-input-microphone-muted" not in qml  # Dia's icon, not a microphone
     # The badge counts decisions only: changes to merge (a commit) and plans.
     assert '(t.status === "done" && t.commit_sha) || t.status === "planned"' in qml

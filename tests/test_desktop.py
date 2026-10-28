@@ -17,6 +17,8 @@ def test_shortcuts_with_the_icon(tmp_path, monkeypatch) -> None:
     assert len(done) == 3
     menu = (tmp_path / "data" / "applications" / "dia.desktop").read_text()
     assert "Icon=io.github.solar9.dia\n" in menu and "Name=Dia" in menu
+    assert "Categories=Utility;\n" in menu
+    assert "Development" not in menu  # one main category only (DIA-27)
     assert f"Exec={sys.executable} -m dia --config /etc/dia.toml app" in menu
     assert (tmp_path / "Pulpit" / "dia.desktop").stat().st_mode & 0o111  # launchable
     autostart = (tmp_path / "config" / "autostart" / "dia.desktop").read_text()

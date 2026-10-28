@@ -32,7 +32,15 @@ from dia.review import CHANGES_REQUESTED, fix_prompt, parse_verdict, review_prom
 from dia.store import TaskRecord, TaskStore, now
 from dia.task_limits import TaskLimits
 from dia.toolchains import Toolchain
-from dia.workspace import GitError, Workspace, git, identity_args, run, uncommitted_files
+from dia.workspace import (
+    GitError,
+    Workspace,
+    git,
+    identity_args,
+    run,
+    uncommitted_files,
+    worktree,
+)
 
 T = TypeVar("T")
 log = logging.getLogger("dia")
@@ -916,7 +924,7 @@ class Orchestrator:
         workspace = Workspace(repo=project.path, path=path, branch="", base=sha)
         try:
             async with self._slots:
-                await git(project.path, "worktree", "add", "--detach", str(path), sha)
+                await worktree(project.path, "add", "--detach", str(path), sha)
                 task.tests_ok, output = await self._test(project, workspace)
             task.status = "failed" if task.tests_ok is False else "done"
             if task.tests_ok is None:
@@ -1098,7 +1106,31 @@ class Orchestrator:
             self.store.save(task)
         report.diff_stat = await workspace.diff_stat()
 
+    async def diff_stat(self, task: TaskRecord) -> dict[str, int] | None:
+        """Files changed and lines added/removed on a task's branch, or None (no branch now)."""
+        base = task.details.get("base")
+        if not (task.commit_sha and task.branch and base):
+            return None
+        try:
+            project = self.config.project(task.project)
+            out = await git(project.path, "diff", "--numstat", f"{base}...{task.branch}")
+        except Exception:
+            return None
+        stat = {"files": 0, "added": 0, "removed": 0}
+        for line in out.splitlines():
+            added, removed, _ = line.split("\t", 2)
+            stat["files"] += 1
+            if added != "-":  # "-" for binary files
+                stat["added"] += int(added)
+                stat["removed"] += int(removed)
+        return stat
+
     async def task_diff(self, task_id: str) -> str:
+        """The changes on a task's branch; also after it was published (the PR/MR is still open)."""
+        task = self.store.get(task_id)
+        if task and task.status == "published" and task.branch and task.details.get("base"):
+            project = self.config.project(task.project)
+            return await git(project.path, "diff", f"{task.details['base']}...{task.branch}")
         task, _, workspace = self._reviewable(task_id)
         return await git(workspace.repo, "diff", f"{workspace.base}...{task.branch}")
 
@@ -1471,7 +1503,12 @@ class Orchestrator:
             resets = [u for n in candidates if (u := self.limits.blocked_until(n))]
             soonest = min(resets) if resets else datetime.now(UTC)
             delay = soonest - datetime.now(UTC) + timedelta(seconds=30)
-            if not self.config.limits.get("wait", True) or waited + delay > max_wait:
+            # Interactive CLI sessions must not sleep for hours on a usage limit.
+            if (
+                purpose == "cli-session"
+                or not self.config.limits.get("wait", True)
+                or waited + delay > max_wait
+            ):
                 names = ", ".join(candidates)
                 return agent, AgentResult(
                     agent=agent.name,

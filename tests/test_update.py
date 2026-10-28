@@ -12,6 +12,12 @@ def test_versions_compare_as_numbers_and_ignore_prereleases():
     assert not update.newer("0.2.1", "0.2.1")
     assert not update.newer("0.3.0rc1", "0.2.1")
     assert not update.newer("main", "0.2.1")
+    # After the version reset, old private 0.2.x must see 0.1.1 as an update (DIA-47).
+    assert update.newer("0.1.1", "0.2.3")
+    assert update.newer("0.1.1", "0.2.0")
+    assert update.newer("0.1.1", "0.1.0")  # also true by ordinary compare
+    assert not update.newer("0.1.0", "0.2.3")  # post-reset floor is 0.1.1
+    assert not update.newer("0.1.1", "0.3.0")  # real future versions stay normal
 
 
 def test_checksum_is_read_from_a_sha256sum_file():
@@ -58,3 +64,22 @@ def test_a_source_checkout_is_never_updated(monkeypatch):
     monkeypatch.setattr(update, "editable", lambda: True)
     with pytest.raises(RuntimeError, match="git"):
         update.install("99.0.0")
+
+
+def test_a_pacman_install_is_never_pip_updated(monkeypatch):
+    monkeypatch.setattr(update, "editable", lambda: False)
+    monkeypatch.setattr(update, "system_package", lambda: True)
+    with pytest.raises(RuntimeError, match="package manager"):
+        update.install("99.0.0")
+    assert "pacman" in update.package_update_hint()
+
+
+def test_system_package_is_usr_outside_a_venv(monkeypatch, tmp_path):
+    monkeypatch.setattr(update, "editable", lambda: False)
+    monkeypatch.setattr(update.sys, "prefix", "/usr")
+    monkeypatch.setattr(update.sys, "base_prefix", "/usr")
+    monkeypatch.setattr(update.dia, "__file__", "/usr/lib/python3.13/site-packages/dia/__init__.py")
+    assert update.system_package()
+    monkeypatch.setattr(update.sys, "prefix", str(tmp_path / "venv"))
+    monkeypatch.setattr(update.sys, "base_prefix", "/usr")
+    assert not update.system_package()

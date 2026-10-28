@@ -12,7 +12,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python: ["3.11", "3.13"]
+        python: ["3.11", "3.13", "3.14"]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -28,4 +28,34 @@ jobs:
           sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0 || true
       - run: ruff check .
       - run: ruff format --check .
-      - run: pytest -q
+      # JUnit XML names each case for triage when something is flaky (DIA-08).
+      - run: pytest -q --junitxml=pytest-results.xml
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pytest-${{ matrix.python }}
+          path: pytest-results.xml
+
+  qt:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: pip install -e '.[dev,qt]'
+      - run: |
+          sudo apt-get install -y -q bubblewrap
+          sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0 || true
+      - name: Qt window and tray (offscreen)
+        env:
+          QT_QPA_PLATFORM: offscreen
+          QTWEBENGINE_CHROMIUM_FLAGS: --no-sandbox
+        # Named clearly in JUnit: real Qt + tray, timing-sensitive on CI runners.
+        run: pytest -q --junitxml=pytest-qt.xml tests/test_appwindow.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pytest-qt
+          path: pytest-qt.xml

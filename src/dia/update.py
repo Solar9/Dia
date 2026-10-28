@@ -25,6 +25,13 @@ import dia
 REPO = "Solar9/Dia"
 EXTRAS = "ui,mobile,chat"  # what scripts/install.sh installs
 TIMEOUT = 15
+# Private builds before the 27.10.2026 version reset kept numbers 0.1.0–0.2.3.
+# Their tags are now v0.0.1–v0.0.5; installs that still report those numbers must
+# treat every post-reset 0.1.x (≥ 0.1.1) as newer (DIA-47, choice a).
+_PRE_RESET = {
+    tuple(int(p) for p in v.split(".")) for v in ("0.1.0", "0.2.0", "0.2.1", "0.2.2", "0.2.3")
+}
+_POST_RESET_MIN = (0, 1, 1)
 
 
 def parse(version: str) -> tuple[int, ...] | None:
@@ -35,7 +42,11 @@ def parse(version: str) -> tuple[int, ...] | None:
 
 def newer(candidate: str, current: str = dia.__version__) -> bool:
     a, b = parse(candidate), parse(current)
-    return a is not None and b is not None and a > b
+    if a is None or b is None or a == b:
+        return False
+    if a > b:
+        return True
+    return b in _PRE_RESET and a >= _POST_RESET_MIN
 
 
 def editable() -> bool:
@@ -45,6 +56,26 @@ def editable() -> bool:
     except metadata.PackageNotFoundError:
         return True
     return bool(text and json.loads(text).get("dir_info", {}).get("editable"))
+
+
+def system_package() -> bool:
+    """Installed by the OS package manager (Arch PKGBUILD), not pip or a venv.
+
+    Those installs must be updated with pacman (or the distro's tool), never
+    ``pip install`` into ``/usr`` (DIA-06).
+    """
+    if editable() or sys.prefix != sys.base_prefix:
+        return False
+    try:
+        root = Path(dia.__file__).resolve()
+    except (TypeError, OSError):
+        return False
+    return root.parts[:2] == ("/", "usr")
+
+
+def package_update_hint() -> str:
+    """How to update a system-package install (shown instead of running pip)."""
+    return "sudo pacman -Syu dia-assistant"
 
 
 def _get(url: str) -> bytes:
@@ -75,6 +106,10 @@ def install(version: str) -> None:
     """Install release ``version`` over this one, after verifying its wheel."""
     if editable():
         raise RuntimeError("Dia runs from a source checkout; update it with git")
+    if system_package():
+        raise RuntimeError(
+            f"Dia was installed by the package manager; update with: {package_update_hint()}"
+        )
     if parse(version) is None:
         raise ValueError(f"not a release version: {version}")
     base = f"https://github.com/{REPO}/releases/download/v{version}"

@@ -24,7 +24,7 @@ import statistics
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
-from dia.workspace import GitError, Workspace, git
+from dia.workspace import GitError, Workspace, git, worktree
 
 if TYPE_CHECKING:
     from dia.config import ProjectConfig
@@ -151,7 +151,7 @@ async def bench(
     path.parent.mkdir(parents=True, exist_ok=True)
     if path.exists():
         await workspace.remove()
-    await git(project.path, "worktree", "add", "--detach", str(path), sha)
+    await worktree(project.path, "add", "--detach", str(path), sha)
     try:
         metrics = await measure(dia, project, path)
     finally:

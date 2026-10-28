@@ -2,11 +2,14 @@
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 from dia.agents.base import AgentRequest, AgentResult, CliAgent, Mode
 
 _LAST_MESSAGE = "last-message.txt"
+# `codex exec` prints its conversation's id in the header it writes first.
+_SESSION = re.compile(r"^session id:\s*([0-9A-Za-z-]{8,})\s*$", re.MULTILINE | re.IGNORECASE)
 
 
 class CodexAgent(CliAgent):
@@ -41,10 +44,12 @@ class CodexAgent(CliAgent):
         message_file = scratch / _LAST_MESSAGE
         summary = message_file.read_text(errors="replace").strip() if message_file.exists() else ""
         ok = exit_code == 0
+        found = _SESSION.search(f"{stderr}\n{stdout}")
         return AgentResult(
             agent=self.name,
             success=ok,
             summary=summary or stdout.strip()[-4000:],
             exit_code=exit_code,
             error=None if ok else (stderr.strip()[-2000:] or "codex exited with an error"),
+            session_id=found.group(1) if found else request.session_id,
         )

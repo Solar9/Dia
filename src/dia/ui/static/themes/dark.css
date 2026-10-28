@@ -1,35 +1,36 @@
-/* Dia theme: dark (default). A theme only sets these variables; copy this file to
+/* Dia theme: dark (default, "Grafit"). A theme only sets these variables; copy this file to
    ~/.config/dia/themes/<name>.css, change the values and pick it in Settings. */
 :root {
   color-scheme: dark;
-  --bg: #0b0b0e;
-  --bg-elevated: #121217;
-  --bg-hover: #1a1a21;
-  --bg-active: #20202a;
-  --border: #23232c;
-  --border-strong: #2f2f3a;
+  --bg: #131317;
+  --bg-elevated: #18181d;
+  --bg-hover: #1f1f25;
+  --bg-active: #26262d;
+  --border: #26262d;
+  --border-strong: #33333b;
   --text: #ececf1;
-  --text-muted: #8b8b98;
-  --text-faint: #5c5c68;
-  --accent: #6e6af6;
-  --accent-text: #ffffff;
-  --accent-soft: rgba(110, 106, 246, 0.14);
-  --ok: #3ecf8e;
-  --warn: #f5a524;
-  --danger: #f2555a;
-  --info: #4ea8ff;
-  --diff-add: rgba(62, 207, 142, 0.12);
-  --diff-del: rgba(242, 85, 90, 0.12);
-  --syntax-keyword: #c792ea;
-  --syntax-string: #a5d6a7;
-  --syntax-number: #f78c6c;
-  --syntax-comment: #6b6b7b;
-  --syntax-function: #82aaff;
-  --syntax-property: #ffcb6b;
-  --syntax-operator: #89ddff;
-  --syntax-punctuation: #8b8b98;
-  --radius: 8px;
+  --text-muted: #a1a1aa;
+  --text-faint: #8a8a94;
+  --accent: #b4a2ff;
+  --accent-text: #17131f;
+  --accent-soft: rgba(180, 162, 255, 0.14);
+  --accent-ink: #c9b8ff;
+  --ok: #7ad9a6;
+  --warn: #f2b55a;
+  --danger: #f0868a;
+  --info: #8cc4ff;
+  --diff-add: rgba(122, 217, 166, 0.09);
+  --diff-del: rgba(240, 134, 138, 0.10);
+  --syntax-keyword: #c9b8ff;
+  --syntax-string: #a8dcb8;
+  --syntax-number: #f2b58a;
+  --syntax-comment: #74747f;
+  --syntax-function: #8cc4ff;
+  --syntax-property: #f2d28a;
+  --syntax-operator: #9adcf0;
+  --syntax-punctuation: #a1a1aa;
+  --radius: 10px;
   --font: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   --mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-  --shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+  --shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
 }

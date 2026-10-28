@@ -110,7 +110,7 @@ wake = { type = "openwakeword", model = "hey_jarvis", threshold = 0.5 }
 ```
 
 Ready-made models: `hey_jarvis`, `hey_mycroft`, `alexa`, `hey_rhasspy`
-(downloaded on first use). For **"Hey Dia"**, train your own model with
+(downloaded on first use). For a custom openWakeWord phrase, train your own model with
 openWakeWord's training notebook (it generates synthetic samples, no
 recording needed; see "Training New Models" in the openWakeWord README) and
 point `model` at the resulting `.onnx` file:
@@ -172,6 +172,14 @@ speaker = { type = "sherpa-onnx", model = "~/.local/share/dia/speaker.onnx" }
 Voices are kept as numbers (embeddings), not recordings. Recognition avoids
 mistakes in a shared room; it is not a lock (a recording of your voice can
 fool it), and approvals stay buttons.
+
+## From your phone
+
+The phone app talks to Dia with the phone's own microphone: the middle button
+of its bottom bar. It records you and sends the recording to `dia serve`,
+which hears it with the `stt` above and answers with the `tts` above, played
+on the phone. The computer's microphone is never used for it. See
+docs/MOBILE.md.
 
 ## What to say
 

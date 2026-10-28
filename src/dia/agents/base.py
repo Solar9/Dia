@@ -8,6 +8,7 @@ model behind some CLI, ...) is picked by configuration.
 from __future__ import annotations
 
 import asyncio
+import logging
 import os
 import shutil
 import tempfile
@@ -21,6 +22,8 @@ from shutil import which
 from typing import Any, ClassVar
 
 from dia import processes
+
+log = logging.getLogger("dia.agents")
 
 # Where agent installers commonly put binaries. Dia may be started from a
 # service, a desktop launcher or a non-login shell whose PATH misses these,
@@ -212,6 +215,14 @@ class CliAgent(Agent):
         if request.sandbox is not None:
             argv = request.sandbox.wrap(argv, Path(request.cwd))
             env = request.sandbox.environment(env)
+        else:
+            # DIA-29: never quietly run agents on the host without a sandbox.
+            log.warning(
+                "SECURITY: agent %r runs WITHOUT a sandbox in %s "
+                "(install bubblewrap, or set [sandbox] enabled = true / auto)",
+                self.name,
+                request.cwd,
+            )
         timeout = request.timeout or self.options.get("timeout")
         started = time.monotonic()
         try:

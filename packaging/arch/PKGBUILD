@@ -43,7 +43,7 @@ Comment=Your assistant for coding agents, games and the computer
 Exec=dia app
 Icon=io.github.solar9.dia
 Terminal=false
-Categories=Utility;Development;
+Categories=Utility;
 StartupWMClass=Dia
 DESKTOP
   install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"

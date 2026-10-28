@@ -68,6 +68,8 @@
 	<true/>
 	<key>NSCameraUsageDescription</key>
 	<string>Dia uses the camera only to scan the pairing QR code your Dia shows.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>When you talk to Dia, the phone records you and sends it only to your own Dia.</string>
 	<key>NSLocalNetworkUsageDescription</key>
 	<string>Dia connects to your own Dia on your local network.</string>
 	<key>NSAppTransportSecurity</key>

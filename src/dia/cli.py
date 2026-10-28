@@ -1362,8 +1362,20 @@ async def cmd_serve(config: Config, args: argparse.Namespace) -> int:
             print(f"channel {channel.name}: {problem}", file=sys.stderr)
             return 2
     print(f"serving: {', '.join(c.name for c in channels)} (Ctrl+C to stop)", file=sys.stderr)
+    from dia import sandbox
     from dia.health import interrupted, supervise
 
+    if not sandbox.enabled(config):
+        why = (
+            "bubblewrap is missing or unusable"
+            if not sandbox.bwrap_works()
+            else "[sandbox] enabled = false"
+        )
+        print(
+            f"WARNING: agents will run WITHOUT a sandbox ({why}). "
+            "Install bubblewrap or set [sandbox] enabled = true.",
+            file=sys.stderr,
+        )
     if stuck := interrupted(dia):
         print(f"{len(stuck)} task(s) were interrupted by the restart", file=sys.stderr)
     # (name, how to start it): each runs supervised, restarted if it crashes.
@@ -2194,8 +2206,9 @@ def build_parser() -> argparse.ArgumentParser:
         app = sub.add_parser(name, help=help_text)
         app.add_argument("--browser", action="store_true", help="a browser window, not Dia's own")
         app.add_argument("--background", action="store_true", help="start Dia, open no window")
-        app.add_argument("--view", choices=["tasks", "missions", "chat", "cli", "memory", "status",
-                                            "usage", "settings"], help="open this tab")  # fmt: skip
+        app.add_argument("--view", help="open this tab",
+                         choices=["inbox", "tasks", "missions", "chat", "cli", "memory",
+                                  "status", "usage", "settings"])  # fmt: skip
         app.add_argument("--task", metavar="ID", help="open this task")
         app.set_defaults(fn=cmd_app)
     shortcut = sub.add_parser("shortcut", help="Dia in the app menu / on the desktop / at login")

@@ -9,7 +9,6 @@ import QtQuick.Layouts
 import org.kde.plasma.core as PlasmaCore
 import org.kde.plasma.plasmoid
 import org.kde.plasma.components as PlasmaComponents
-import org.kde.plasma.extras as PlasmaExtras
 import org.kde.plasma.plasma5support as P5Support
 import org.kde.kirigami as Kirigami
 
@@ -126,12 +125,48 @@ PlasmoidItem {
         return (root.lang === "pl" ? pl[status] : en[status]) || status;
     }
 
-    readonly property var statusColor: ({
-        "done": Kirigami.Theme.positiveTextColor, "merged": Kirigami.Theme.positiveTextColor,
-        "failed": Kirigami.Theme.negativeTextColor, "running": Kirigami.Theme.neutralTextColor,
-        "queued": Kirigami.Theme.neutralTextColor, "planned": Kirigami.Theme.linkColor,
-        "published": Kirigami.Theme.linkColor
+    // Dia's theme for the widget (Settings → Look: the app's, or its own): its colours
+    // come with Dia's status. Until then, and without Dia, the default "dark" theme.
+    readonly property var defaultColors: ({
+        bg: "#131317", card: "#18181d", hover: "#1f1f25", active: "#2a2538", border: "#26262d",
+        borderStrong: "#33333b", text: "#ececf1", muted: "#a1a1aa", faint: "#8a8a94",
+        accent: "#b4a2ff", accentInk: "#c9b8ff", onAccent: "#17131f", ok: "#7ad9a6",
+        warn: "#f2b55a", danger: "#f0868a", info: "#8cc4ff"
     })
+    property var c: defaultColors
+
+    function applyTheme(colors) {
+        if (!colors || !colors.bg) return;
+        const names = { bg: "bg", card: "bg-elevated", hover: "bg-hover", active: "accent-soft",
+            border: "border", borderStrong: "border-strong", text: "text", muted: "text-muted",
+            faint: "text-faint", accent: "accent", accentInk: "accent-ink", onAccent: "accent-text",
+            ok: "ok", warn: "warn", danger: "danger", info: "info" };
+        const next = {};
+        for (const key in names) next[key] = colors[names[key]] || defaultColors[key];
+        if (JSON.stringify(next) !== JSON.stringify(root.c)) root.c = next;
+    }
+
+    // Dia's icon in the theme's accent: the rings of dia.svg, the gradient from lighter
+    // to darkest, as the app draws it (grey dia-idle.svg while she is not listening).
+    readonly property string litIcon: {
+        const rgb = [1, 3, 5].map((i) => parseInt(c.accent.slice(-6).substr(i - 1, 2), 16));
+        const mix = (share, other) => "#" + rgb.map((v) => Math.round(v * share + other * (1 - share))
+            .toString(16).padStart(2, "0")).join("");
+        const stops = [[0, mix(0.45, 255)], [0.46, mix(1, 0)], [0.72, mix(0.7, 0)], [1, mix(0.35, 0)]]
+            .map((stop) => '<stop offset="' + stop[0] + '" stop-color="' + stop[1] + '"/>').join("");
+        const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><defs>'
+            + '<linearGradient id="dia" x1="0" y1="0" x2="1" y2="1">' + stops + '</linearGradient></defs>'
+            + '<circle cx="256" cy="256" r="208" fill="none" stroke="url(#dia)" stroke-width="54"/>'
+            + '<circle cx="256" cy="256" r="112" fill="url(#dia)"/></svg>';
+        return "data:image/svg+xml;utf8," + encodeURIComponent(svg);
+    }
+
+    readonly property var statusColor: ({
+        "done": c.ok, "merged": c.ok, "failed": c.danger, "running": c.warn,
+        "queued": c.warn, "waiting": c.warn, "planned": c.info, "published": c.info
+    })
+
+    readonly property var running: tasks.filter((t) => ["running", "queued", "waiting"].indexOf(t.status) !== -1)
 
     // "io.github.solar9.dia", not "dia": icon themes ship the Dia diagram editor's icon as "dia".
     Plasmoid.icon: "io.github.solar9.dia"
@@ -220,6 +255,8 @@ PlasmoidItem {
             root.version = status.version || "";
             root.quiet = !!status.quiet;
             root.halted = !!status.halted;
+            // the widget's own theme, or the app's (Settings → Look)
+            root.applyTheme(status.widget_theme_colors || status.theme_colors);
         });
         request("GET", "api/tasks?limit=20", null, (tasks) => root.tasks = tasks);
     }
@@ -264,7 +301,8 @@ PlasmoidItem {
         onTriggered: root.dia("runtime status")
     }
 
-    onExpandedChanged: if (expanded) refresh()
+    // Use the property, not the injected signal parameter (Plasma/Qt deprecation).
+    onExpandedChanged: if (root.expanded) root.refresh()
 
     compactRepresentation: MouseArea {
         id: compact
@@ -282,7 +320,7 @@ PlasmoidItem {
             width: Math.min(parent.width, parent.height) * 0.86
             height: width
             sourceSize: Qt.size(width * 2, height * 2)
-            source: root.lit ? "../images/dia.svg" : "../images/dia-idle.svg"
+            source: root.lit ? root.litIcon : "../images/dia-idle.svg"
             opacity: root.online ? 1 : 0.45
             smooth: true
 
@@ -311,23 +349,34 @@ PlasmoidItem {
             width: Math.max(height, badge.implicitWidth + 4)
             height: Math.round(parent.height * 0.42)
             radius: height / 2
-            color: Kirigami.Theme.highlightColor
+            color: root.c.accent
             PlasmaComponents.Label {
                 id: badge
                 anchors.centerIn: parent
                 text: root.waiting.length
-                color: Kirigami.Theme.highlightedTextColor
+                color: root.c.onAccent
                 font.pixelSize: parent.height * 0.75
                 font.bold: true
             }
         }
     }
 
-    fullRepresentation: ColumnLayout {
+    // The popup, like the app's Inbox: services, talk or write to Dia, what waits for
+    // your decision, what runs now, and the app's views.
+    fullRepresentation: Rectangle {
+        Layout.preferredWidth: Kirigami.Units.gridUnit * 24
+        Layout.preferredHeight: Kirigami.Units.gridUnit * 38
+        Layout.minimumWidth: Kirigami.Units.gridUnit * 18
+        color: root.c.bg
+        radius: 10
+
         QQC2.Dialog {
             id: serviceConfirm
             title: root.tr("Confirm service action", "Potwierdź zmianę usług")
             modal: true
+            width: parent.width - 40
+            x: 20
+            y: (parent.height - height) / 2
             standardButtons: QQC2.Dialog.Yes | QQC2.Dialog.No
             onAccepted: root.executeService()
             contentItem: PlasmaComponents.Label {
@@ -336,211 +385,477 @@ PlasmoidItem {
                 wrapMode: Text.Wrap
             }
         }
-        Layout.preferredWidth: Kirigami.Units.gridUnit * 24
-        Layout.preferredHeight: Kirigami.Units.gridUnit * 30
-        spacing: Kirigami.Units.smallSpacing
 
-        RowLayout {
-            Image {
-                source: root.lit ? "../images/dia.svg" : "../images/dia-idle.svg"
-                sourceSize: Qt.size(Kirigami.Units.iconSizes.medium * 2, Kirigami.Units.iconSizes.medium * 2)
-                Layout.preferredWidth: Kirigami.Units.iconSizes.medium
-                Layout.preferredHeight: Kirigami.Units.iconSizes.medium
+        ColumnLayout {
+            anchors.fill: parent
+            anchors.margins: 14
+            spacing: 12
+
+            // ---- header: Dia, the connection, the app
+            RowLayout {
+                spacing: 8
+                Image {
+                    source: root.lit ? root.litIcon : "../images/dia-idle.svg"
+                    sourceSize: Qt.size(48, 48)
+                    Layout.preferredWidth: 24
+                    Layout.preferredHeight: 24
+                }
+                QQC2.Label { text: "dia"; color: root.c.text; font.pixelSize: 20; font.weight: Font.ExtraBold }
+                QQC2.Label { text: root.version; color: root.c.faint; font.family: "monospace"; font.pixelSize: 11 }
+                Item { Layout.fillWidth: true }
+                Rectangle {
+                    radius: 5
+                    color: root.online ? Qt.rgba(0.48, 0.85, 0.65, 0.12) : root.c.card
+                    implicitWidth: connLabel.implicitWidth + 24
+                    implicitHeight: 24
+                    Rectangle {
+                        width: 6; height: 6; radius: 3
+                        anchors.left: parent.left; anchors.leftMargin: 8
+                        anchors.verticalCenter: parent.verticalCenter
+                        color: root.online ? root.c.ok : root.c.faint
+                    }
+                    QQC2.Label {
+                        id: connLabel
+                        anchors.left: parent.left; anchors.leftMargin: 18
+                        anchors.verticalCenter: parent.verticalCenter
+                        text: root.online ? (root.activeCount > 0 ? root.tr("%1 running", "w toku: %1").arg(root.activeCount)
+                            : root.tr("Connected", "Połączono")) : root.tr("Not running", "Nie działa")
+                        color: root.online ? root.c.ok : root.c.muted
+                        font.pixelSize: 11
+                    }
+                }
+                QQC2.ToolButton {
+                    icon.name: "window-new"
+                    icon.color: root.c.muted
+                    text: root.tr("Open Dia", "Otwórz Dia")
+                    display: QQC2.AbstractButton.IconOnly
+                    onClicked: root.openApp("", "")
+                    QQC2.ToolTip.visible: hovered
+                    QQC2.ToolTip.text: text
+                    background: Rectangle { radius: 8; color: parent.hovered ? root.c.hover : "transparent" }
+                }
             }
-            Kirigami.Heading { level: 3; text: "Dia" }
-            PlasmaComponents.Label { text: root.version; opacity: 0.6; Layout.fillWidth: true }
-            PlasmaComponents.Label {
-                text: root.online ? root.tr("Connected", "Połączono") : root.tr("Not running", "Nie działa")
-                color: root.online ? Kirigami.Theme.positiveTextColor : Kirigami.Theme.disabledTextColor
-            }
-        }
 
-        Repeater {
-            model: ["dia", "ollama"]
-            delegate: RowLayout {
-                required property string modelData
-                PlasmaComponents.Label {
-                    Layout.fillWidth: true
-                    text: (modelData === "dia" ? "Dia" : "Ollama") + ": " + root.serviceStatus(modelData)
-                }
-                PlasmaComponents.Button {
-                    text: root.tr("Start", "Uruchom")
-                    enabled: !root.serviceBusy
-                    onClicked: root.controlService(modelData, "start")
-                }
-                PlasmaComponents.ToolButton {
-                    icon.name: "media-playback-stop"
-                    text: root.tr("Stop", "Zatrzymaj")
-                    enabled: !root.serviceBusy
-                    onClicked: root.controlService(modelData, "stop")
-                }
-                PlasmaComponents.ToolButton {
-                    icon.name: "view-refresh"
-                    text: root.tr("Restart", "Restart")
-                    enabled: !root.serviceBusy
-                    onClicked: root.controlService(modelData, "restart")
-                }
-            }
-        }
-
-        Kirigami.InlineMessage {
-            Layout.fillWidth: true
-            visible: root.halted
-            type: Kirigami.MessageType.Error
-            text: root.tr("Emergency stop: no agent runs.", "Zatrzymanie awaryjne: żaden agent nie działa.")
-            actions: [
-                Kirigami.Action {
-                    text: root.tr("Resume", "Wznów")
-                    onTriggered: root.post("api/resume")
-                }
-            ]
-        }
-
-        PlasmaComponents.Button {
-            Layout.fillWidth: true
-            icon.name: root.voice === "listening" ? "audio-input-microphone-high" : "audio-input-microphone"
-            text: root.voice === "listening" ? root.tr("Listening… click to stop", "Słucham… kliknij, by skończyć")
-                : root.voice === "processing" ? root.tr("Thinking…", "Myślę…")
-                : root.speaking ? root.tr("Speaking… click to interrupt", "Mówię… kliknij, by przerwać")
-                : root.tr("Talk to Dia", "Mów do Dia")
-            enabled: root.online
-            onClicked: root.talk()
-        }
-
-        RowLayout {
-            PlasmaComponents.TextField {
-                id: ask
+            // ---- services: Dia and Ollama
+            Rectangle {
                 Layout.fillWidth: true
-                placeholderText: root.tr("Write to Dia…", "Napisz do Dia…")
-                enabled: root.online && !root.asking
-                onAccepted: { root.send(text); text = ""; }
-            }
-            PlasmaComponents.ToolButton {
-                icon.name: "document-send"
-                enabled: root.online && !root.asking && ask.text.trim() !== ""
-                onClicked: { root.send(ask.text); ask.text = ""; }
-            }
-        }
-
-        PlasmaComponents.Label {
-            Layout.fillWidth: true
-            visible: root.asking || root.reply !== ""
-            text: root.asking ? root.tr("Thinking…", "Myślę…") : root.reply
-            textFormat: Text.MarkdownText
-            wrapMode: Text.Wrap
-            maximumLineCount: 10
-            elide: Text.ElideRight
-            opacity: root.asking ? 0.6 : 1
-        }
-
-        PlasmaExtras.Heading {
-            visible: root.waiting.length > 0
-            level: 5
-            text: root.tr("Waiting for you", "Czeka na Ciebie") + " (" + root.waiting.length + ")"
-            color: Kirigami.Theme.highlightColor
-        }
-
-        Repeater {
-            model: root.waiting.slice(0, 4)
-            delegate: taskRow
-        }
-
-        PlasmaExtras.Heading { level: 5; text: root.tr("Recent tasks", "Ostatnie zadania"); opacity: 0.7 }
-
-        ListView {
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-            clip: true
-            model: root.tasks.slice(0, 10)
-            delegate: taskRow
-            PlasmaExtras.PlaceholderMessage {
-                anchors.centerIn: parent
-                width: parent.width - Kirigami.Units.gridUnit * 2
-                visible: parent.count === 0
-                text: root.online ? root.tr("No tasks yet", "Na razie brak zadań")
-                    : root.tr("Start Dia: dia app, or dia service install", "Uruchom Dia: dia app albo dia service install")
-            }
-        }
-
-        RowLayout {
-            Layout.fillWidth: true
-            PlasmaComponents.Button {
-                Layout.fillWidth: true
-                icon.name: "io.github.solar9.dia"
-                text: root.tr("Open Dia", "Otwórz Dia")
-                onClicked: root.openApp("", "")
-            }
-            PlasmaComponents.ToolButton {
-                icon.name: "dialog-messages"
-                text: root.tr("Chat", "Czat")
-                display: QQC2.AbstractButton.IconOnly
-                onClicked: root.openApp("chat", "")
-                PlasmaComponents.ToolTip { text: parent.text }
-            }
-            PlasmaComponents.ToolButton {
-                icon.name: "view-statistics"
-                text: root.tr("Status", "Status")
-                display: QQC2.AbstractButton.IconOnly
-                onClicked: root.openApp("status", "")
-                PlasmaComponents.ToolTip { text: parent.text }
-            }
-            PlasmaComponents.ToolButton {
-                icon.name: "configure"
-                text: root.tr("Settings", "Ustawienia")
-                display: QQC2.AbstractButton.IconOnly
-                onClicked: root.openApp("settings", "")
-                PlasmaComponents.ToolTip { text: parent.text }
-            }
-            PlasmaComponents.ToolButton {
-                icon.name: root.quiet ? "audio-volume-muted" : "audio-volume-high"
-                text: root.quiet ? root.tr("Quiet mode: on", "Tryb cichy: włączony")
-                    : root.tr("Quiet mode: off", "Tryb cichy: wyłączony")
-                display: QQC2.AbstractButton.IconOnly
-                checkable: true
-                checked: root.quiet
-                enabled: root.online
-                onClicked: root.post("api/quiet", { on: !root.quiet })
-                PlasmaComponents.ToolTip { text: parent.text }
-            }
-            PlasmaComponents.ToolButton {  // two clicks: an emergency stop is not a misclick
-                icon.name: "process-stop"
-                text: root.confirmStop ? root.tr("Click again to stop every agent", "Kliknij jeszcze raz, by zatrzymać wszystkich agentów")
-                    : root.tr("Emergency stop", "Zatrzymanie awaryjne")
-                display: root.confirmStop ? QQC2.AbstractButton.TextBesideIcon : QQC2.AbstractButton.IconOnly
-                visible: !root.halted
-                enabled: root.online
-                onClicked: {
-                    if (root.confirmStop) { root.confirmStop = false; root.post("api/stop"); }
-                    else { root.confirmStop = true; stopTimeout.restart(); }
+                implicitHeight: services.implicitHeight + 16
+                radius: 10
+                color: root.c.card
+                border.color: root.c.border
+                ColumnLayout {
+                    id: services
+                    anchors.fill: parent
+                    anchors.margins: 8
+                    anchors.leftMargin: 12
+                    spacing: 2
+                    Repeater {
+                        model: ["dia", "ollama"]
+                        delegate: RowLayout {
+                            required property string modelData
+                            readonly property string unit: (root.serviceState[modelData] || {}).active || ""
+                            spacing: 6
+                            Rectangle {
+                                Layout.preferredWidth: 7; Layout.preferredHeight: 7; radius: 4
+                                color: unit === "active" ? root.c.ok : unit === "failed" ? root.c.danger
+                                    : unit === "activating" || unit === "deactivating" ? root.c.warn : root.c.faint
+                            }
+                            QQC2.Label { text: modelData === "dia" ? "Dia" : "Ollama"; color: root.c.text }
+                            QQC2.Label {
+                                Layout.fillWidth: true
+                                text: root.serviceStatus(modelData)
+                                color: root.c.muted
+                                font.pixelSize: 12
+                                elide: Text.ElideRight
+                            }
+                            Repeater {
+                                model: [
+                                    { verb: "start", icon: "media-playback-start", label: root.tr("Start", "Uruchom") },
+                                    { verb: "stop", icon: "media-playback-stop", label: root.tr("Stop", "Zatrzymaj") },
+                                    { verb: "restart", icon: "view-refresh", label: root.tr("Restart", "Uruchom ponownie") }
+                                ]
+                                delegate: QQC2.ToolButton {
+                                    required property var modelData
+                                    icon.name: modelData.icon
+                                    icon.color: root.c.muted
+                                    icon.width: 16; icon.height: 16
+                                    text: modelData.label
+                                    display: QQC2.AbstractButton.IconOnly
+                                    enabled: !root.serviceBusy
+                                    implicitWidth: 30; implicitHeight: 30
+                                    onClicked: root.controlService(parent.modelData, modelData.verb)
+                                    QQC2.ToolTip.visible: hovered
+                                    QQC2.ToolTip.text: text
+                                    background: Rectangle { radius: 6; color: parent.hovered ? root.c.hover : "transparent" }
+                                }
+                            }
+                        }
+                    }
                 }
-                PlasmaComponents.ToolTip { text: parent.text }
+            }
+
+            // ---- emergency stop in force
+            Rectangle {
+                Layout.fillWidth: true
+                visible: root.halted
+                implicitHeight: 44
+                radius: 10
+                color: Qt.rgba(0.94, 0.53, 0.54, 0.10)
+                border.color: Qt.rgba(0.94, 0.53, 0.54, 0.35)
+                RowLayout {
+                    anchors.fill: parent
+                    anchors.leftMargin: 12
+                    anchors.rightMargin: 6
+                    QQC2.Label {
+                        Layout.fillWidth: true
+                        text: root.tr("Emergency stop: no agent runs.", "Zatrzymanie awaryjne: żaden agent nie działa.")
+                        color: root.c.danger
+                        wrapMode: Text.Wrap
+                    }
+                    QQC2.Button {
+                        text: root.tr("Resume", "Wznów")
+                        onClicked: root.post("api/resume")
+                        contentItem: QQC2.Label { text: parent.text; color: root.c.onAccent; font.weight: Font.DemiBold; horizontalAlignment: Text.AlignHCenter }
+                        background: Rectangle { radius: 8; color: root.c.accent; implicitHeight: 32 }
+                    }
+                }
+            }
+
+            // ---- talk to Dia (the computer's microphone, as `dia voice toggle`)
+            Rectangle {
+                id: talkCard
+                Layout.fillWidth: true
+                implicitHeight: 60
+                radius: 12
+                color: talkArea.containsMouse ? root.c.hover : root.c.card
+                border.color: root.c.borderStrong
+                opacity: root.online ? 1 : 0.5
+                RowLayout {
+                    anchors.fill: parent
+                    anchors.leftMargin: 12
+                    anchors.rightMargin: 12
+                    spacing: 12
+                    Rectangle {
+                        id: orb
+                        Layout.preferredWidth: 36; Layout.preferredHeight: 36; radius: 18
+                        color: root.voice === "listening" ? root.c.danger : root.voice === "processing" ? root.c.warn
+                            : root.speaking ? root.c.accent : root.c.active
+                        Kirigami.Icon {
+                            anchors.centerIn: parent
+                            width: 18; height: 18
+                            source: "audio-input-microphone"
+                            isMask: true
+                            color: root.lit ? root.c.onAccent : root.c.accentInk
+                        }
+                        SequentialAnimation on opacity {
+                            running: root.voice === "listening" || root.voice === "processing"
+                            loops: Animation.Infinite
+                            NumberAnimation { to: 0.5; duration: 600 }
+                            NumberAnimation { to: 1; duration: 600 }
+                            onRunningChanged: if (!running) orb.opacity = 1
+                        }
+                    }
+                    ColumnLayout {
+                        spacing: 0
+                        Layout.fillWidth: true
+                        QQC2.Label { Layout.fillWidth: true; text: root.tr("Talk to Dia", "Porozmawiaj z Dią"); color: root.c.text; font.weight: Font.Medium }
+                        QQC2.Label {
+                            Layout.fillWidth: true
+                            elide: Text.ElideRight
+                            text: root.voice === "listening" ? root.tr("Listening… click to stop", "Słucham… kliknij, by skończyć")
+                                : root.voice === "processing" ? root.tr("Thinking…", "Myślę…")
+                                : root.speaking ? root.tr("Speaking… click to interrupt", "Mówię… kliknij, by przerwać")
+                                : root.tr("Middle-click the icon works too", "Działa też środkowy klik w ikonę")
+                            color: root.c.muted
+                            font.pixelSize: 11
+                        }
+                    }
+                }
+                MouseArea {
+                    id: talkArea
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    enabled: root.online
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: root.talk()
+                }
+                Accessible.role: Accessible.Button
+                Accessible.name: root.tr("Talk to Dia", "Porozmawiaj z Dią")
+            }
+
+            // ---- write to Dia
+            Rectangle {
+                Layout.fillWidth: true
+                implicitHeight: 44
+                radius: 10
+                color: root.c.card
+                border.color: ask.activeFocus ? root.c.accent : Qt.rgba(0.71, 0.64, 1, 0.35)
+                RowLayout {
+                    anchors.fill: parent
+                    anchors.leftMargin: 12
+                    anchors.rightMargin: 6
+                    QQC2.TextField {
+                        id: ask
+                        Layout.fillWidth: true
+                        placeholderText: root.tr("Ask or tell Dia…", "Zapytaj lub zleć coś Dii…")
+                        placeholderTextColor: root.c.faint
+                        color: root.c.text
+                        enabled: root.online && !root.asking
+                        background: Item {}
+                        onAccepted: { root.send(text); text = ""; }
+                    }
+                    QQC2.ToolButton {
+                        icon.name: "go-up"
+                        icon.color: root.c.onAccent
+                        text: root.tr("Send", "Wyślij")
+                        display: QQC2.AbstractButton.IconOnly
+                        enabled: root.online && !root.asking && ask.text.trim() !== ""
+                        implicitWidth: 32; implicitHeight: 32
+                        onClicked: { root.send(ask.text); ask.text = ""; }
+                        background: Rectangle { radius: 8; color: root.c.accent; opacity: parent.enabled ? 1 : 0.4 }
+                    }
+                }
+            }
+
+            QQC2.Label {
+                Layout.fillWidth: true
+                visible: root.asking || root.reply !== ""
+                text: root.asking ? root.tr("Thinking…", "Myślę…") : root.reply
+                textFormat: Text.MarkdownText
+                wrapMode: Text.Wrap
+                maximumLineCount: 8
+                elide: Text.ElideRight
+                color: root.asking ? root.c.muted : root.c.text
+            }
+
+            // ---- what waits for you, what runs now
+            QQC2.ScrollView {
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                clip: true
+                contentWidth: availableWidth
+                ColumnLayout {
+                    width: parent.width
+                    spacing: 8
+
+                    QQC2.Label {
+                        visible: root.waiting.length > 0
+                        text: root.tr("WAITING FOR YOU · %1", "CZEKA NA CIEBIE · %1").arg(root.waiting.length)
+                        color: root.c.faint
+                        font.pixelSize: 11
+                        font.weight: Font.DemiBold
+                        font.letterSpacing: 1.4
+                    }
+                    Repeater {
+                        model: root.waiting.slice(0, 4)
+                        delegate: waitingCard
+                    }
+
+                    QQC2.Label {
+                        visible: root.running.length > 0
+                        Layout.topMargin: 6
+                        text: root.tr("WORKING NOW", "TERAZ PRACUJE")
+                        color: root.c.faint
+                        font.pixelSize: 11
+                        font.weight: Font.DemiBold
+                        font.letterSpacing: 1.4
+                    }
+                    Repeater {
+                        model: root.running.slice(0, 4)
+                        delegate: taskRow
+                    }
+
+                    QQC2.Label {
+                        Layout.fillWidth: true
+                        Layout.topMargin: 16
+                        visible: root.waiting.length === 0 && root.running.length === 0
+                        horizontalAlignment: Text.AlignHCenter
+                        wrapMode: Text.Wrap
+                        color: root.c.muted
+                        text: root.online ? root.tr("Nothing waits for you. Dia handles the rest.", "Nic nie czeka na Twoją decyzję. Resztą Dia zajmuje się sama.")
+                            : root.tr("Start Dia: dia app, or dia service install", "Uruchom Dia: dia app albo dia service install")
+                    }
+                }
+            }
+
+            // ---- the app's views and quick switches
+            Rectangle { Layout.fillWidth: true; implicitHeight: 1; color: root.c.border }
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: 2
+                Repeater {
+                    model: [
+                        { view: "inbox", icon: "mail-folder-inbox", label: root.tr("Inbox", "Skrzynka") },
+                        { view: "tasks", icon: "view-list-details", label: root.tr("Tasks", "Zadania") },
+                        { view: "chat", icon: "dialog-messages", label: root.tr("Chat", "Czat") },
+                        { view: "status", icon: "view-statistics", label: root.tr("Status", "Status") },
+                        { view: "settings", icon: "configure", label: root.tr("Settings", "Ustawienia") }
+                    ]
+                    delegate: QQC2.ToolButton {
+                        required property var modelData
+                        icon.name: modelData.icon
+                        icon.color: root.c.muted
+                        text: modelData.label
+                        display: QQC2.AbstractButton.IconOnly
+                        implicitWidth: 36; implicitHeight: 36
+                        onClicked: root.openApp(modelData.view, "")
+                        QQC2.ToolTip.visible: hovered
+                        QQC2.ToolTip.text: text
+                        background: Rectangle { radius: 8; color: parent.hovered ? root.c.hover : "transparent" }
+                    }
+                }
+                Item { Layout.fillWidth: true }
+                QQC2.ToolButton {
+                    icon.name: root.quiet ? "audio-volume-muted" : "audio-volume-high"
+                    icon.color: root.quiet ? root.c.accentInk : root.c.muted
+                    text: root.quiet ? root.tr("Quiet mode: on", "Tryb cichy: włączony")
+                        : root.tr("Quiet mode: off", "Tryb cichy: wyłączony")
+                    display: QQC2.AbstractButton.IconOnly
+                    checkable: true
+                    checked: root.quiet
+                    enabled: root.online
+                    implicitWidth: 36; implicitHeight: 36
+                    onClicked: root.post("api/quiet", { on: !root.quiet })
+                    QQC2.ToolTip.visible: hovered
+                    QQC2.ToolTip.text: text
+                    background: Rectangle { radius: 8; color: root.quiet ? root.c.active : parent.hovered ? root.c.hover : "transparent" }
+                }
+                QQC2.ToolButton {  // two clicks: an emergency stop is not a misclick
+                    icon.name: "process-stop"
+                    icon.color: root.c.danger
+                    text: root.confirmStop ? root.tr("Click again to stop every agent", "Kliknij jeszcze raz, by zatrzymać wszystkich agentów")
+                        : root.tr("Emergency stop", "Zatrzymanie awaryjne")
+                    display: root.confirmStop ? QQC2.AbstractButton.TextBesideIcon : QQC2.AbstractButton.IconOnly
+                    visible: !root.halted
+                    enabled: root.online
+                    implicitHeight: 36
+                    onClicked: {
+                        if (root.confirmStop) { root.confirmStop = false; root.post("api/stop"); }
+                        else { root.confirmStop = true; stopTimeout.restart(); }
+                    }
+                    QQC2.ToolTip.visible: hovered
+                    QQC2.ToolTip.text: text
+                    contentItem: RowLayout {
+                        spacing: 6
+                        Kirigami.Icon { source: "process-stop"; isMask: true; color: root.c.danger; Layout.preferredWidth: 16; Layout.preferredHeight: 16 }
+                        QQC2.Label { visible: root.confirmStop; text: parent.parent.text; color: root.c.danger; font.pixelSize: 12 }
+                    }
+                    background: Rectangle {
+                        radius: 8
+                        color: root.confirmStop ? Qt.rgba(0.94, 0.53, 0.54, 0.12) : parent.hovered ? root.c.hover : "transparent"
+                        border.color: root.confirmStop ? Qt.rgba(0.94, 0.53, 0.54, 0.4) : "transparent"
+                    }
+                }
             }
         }
     }
 
+    // A decision waiting for you, as a card in the app's Inbox.
+    Component {
+        id: waitingCard
+        Rectangle {
+            id: card
+            required property var modelData
+            readonly property bool plan: modelData.status === "planned"
+            Layout.fillWidth: true
+            implicitHeight: cardColumn.implicitHeight + 24
+            radius: 12
+            color: root.c.card
+            border.color: root.c.border
+            ColumnLayout {
+                id: cardColumn
+                anchors.fill: parent
+                anchors.margins: 12
+                spacing: 8
+                RowLayout {
+                    spacing: 6
+                    Rectangle { Layout.preferredWidth: 6; Layout.preferredHeight: 6; radius: 3; color: card.plan ? root.c.info : root.c.ok }
+                    QQC2.Label {
+                        Layout.fillWidth: true
+                        text: card.modelData.project + "  ·  " + card.modelData.agent
+                        color: root.c.muted
+                        font.pixelSize: 11
+                        elide: Text.ElideRight
+                    }
+                    QQC2.Label {
+                        visible: !!card.modelData.diffstat
+                        text: card.modelData.diffstat ? "<font color='" + root.c.ok + "'>+" + card.modelData.diffstat.added
+                            + "</font> <font color='" + root.c.danger + "'>−" + card.modelData.diffstat.removed + "</font>" : ""
+                        textFormat: Text.StyledText
+                        font.family: "monospace"
+                        font.pixelSize: 11
+                    }
+                    QQC2.Label {
+                        text: card.plan ? root.tr("Plan to approve", "Plan do akceptacji") : root.tr("Ready to merge", "Gotowe do scalenia")
+                        color: card.plan ? root.c.info : root.c.ok
+                        font.pixelSize: 11
+                    }
+                }
+                QQC2.Label {
+                    Layout.fillWidth: true
+                    text: card.modelData.prompt.split("\n")[0]
+                    color: root.c.text
+                    font.weight: Font.Medium
+                    wrapMode: Text.Wrap
+                    maximumLineCount: 2
+                    elide: Text.ElideRight
+                }
+                RowLayout {
+                    spacing: 8
+                    QQC2.Button {
+                        text: card.plan ? root.tr("Run plan", "Uruchom plan") : root.tr("Review changes", "Sprawdź zmiany")
+                        onClicked: card.plan ? root.post("api/tasks/" + card.modelData.id + "/run-plan")
+                            : root.openApp("tasks", card.modelData.id)
+                        contentItem: QQC2.Label { text: parent.text; color: root.c.onAccent; font.weight: Font.DemiBold; horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter }
+                        background: Rectangle { radius: 8; color: root.c.accent; implicitHeight: 32; implicitWidth: 110 }
+                    }
+                    QQC2.Button {
+                        visible: card.plan
+                        text: root.tr("Open", "Otwórz")
+                        onClicked: root.openApp("tasks", card.modelData.id)
+                        contentItem: QQC2.Label { text: parent.text; color: root.c.text; horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter }
+                        background: Rectangle { radius: 8; color: parent.hovered ? root.c.hover : "transparent"; border.color: root.c.borderStrong; implicitHeight: 32; implicitWidth: 80 }
+                    }
+                }
+            }
+        }
+    }
+
+    // A task that runs now: a click opens it in the app.
     Component {
         id: taskRow
         MouseArea {
-            width: ListView.view ? ListView.view.width : parent.width
+            id: row
+            required property var modelData
             Layout.fillWidth: true
-            implicitHeight: rowColumn.implicitHeight + Kirigami.Units.smallSpacing
+            implicitHeight: rowColumn.implicitHeight + 12
             cursorShape: Qt.PointingHandCursor
+            hoverEnabled: true
             onClicked: root.openApp("tasks", modelData.id)
-            ColumnLayout {
-                id: rowColumn
-                width: parent.width
-                spacing: 0
-                PlasmaComponents.Label {
+            Rectangle { anchors.fill: parent; radius: 8; color: row.containsMouse ? root.c.hover : "transparent" }
+            RowLayout {
+                anchors.fill: parent
+                anchors.leftMargin: 6
+                anchors.rightMargin: 6
+                spacing: 10
+                Rectangle { Layout.preferredWidth: 7; Layout.preferredHeight: 7; radius: 4; color: root.statusColor[row.modelData.status] || root.c.faint }
+                ColumnLayout {
+                    id: rowColumn
                     Layout.fillWidth: true
-                    text: modelData.prompt.split("\n")[0]
-                    elide: Text.ElideRight
-                }
-                PlasmaComponents.Label {
-                    Layout.fillWidth: true
-                    text: "● " + root.taskStatus(modelData) + "  ·  " + modelData.project + "  ·  " + modelData.agent
-                    color: root.statusColor[modelData.status] || Kirigami.Theme.disabledTextColor
-                    font: Kirigami.Theme.smallFont
-                    elide: Text.ElideRight
+                    spacing: 0
+                    QQC2.Label {
+                        Layout.fillWidth: true
+                        text: row.modelData.prompt.split("\n")[0]
+                        color: root.c.text
+                        elide: Text.ElideRight
+                    }
+                    QQC2.Label {
+                        Layout.fillWidth: true
+                        text: root.taskStatus(row.modelData) + "  ·  " + row.modelData.project + "  ·  " + row.modelData.agent
+                        color: root.c.muted
+                        font.pixelSize: 11
+                        elide: Text.ElideRight
+                    }
                 }
             }
         }

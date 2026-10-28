@@ -1,8 +1,9 @@
-"""Wake word detection ("Hey Jarvis", or your own trained "Hey Dia").
+"""Wake word detection ("Hej Dia" via whisper-keyword, or a trained model).
 
 Detectors are plugins (``dia.wake``) fed with 16 kHz mono 16-bit audio in
-chunks of ``chunk_samples``. The built-in one uses openWakeWord, which runs
-comfortably on a laptop CPU.
+chunks of ``chunk_samples``. openWakeWord can run a trained custom model;
+``whisper-keyword`` recognises "Hej Dia" without training. Older ASR may still
+hear "Hey Jarvis" — that form is accepted as an address, not advertised.
 """
 
 from __future__ import annotations

@@ -129,6 +129,16 @@ const STRINGS = {
     saved: "Saved.", needs_restart: "applies after restarting Dia", add: "Add", remove: "Remove",
     assistant: "Assistant", voice_brain: "Voice & brain", agents_tab: "Agents", automation: "Automation",
     schedule: "Schedule", secrets: "Secrets", devices_tab: "Devices", look: "Appearance", config_file: "Config file",
+    desktop_tab: "Desktop & services", security_tab: "Security",
+    settings_help: "Who Dia is, how she works, and how she connects to your world.",
+    settings_you: "You and Dia", settings_work: "Work", settings_connect: "Connect", settings_computer: "This computer",
+    s_identity: "Identity", s_skills_brief: "Skills and briefing", s_conversation: "Conversation",
+    s_defaults: "Defaults", s_review_retry: "Review and retries", s_task_limits: "Task limits",
+    s_plans_missions: "Plans and missions", s_specialists: "Specialists", s_quality: "Quality gates",
+    s_watchers: "Watchers", s_system_tidy: "Computer and tidy", s_suggestions: "Suggestions and goals",
+    s_mail_home: "Mail and home", s_senses: "Screen and camera", s_publish: "Publishing",
+    s_vault: "Vault", s_memory_search: "Search and learning", s_notify_policy: "Quiet hours and budget",
+    s_security_hosts: "Your machines", s_sandbox: "Agent sandbox",
     f_name: "Assistant's name", f_user_name: "Call me", f_personality: "Personality",
     p_friendly: "Friendly", p_butler: "Butler (JARVIS-like)", p_concise: "Concise", p_buddy: "Buddy", p_mentor: "Mentor",
     p_custom: "Your own…", p_custom_hint: "Describe the personality, e.g. calm, ironic, speaks like a ship's captain",
@@ -146,7 +156,7 @@ const STRINGS = {
     f_stability: "Stability (0–1)", f_similarity: "Similarity (0–1)", f_tts_fallback: "When ElevenLabs is unavailable",
     f_piper_voice: "Piper voice", f_wake: "Wake word model",
     f_local_brain: "Local brain (Ollama)", f_ollama_model: "Ollama model",
-    local_brain_help: "Understands your requests on this computer, free and private; Claude stays as the fallback. Install: sudo pacman -S ollama; ollama pull qwen2.5:3b",
+    local_brain_help: "Understands your requests on this computer, free and private; Claude stays as the fallback. Install: sudo pacman -S ollama; ollama pull qwen3.5:4b  (best measured 25.10.2026: 8/9)",
     voice_off: "Voice is not configured: add [channels.voice] in the config file (docs/VOICE.md).",
     not_set: "not set", secrets_help: "Kept in ~/.config/dia/env (mode 600). Values can't be read back here. Restart Dia after a change.",
     when: "When", sched_what: "What", next_run: "Next", run_now: "Run now", pause: "Pause", resume: "Resume",
@@ -205,6 +215,32 @@ const STRINGS = {
     scenario_help: "An agent writes a test for this behaviour and Dia runs it", council_help: "Several agents answer, a moderator weighs them",
     council_started: "The council is meeting; the answer shows up as a task.",
     limited: "limit", limited_until: "Usage limit until {time}", waiting_until: "Waiting for a usage limit until {time}",
+    inbox: "Inbox", workspace: "Personal space", nav_work: "Workspace", nav_system: "Knowledge and system",
+    menu_collapse: "Collapse menu", menu_expand: "Expand menu", talk_to_dia: "Talk to Dia", voice_ready: "Voice ready to talk",
+    senses: "Dia's senses", agents_ready: "{ok}/{all} agents", local_dia: "Dia on this computer",
+    inbox_waiting: "Waiting for your decision: {n}", inbox_clear: "Nothing waits for you. Dia handles the rest.",
+    waiting_for_you: "Waiting for you", working_now: "Working now", nothing_running: "No agent is working right now.",
+    ready_to_merge: "Ready to merge", plan_to_approve: "Plan to approve", ci_failed: "CI failed",
+    comments_waiting: "Review comments", running_count: "{n} running",
+    plan_steps_count: "{n} steps", needs_override: "Has blockers: decide in the task",
+    summary_tab: "Summary", changes_tab: "Changes",
+    filter_tasks: "Filter tasks", earlier: "Earlier", open_view: "Open",
+    theme_app: "App theme", theme_app_help: "Dia's window and the browser.", theme_phone: "Phone theme",
+    theme_phone_help: "The phone app and Dia in the phone's browser.", theme_widget: "KDE widget theme",
+    theme_widget_help: "The widget in the panel and its popup.", theme_same: "Same as the app ({name})",
+    theme_own: "Its own", custom_theme: "yours",
+    budget_calls_short: "Calls", budget_minutes_short: "Minutes", priority: "Priority",
+    cli_new: "New session", cli_new_help: "Starts the agent you pick, with its model, in the project's folder. It works there as in a terminal; you answer here, and Release gives you the command to go on in a terminal.",
+    cli_new_first: "The first message, e.g. “look at the failing test in the save system”", cli_new_start: "Start", cli_new_starting: "Starting…",
+    cli_new_started: "The session is on: answer below.", cli_new_working: "The agent is working on the first answer…",
+    cli_new_failed: "The session did not start", cancel: "Cancel", cli_new_here: "started in Dia", cli_new_none: "No Claude Code, Codex or Cursor Agent is configured (Settings → Agents).",
+    search: "Search", palette_hint: "Go to, find a task, or do something…", nothing_found: "Nothing found.", kind_view: "view", kind_action: "action", kind_task: "task", quiet_on_action: "Quiet mode on", quiet_off_action: "Quiet mode off",
+    files_changed: "files changed: {n}", mission: "Mission", agent_unavailable: "unavailable", calls_today: "24 h: {n} calls · {min} min", idle_today: "no calls in 24 h",
+    more: "More", talk_phone: "Conversation", talk_hint: "Tap the microphone and speak", talk_listening: "Listening…",
+    talk_thinking: "Thinking…", talk_speaking: "Speaking… tap to interrupt", talk_unheard: "No speech recognised. Try again.",
+    talk_unsupported: "This browser can't take dictation here. Write instead: the keyboard's microphone works too.",
+    talk_type: "Write instead", talk_end: "End the conversation", talk_mic: "Microphone",
+    talk_denied: "No access to the microphone: allow it in the browser's or the app's settings.", talk_local: "heard and spoken on your computer",
   },
   pl: {
     tasks: "Zadania", chat: "Czat", status: "Status", settings: "Ustawienia",
@@ -327,6 +363,16 @@ const STRINGS = {
     saved: "Zapisano.", needs_restart: "zadziała po ponownym uruchomieniu Dia", add: "Dodaj", remove: "Usuń",
     assistant: "Asystent", voice_brain: "Głos i mózg", agents_tab: "Agenci", automation: "Automatyzacje",
     schedule: "Harmonogram", secrets: "Sekrety", devices_tab: "Urządzenia", look: "Wygląd", config_file: "Plik konfiguracji",
+    desktop_tab: "Pulpit i usługi", security_tab: "Bezpieczeństwo",
+    settings_help: "Kim jest Dia, jak pracuje i jak łączy się z Twoim światem.",
+    settings_you: "Ty i Dia", settings_work: "Praca", settings_connect: "Połączenia", settings_computer: "Ten komputer",
+    s_identity: "Tożsamość", s_skills_brief: "Umiejętności i briefing", s_conversation: "Rozmowa",
+    s_defaults: "Domyślne", s_review_retry: "Recenzja i ponowienia", s_task_limits: "Limity zadań",
+    s_plans_missions: "Plany i misje", s_specialists: "Specjaliści", s_quality: "Bramki jakości",
+    s_watchers: "Obserwatorzy", s_system_tidy: "Komputer i porządki", s_suggestions: "Sugestie i cele",
+    s_mail_home: "Poczta i dom", s_senses: "Ekran i kamera", s_publish: "Publikacja",
+    s_vault: "Skarbiec", s_memory_search: "Szukanie i uczenie", s_notify_policy: "Ciche godziny i budżet",
+    s_security_hosts: "Twoje maszyny", s_sandbox: "Piaskownica agentów",
     f_name: "Imię asystentki", f_user_name: "Jak się do mnie zwracać", f_personality: "Osobowość",
     p_friendly: "Przyjazna", p_butler: "Lokaj (jak JARVIS)", p_concise: "Zwięzła", p_buddy: "Kumpelka", p_mentor: "Mentorka",
     p_custom: "Własna…", p_custom_hint: "Opisz osobowość, np. spokojna, ironiczna, mówi jak kapitan statku",
@@ -344,7 +390,7 @@ const STRINGS = {
     f_stability: "Stabilność (0–1)", f_similarity: "Podobieństwo (0–1)", f_tts_fallback: "Gdy ElevenLabs nie działa",
     f_piper_voice: "Głos Piper", f_wake: "Model słowa aktywującego",
     f_local_brain: "Lokalny mózg (Ollama)", f_ollama_model: "Model Ollamy",
-    local_brain_help: "Rozumie Twoje polecenia na tym komputerze, za darmo i prywatnie; Claude zostaje jako zapas. Instalacja: sudo pacman -S ollama; ollama pull qwen2.5:3b",
+    local_brain_help: "Rozumie Twoje polecenia na tym komputerze, za darmo i prywatnie; Claude zostaje jako zapas. Instalacja: sudo pacman -S ollama; ollama pull qwen3.5:4b  (najlepszy wynik 25.10.2026: 8/9)",
     voice_off: "Głos nie jest skonfigurowany: dodaj [channels.voice] w pliku konfiguracji (docs/VOICE.md).",
     not_set: "nie ustawiono", secrets_help: "Trzymane w ~/.config/dia/env (prawa 600). Wartości nie da się tu odczytać. Po zmianie uruchom Dia ponownie.",
     when: "Kiedy", sched_what: "Co", next_run: "Najbliżej", run_now: "Uruchom teraz", pause: "Wstrzymaj", resume: "Wznów",
@@ -403,6 +449,32 @@ const STRINGS = {
     scenario_help: "Agent pisze test tego zachowania, a Dia go uruchamia", council_help: "Kilku agentów odpowiada, moderator to waży",
     council_started: "Rada obraduje; odpowiedź pojawi się jako zadanie.",
     limited: "limit", limited_until: "Limit użycia do {time}", waiting_until: "Czeka na odnowienie limitu do {time}",
+    inbox: "Skrzynka", workspace: "Osobista przestrzeń", nav_work: "Przestrzeń pracy", nav_system: "Wiedza i system",
+    menu_collapse: "Zwiń menu", menu_expand: "Rozwiń menu", talk_to_dia: "Porozmawiaj z Dią", voice_ready: "Głos gotowy do rozmowy",
+    senses: "Zmysły Dii", agents_ready: "agenci: {ok}/{all}", local_dia: "Dia na tym komputerze",
+    inbox_waiting: "Czeka na Twoją decyzję: {n}", inbox_clear: "Nic nie czeka na Twoją decyzję. Resztą Dia zajmuje się sama.",
+    waiting_for_you: "Czeka na Ciebie", working_now: "Teraz pracuje", nothing_running: "Żaden agent teraz nie pracuje.",
+    ready_to_merge: "Gotowe do scalenia", plan_to_approve: "Plan do akceptacji", ci_failed: "CI nie przeszło",
+    comments_waiting: "Uwagi z recenzji", running_count: "w toku: {n}",
+    plan_steps_count: "kroki: {n}", needs_override: "Są blokady: zdecyduj w zadaniu",
+    summary_tab: "Podsumowanie", changes_tab: "Zmiany",
+    filter_tasks: "Filtruj zadania", earlier: "Wcześniej", open_view: "Otwórz",
+    theme_app: "Motyw aplikacji", theme_app_help: "Okno Dii i przeglądarka.", theme_phone: "Motyw na telefonie",
+    theme_phone_help: "Aplikacja na telefonie i Dia w przeglądarce telefonu.", theme_widget: "Motyw widżetu KDE",
+    theme_widget_help: "Widżet w panelu i jego okienko.", theme_same: "Jak aplikacja ({name})",
+    theme_own: "Własny", custom_theme: "Twój",
+    budget_calls_short: "Wywołania", budget_minutes_short: "Minuty", priority: "Priorytet",
+    cli_new: "Nowa sesja", cli_new_help: "Uruchamia wybranego agenta z jego modelem w folderze projektu. Pracuje tam jak w terminalu; odpowiadasz tutaj, a Zwolnij poda polecenie, by ciągnąć dalej w terminalu.",
+    cli_new_first: "Pierwsza wiadomość, np. „zajrzyj do testu systemu zapisu, który nie przechodzi”", cli_new_start: "Rozpocznij", cli_new_starting: "Uruchamiam…",
+    cli_new_started: "Sesja działa: odpowiadaj poniżej.", cli_new_working: "Agent pracuje nad pierwszą odpowiedzią…",
+    cli_new_failed: "Sesja nie wystartowała", cancel: "Anuluj", cli_new_here: "rozpoczęta w Dii", cli_new_none: "Nie skonfigurowano Claude Code, Codex ani Cursor Agent (Ustawienia → Agenci).",
+    search: "Szukaj", palette_hint: "Przejdź do, znajdź zadanie albo zrób coś…", nothing_found: "Nic nie znaleziono.", kind_view: "widok", kind_action: "akcja", kind_task: "zadanie", quiet_on_action: "Włącz tryb cichy", quiet_off_action: "Wyłącz tryb cichy",
+    files_changed: "zmienione pliki: {n}", mission: "Misja", agent_unavailable: "niedostępny", calls_today: "24 h: wywołania {n} · {min} min", idle_today: "brak wywołań w 24 h",
+    more: "Więcej", talk_phone: "Rozmowa", talk_hint: "Dotknij mikrofonu i mów", talk_listening: "Słucham…",
+    talk_thinking: "Myślę…", talk_speaking: "Mówię… dotknij, żeby przerwać", talk_unheard: "Nie rozpoznano mowy. Spróbuj jeszcze raz.",
+    talk_unsupported: "Ta przeglądarka nie przyjmuje tu dyktowania. Napisz: mikrofon klawiatury też działa.",
+    talk_type: "Pisz zamiast mówić", talk_end: "Zakończ rozmowę", talk_mic: "Mikrofon",
+    talk_denied: "Brak dostępu do mikrofonu: zezwól na niego w ustawieniach przeglądarki lub aplikacji.", talk_local: "słucha i mówi Twój komputer",
   },
 };
 let lang = "en";
@@ -420,6 +492,8 @@ const IN_APP = navigator.userAgent.includes("DiaApp");
 const APP_HOME = /iPhone|iPad|iPod/.test(navigator.userAgent)
   ? "capacitor://localhost/index.html?reset=1" : "https://localhost/index.html?reset=1";
 const THEME_KEY = "dia-theme";
+let onPhone = false;  // a paired device: its own theme may differ from the app's
+const SIDEBAR_KEY = "dia-sidebar";
 
 function store(key, value) {
   try {
@@ -432,7 +506,7 @@ function store(key, value) {
 
 // What the address asks for (#token=...&view=chat&task=ID), read before the
 // token is wiped from it: the desktop window and its tray open a given tab.
-const VIEWS = ["tasks", "missions", "chat", "cli", "memory", "status", "usage", "settings"];
+const VIEWS = ["inbox", "tasks", "missions", "chat", "cli", "memory", "status", "usage", "settings"];
 const hashParam = (name) => (location.hash.match(new RegExp(`[#&]${name}=([\\w-]+)`)) || [])[1] || null;
 const START_VIEW = VIEWS.includes(hashParam("view")) ? hashParam("view") : null;
 const START_TASK = hashParam("task");
@@ -448,11 +522,12 @@ function readToken() {
 
 let token = readToken();
 
-async function api(path, { method = "GET", body } = {}) {
+async function api(path, { method = "GET", body, raw } = {}) {
   const response = await fetch(path, {
     method,
-    headers: { Authorization: `Bearer ${token}`, ...(body ? { "Content-Type": "application/json" } : {}) },
-    body: body ? JSON.stringify(body) : undefined,
+    headers: { Authorization: `Bearer ${token}`, ...(body ? { "Content-Type": "application/json" } : {}),
+      ...(raw ? { "Content-Type": raw.type } : {}) },
+    body: raw || (body ? JSON.stringify(body) : undefined),
   });
   const type = response.headers.get("Content-Type") || "";
   const data = type.includes("json") ? await response.json() : await response.text();
@@ -461,8 +536,49 @@ async function api(path, { method = "GET", body } = {}) {
 }
 
 function applyTheme(name) {
-  document.getElementById("theme").href = `/themes/${encodeURIComponent(name)}.css`;
+  const link = document.getElementById("theme");
+  const href = `/themes/${encodeURIComponent(name)}.css`;
   store(THEME_KEY, name);
+  if (link.getAttribute("href") === href) { paintIcon(); return; }  // loaded with the page
+  link.onload = paintIcon;  // the new theme's accent colours Dia's icon
+  link.href = href;
+}
+
+// ------------------------------------------------------------ Dia's icon ---
+// The rings of icons/dia.svg, their gradient made from the theme's accent:
+// lighter, the accent itself, darker, darkest.
+const LOGO_MIX = [[0, 0.45, 255], [0.46, 1, 0], [0.72, 0.7, 0], [1, 0.35, 0]];  // offset, accent share, mixed with
+
+function logoSvg(stops, id = "dia") {
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><defs><linearGradient id="${id}" x1="0" y1="0" x2="1" y2="1">${
+    stops.map(([offset, color]) => `<stop offset="${offset}" stop-color="${color}"/>`).join("")
+  }</linearGradient></defs><circle cx="256" cy="256" r="208" fill="none" stroke="url(#${id})" stroke-width="54"/><circle cx="256" cy="256" r="112" fill="url(#${id})"/></svg>`;
+}
+
+function DiaLogo({ class: cls = "brand-logo" }) {
+  // live CSS colours: the icon follows a theme switch at once
+  const stops = LOGO_MIX.map(([offset, share, other]) => [offset, share === 1 ? "var(--accent)"
+    : `color-mix(in srgb, var(--accent) ${share * 100}%, ${other ? "white" : "black"})`]);
+  return html`<svg class=${cls} viewBox="0 0 512 512" aria-hidden="true" dangerouslySetInnerHTML=${{
+    __html: logoSvg(stops, "dia-logo").replace(/^<svg[^>]*>|<\/svg>$/g, "").replace(/stop-color="([^"]+)"/g, 'style="stop-color:$1"') }}></svg>`;
+}
+
+// The favicon, and in Dia's own window its window and tray icon, in the accent too.
+function paintIcon() {
+  const probe = document.createElement("i");
+  probe.style.color = getComputedStyle(document.documentElement).getPropertyValue("--accent").trim();
+  document.body.appendChild(probe);
+  const rgb = (getComputedStyle(probe).color.match(/\d+/g) || []).slice(0, 3).map(Number);
+  probe.remove();
+  if (rgb.length !== 3) return;
+  const hex = (c) => `#${c.map((v) => Math.round(v).toString(16).padStart(2, "0")).join("")}`;
+  const stops = LOGO_MIX.map(([offset, share, other]) => [offset, hex(rgb.map((v) => v * share + other * (1 - share)))]);
+  const svg = logoSvg(stops);
+  document.querySelectorAll('link[rel="icon"]').forEach((link) => link.remove());
+  const link = Object.assign(document.createElement("link"), { rel: "icon", type: "image/svg+xml",
+    href: `data:image/svg+xml,${encodeURIComponent(svg)}` });
+  document.head.appendChild(link);
+  if (navigator.userAgent.includes("DiaDesktop")) console.log(`dia-window:accent:${hex(rgb).slice(1)}`);
 }
 
 // --------------------------------------------------------------- helpers ---
@@ -480,6 +596,34 @@ function ago(iso) {
 
 const firstLine = (text) => (text || "").split("\n")[0];
 const Pill = ({ status, label }) => html`<span class="pill s-${status}">${label || status}</span>`;
+
+// Line icons (24×24, drawn with the text colour).
+const ICONS = {
+  inbox: "M22 12h-6l-2 3h-4l-2-3H2M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z",
+  tasks: "M4.5 3h4a1.5 1.5 0 0 1 1.5 1.5v4A1.5 1.5 0 0 1 8.5 10h-4A1.5 1.5 0 0 1 3 8.5v-4A1.5 1.5 0 0 1 4.5 3zM15.5 3h4A1.5 1.5 0 0 1 21 4.5v4a1.5 1.5 0 0 1-1.5 1.5h-4A1.5 1.5 0 0 1 14 8.5v-4A1.5 1.5 0 0 1 15.5 3zM4.5 14h4a1.5 1.5 0 0 1 1.5 1.5v4A1.5 1.5 0 0 1 8.5 21h-4A1.5 1.5 0 0 1 3 19.5v-4A1.5 1.5 0 0 1 4.5 14zM15.5 14h4a1.5 1.5 0 0 1 1.5 1.5v4a1.5 1.5 0 0 1-1.5 1.5h-4a1.5 1.5 0 0 1-1.5-1.5v-4a1.5 1.5 0 0 1 1.5-1.5z",
+  missions: "M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10zM12 10.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3z",
+  chat: "M21 11.5a8.4 8.4 0 0 1-12.2 7.5L3 21l2-5.5A8.4 8.4 0 1 1 21 11.5z",
+  cli: "M5 4h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zM7 10l3 2.5L7 15M12 15h4",
+  memory: "M2 5h6a4 4 0 0 1 4 4v11a3 3 0 0 0-3-3H2zM22 5h-6a4 4 0 0 0-4 4v11a3 3 0 0 1 3-3h7z",
+  status: "M2 12h4l3-7 5 14 3-7h5",
+  usage: "M3 3v18h18M8 17v-5M12 17V8M16 17v-6",
+  settings: "M4 7h3M11 7h9M4 17h9M17 17h3M9 4.8a2.2 2.2 0 1 0 0 4.4 2.2 2.2 0 0 0 0-4.4zM15 14.8a2.2 2.2 0 1 0 0 4.4 2.2 2.2 0 0 0 0-4.4z",
+  mic: "M12 2a3 3 0 0 1 3 3v6a3 3 0 0 1-6 0V5a3 3 0 0 1 3-3zM19 10v1a7 7 0 0 1-14 0v-1M12 18v4",
+  screen: "M4 3h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zM8 21h8M12 17v4",
+  camera: "M23 7l-7 5 7 5V7zM3 5h11a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z",
+  speaker: "M11 5 6 9H2v6h4l5 4V5zM15.5 8.5a5 5 0 0 1 0 7",
+  muted: "M11 5 6 9H2v6h4l5 4V5zM22 9l-6 6M16 9l6 6",
+  moon: "M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z",
+  panel: "M5 4h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zM9 4v16",
+  check: "M20 6 9 17l-5-5",
+  arrow: "M5 12h14M12 5l7 7-7 7",
+  stop: "M6 6h12v12H6z",
+  close: "M6 6l12 12M18 6 6 18",
+  search: "M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14zM21 21l-5-5",
+  more: "M5 10.6a1.4 1.4 0 1 0 0 2.8 1.4 1.4 0 0 0 0-2.8zM12 10.6a1.4 1.4 0 1 0 0 2.8 1.4 1.4 0 0 0 0-2.8zM19 10.6a1.4 1.4 0 1 0 0 2.8 1.4 1.4 0 0 0 0-2.8z",
+};
+const Icon = ({ name, size = 18 }) => html`<svg class="icon" width=${size} height=${size} viewBox="0 0 24 24" fill="none"
+  stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d=${ICONS[name]} /></svg>`;
 
 // ------------------------------------------------------- highlighting ---
 // Prism (vendor/prism.bundle.js) colours code; the colours come from the theme.
@@ -508,34 +652,99 @@ function Code({ code, lang }) {
 }
 
 // Text with ```fenced``` code blocks shown as highlighted code.
+// Markdown as agents write it, drawn as elements (never as HTML from the text):
+// paragraphs, headings, lists, tables, **bold**, *italic*, `code`, [links](https://…)
+// and ```fenced code```.
+const INLINE = /(`[^`\n]+`)|(\*\*[^*\n]+?\*\*|__[^_\n]+?__)|(\[[^\]\n]+\]\((https?:\/\/[^)\s]+)\))|(\*[^*\s][^*\n]*?\*)/g;
+
+function inline(text) {
+  const out = [];
+  let last = 0;
+  for (const m of text.matchAll(INLINE)) {
+    if (m.index > last) out.push(text.slice(last, m.index));
+    if (m[1]) out.push(html`<code class="inline">${m[1].slice(1, -1)}</code>`);
+    else if (m[2]) out.push(html`<strong>${inline(m[2].slice(2, -2))}</strong>`);
+    else if (m[3]) out.push(html`<a href=${m[4]} target="_blank" rel="noopener noreferrer">${m[3].slice(1, m[3].indexOf("]("))}</a>`);
+    else out.push(html`<em>${m[5].slice(1, -1)}</em>`);
+    last = m.index + m[0].length;
+  }
+  if (last < text.length) out.push(text.slice(last));
+  return out;
+}
+
+const cells = (line) => line.trim().replace(/^\|/, "").replace(/\|$/, "").split("|").map((c) => c.trim());
+
+function blocks(text) {
+  const lines = text.split("\n");
+  const out = [];
+  let i = 0;
+  while (i < lines.length) {
+    const line = lines[i];
+    if (!line.trim()) { i++; continue; }
+    if (/^\s*\|.*\|\s*$/.test(line) && /^\s*\|?\s*:?-{2,}/.test(lines[i + 1] || "")) {
+      const head = cells(line);
+      const rows = [];
+      for (i += 2; i < lines.length && /^\s*\|/.test(lines[i]); i++) rows.push(cells(lines[i]));
+      out.push(html`<div class="md-table"><table><thead><tr>${head.map((c) => html`<th>${inline(c)}</th>`)}</tr></thead>
+        <tbody>${rows.map((r) => html`<tr>${r.map((c) => html`<td>${inline(c)}</td>`)}</tr>`)}</tbody></table></div>`);
+      continue;
+    }
+    const heading = line.match(/^\s*#{1,4}\s+(.*)$/);
+    if (heading) { out.push(html`<div class="md-h">${inline(heading[1])}</div>`); i++; continue; }
+    const bullet = /^\s*[-*•]\s+/, number = /^\s*\d+[.)]\s+/;
+    if (bullet.test(line) || number.test(line)) {
+      const ordered = number.test(line);
+      const items = [];
+      for (; i < lines.length && (ordered ? number : bullet).test(lines[i]); i++) items.push(lines[i].replace(ordered ? number : bullet, ""));
+      const list = items.map((item) => html`<li>${inline(item)}</li>`);
+      out.push(ordered ? html`<ol>${list}</ol>` : html`<ul>${list}</ul>`);
+      continue;
+    }
+    const para = [];
+    for (; i < lines.length && lines[i].trim() && !bullet.test(lines[i]) && !number.test(lines[i])
+      && !/^\s*#{1,4}\s/.test(lines[i]) && !(/^\s*\|/.test(lines[i]) && /^\s*\|?\s*:?-{2,}/.test(lines[i + 1] || "")); i++) para.push(lines[i]);
+    out.push(html`<p>${para.flatMap((l, k) => (k ? [html`<br />`, ...inline(l)] : inline(l)))}</p>`);
+  }
+  return out;
+}
+
 function RichText({ text, class: cls = "card prose", style }) {
   const parts = (text || "").split(/```([\w+#.-]*)[^\n]*\n([\s\S]*?)```/g);
   const out = [];
   for (let i = 0; i < parts.length; i += 3) {
-    // `inline code` outside the fenced blocks
-    parts[i].split(/`([^`\n]+)`/g).forEach((piece, j) => {
-      if (piece) out.push(j % 2 ? html`<code class="inline">${piece}</code>` : piece);
-    });
+    out.push(...blocks(parts[i]));
     if (i + 2 < parts.length) {
       out.push(html`<pre class="code mono"><${Code} code=${parts[i + 2].replace(/\n$/, "")} lang=${languageOf(parts[i + 1])} /></pre>`);
     }
   }
-  return html`<div class=${cls} style=${style}>${out}</div>`;
+  return html`<div class=${`${cls} md`} style=${style}>${out}</div>`;
 }
 
-function Diff({ text }) {
-  let lang = null;
-  const lines = text.split("\n").map((line, i) => {
-    if (line.startsWith("diff --git")) lang = languageOf(line.split(" ").pop());
-    const meta = line.startsWith("diff --git") || line.startsWith("+++") || line.startsWith("---")
-      || line.startsWith("index ") || line.startsWith("new file") || line.startsWith("deleted file");
-    if (meta) return html`<div key=${i} class="file">${line}</div>`;
-    if (line.startsWith("@@")) return html`<div key=${i} class="hunk">${line}</div>`;
-    const sign = line[0] === "+" || line[0] === "-" || line[0] === " " ? line[0] : "";
+function Diff({ text, notes = [] }) {
+  let lang = null, file = null, line = 0;
+  const rows = [];
+  text.split("\n").forEach((raw, i) => {
+    if (raw.startsWith("diff --git")) lang = languageOf(raw.split(" ").pop());
+    if (raw.startsWith("+++ ")) file = raw.slice(4).replace(/^b\//, "");
+    const meta = raw.startsWith("diff --git") || raw.startsWith("+++") || raw.startsWith("---")
+      || raw.startsWith("index ") || raw.startsWith("new file") || raw.startsWith("deleted file");
+    if (meta) { rows.push(html`<div key=${i} class="file">${raw}</div>`); return; }
+    if (raw.startsWith("@@")) {
+      line = Number((raw.match(/\+(\d+)/) || [])[1] || 0);
+      rows.push(html`<div key=${i} class="hunk">${raw}</div>`);
+      return;
+    }
+    const sign = raw[0] === "+" || raw[0] === "-" || raw[0] === " " ? raw[0] : "";
     const cls = sign === "+" ? "add" : sign === "-" ? "del" : "";
-    return html`<div key=${i} class=${cls}><span class="sign">${sign || " "}</span><${Code} code=${line.slice(sign ? 1 : 0)} lang=${lang} /></div>`;
+    rows.push(html`<div key=${i} class=${cls}><span class="sign">${sign || " "}</span><${Code} code=${raw.slice(sign ? 1 : 0)} lang=${lang} /></div>`);
+    if (sign !== "-") {
+      // comments from the PR/MR review, under the line they are about
+      notes.filter((n) => n.path === file && n.line === line).forEach((n, j) => rows.push(html`<div key=${`${i}-${j}`} class="diff-note">
+        <strong>${n.author}</strong><${RichText} text=${n.body} class="prose muted" /></div>`));
+      line += 1;
+    }
   });
-  return html`<pre class="diff mono">${lines}</pre>`;
+  return html`<pre class="diff mono">${rows}</pre>`;
 }
 
 // ---------------------------------------------------------------- tasks ---
@@ -555,9 +764,18 @@ function Composer({ status, onCreated, toast }) {
   const chosen = project || projects[0]?.name || "";
 
   const submit = async (kind) => {
-    if (!text.trim() || !chosen) return;
+    if (!text.trim()) return;
+    if (kind !== "research" && !chosen) return;
     setBusy(true);
     try {
+      if (kind === "research") {
+        const task = await api("/api/research", {
+          method: "POST",
+          body: { topic: text, project: chosen || null, agent: spec || undefined },
+        });
+        setText(""); onCreated(task); toast(t("research_started")); setBusy(false);
+        return;
+      }
       if (kind === "council") {
         await api("/api/council", { method: "POST", body: { question: text, project: chosen } });
         setText(""); toast(t("council_started")); setBusy(false);
@@ -580,37 +798,38 @@ function Composer({ status, onCreated, toast }) {
 
   return html`
     <div class="composer">
-      <div class="row">
-        <select class="select" value=${chosen} onChange=${(e) => setProject(e.target.value)}>
+      <textarea class="textarea" placeholder=${t("what")} value=${text} aria-label=${t("what")}
+        onInput=${(e) => setText(e.target.value)}
+        onKeyDown=${(e) => { if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) submit("run"); }}></textarea>
+      <div class="composer-bar">
+        <select class="chip-select" value=${chosen} title=${t("project")} onChange=${(e) => setProject(e.target.value)}>
+          ${projects.length ? null : html`<option value="">—</option>`}
           ${projects.map((p) => html`<option value=${p.name}>${p.name}</option>`)}
         </select>
-        <select class="select" value=${agent} onChange=${(e) => { setAgent(e.target.value); setModel(""); }}>
+        <select class="chip-select" value=${agent} title=${t("agent")} onChange=${(e) => { setAgent(e.target.value); setModel(""); }}>
           <option value="">${t("default_agent")}</option>
           ${(status?.agents || []).map((a) => html`<option value=${a.name}>${a.name}</option>`)}
         </select>
-        ${agentInfo ? html`<input class="input" style="width:130px" list="task-models" placeholder=${`${t("model")}: ${agentInfo.model || t("auto")}`}
+        ${agentInfo ? html`<input class="chip-select" style="width:130px" list="task-models" placeholder=${`${t("model")}: ${agentInfo.model || t("auto")}`}
             value=${model} onInput=${(e) => setModel(e.target.value)} />
           <datalist id="task-models">${agentInfo.models.map((m) => html`<option value=${m}></option>`)}</datalist>` : null}
-        <select class="select" value=${mode} onChange=${(e) => setMode(e.target.value)}>
+        <select class="chip-select" value=${mode} title=${t("mode")} onChange=${(e) => setMode(e.target.value)}>
           <option value="edit">${t("edit")}</option>
           <option value="read-only">${t("read_only")}</option>
         </select>
-        <label class="row muted"><input type="checkbox" checked=${review}
-          onChange=${(e) => setReview(e.target.checked)} /> ${t("review")}</label>
-      </div>
-      <textarea class="textarea" placeholder=${t("what")} value=${text}
-        onInput=${(e) => setText(e.target.value)}
-        onKeyDown=${(e) => { if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) submit("run"); }}></textarea>
-      <div class="row">
-        <button class="btn primary" disabled=${busy || !text.trim()} onClick=${() => submit("run")}>${t("run")} <span class="faint">Ctrl+↵</span></button>
-        <button class="btn" disabled=${busy || !text.trim()} onClick=${() => submit("plan")}>${t("plan")}</button>
-        <button class="btn ghost" title=${t("scenario_help")} disabled=${busy || !text.trim()} onClick=${() => submit("scenario")}>${t("scenario")}</button>
-        <button class="btn ghost" title=${t("council_help")} disabled=${busy || !text.trim()} onClick=${() => submit("council")}>${t("council")}</button>
         ${status?.pipelines?.length ? html`
-          <select class="select" value=${pipeline} onChange=${(e) => setPipeline(e.target.value)}>
+          <select class="chip-select" value=${pipeline} onChange=${(e) => setPipeline(e.target.value)}>
             <option value="">${t("planner")}</option>
             ${status.pipelines.map((p) => html`<option value=${p}>${t("pipeline")}: ${p}</option>`)}
           </select>` : null}
+        <label class="chip-check"><input type="checkbox" checked=${review}
+          onChange=${(e) => setReview(e.target.checked)} /> ${t("review")}</label>
+        <span class="spacer"></span>
+        <button class="btn ghost" title=${t("research_help")} disabled=${busy || !text.trim()} onClick=${() => submit("research")}>${t("research")}</button>
+        <button class="btn ghost" title=${t("scenario_help")} disabled=${busy || !text.trim() || !chosen} onClick=${() => submit("scenario")}>${t("scenario")}</button>
+        <button class="btn ghost" title=${t("council_help")} disabled=${busy || !text.trim() || !chosen} onClick=${() => submit("council")}>${t("council")}</button>
+        <button class="btn" disabled=${busy || !text.trim() || !chosen} onClick=${() => submit("plan")}>${t("plan")}</button>
+        <button class="btn primary" title="Ctrl+↵" disabled=${busy || !text.trim() || !chosen} onClick=${() => submit("run")}>${t("run")}</button>
       </div>
     </div>`;
 }
@@ -620,11 +839,17 @@ function TaskDetail({ id, toast, onChanged, onBack }) {
   const [diff, setDiff] = useState(null);
   const [log, setLog] = useState(null);
   const [busy, setBusy] = useState(false);
+  const [tab, setTab] = useState(null);
+  const asked = useRef({});
 
   const load = useCallback(() => api(`/api/tasks/${id}`).then(setTask).catch((e) => toast(e.message, "error")), [id]);
-  useEffect(() => { setDiff(null); setLog(null); load(); }, [id]);
+  useEffect(() => { setDiff(null); setLog(null); setTab(null); asked.current = {}; load(); }, [id]);
   useEffect(() => {
-    const onUpdate = (e) => { if (e.detail.id === id) load(); };
+    const onUpdate = (e) => {
+      if (e.detail.id !== id) return;
+      asked.current = {};  // a new commit or test run: fetch them again when shown
+      load();
+    };
     window.addEventListener("dia-task", onUpdate);
     return () => window.removeEventListener("dia-task", onUpdate);
   }, [id]);
@@ -654,43 +879,54 @@ function TaskDetail({ id, toast, onChanged, onBack }) {
     const reason = prompt(t("reason_prompt"), "");
     if (reason !== null) act(action, { reason, override });
   };
-  const toggleDiff = async () => {
-    if (diff !== null) return setDiff(null);
-    try { setDiff(await api(`/api/tasks/${id}/diff`)); } catch (e) { toast(e.message, "error"); }
-  };
-  const toggleLog = async () => {
-    if (log !== null) return setLog(null);
-    try { setLog(await api(`/api/tasks/${id}/tests`)); } catch (e) { toast(e.message, "error"); }
-  };
   const reviewable = task.commit_sha && ["done", "failed"].includes(task.status);
   const ci = d.ci || {};
   const pending = d.comments_pending || [];
   const tests = task.tests_ok === null ? t("not_run") : task.tests_ok ? t("passed") : "FAILED";
 
+  const changes = task.commit_sha && !["merged", "discarded"].includes(task.status);
+  const reviewed = d.reviews?.length || pending.length;
+  const tabs = [["summary", t("summary_tab")], changes && ["changes", t("changes_tab")],
+    task.has_test_log && ["tests", t("tests")], reviewed && ["review", t("reviews")]].filter(Boolean);
+  const shown = tab && tabs.some(([key]) => key === tab) ? tab
+    : changes && task.status === "done" ? "changes" : "summary";
+  // the diff and the test log are fetched once, when their tab is first shown
+  if (shown === "changes" && !asked.current.diff) {
+    asked.current.diff = true;
+    api(`/api/tasks/${id}/diff`).then(setDiff).catch((e) => { setDiff(""); toast(e.message, "error"); });
+  }
+  if (shown === "tests" && !asked.current.log) {
+    asked.current.log = true;
+    api(`/api/tasks/${id}/tests`).then(setLog).catch((e) => { setLog(""); toast(e.message, "error"); });
+  }
+  const lastReview = d.reviews?.length ? d.reviews[d.reviews.length - 1] : null;
+
   return html`
     <div class="detail">
       <button class="btn ghost back" onClick=${onBack}>← ${t("tasks")}</button>
-      <div class="row"><${Pill} status=${task.status} />${task.status === "waiting" && d.waiting_until
-        ? html`<span class="muted">${t("waiting_until", { time: clock(d.waiting_until) })}</span>` : null}
-        <span class="faint mono">${task.id}</span></div>
-      <h2>${d.scenario ? d.scenario : firstLine(task.prompt)}</h2>
-      ${d.scenario_result ? html`<div class="row"><${Pill} status=${d.scenario_result === "works" ? "done" : d.scenario_result === "broken" ? "failed" : "planned"} label=${t(`scenario_${d.scenario_result}`)} /></div>` : null}
-      <div class="kv section">
-        <span>${t("project")}</span><span>${task.project}</span>
-        <span>${t("agent")}</span><span>${task.agent}</span>
-        <span>${t("mode")}</span><span>${task.mode}</span>
-        ${task.branch ? html`<span>${t("branch")}</span><span class="mono">${task.branch}${task.commit_sha ? ` @ ${task.commit_sha.slice(0, 10)}` : ""}</span>` : null}
-        ${task.tests_ok !== null ? html`<span>${t("tests")}</span><span>${tests}</span>` : null}
-        ${d.published ? html`<span>${t("ci")}</span><span>${ci.state || "-"} ${d.published.url ? html`· <a href=${d.published.url} target="_blank">${t("open_pr")}</a>` : null}</span>` : null}
-        <span>${t("created")}</span><span>${ago(task.created_at)}</span>
-        ${d.routed ? html`<span>${t("routed")}</span><span>${d.routed}</span>` : null}
-        ${d.reverts ? html`<span>${t("reverts")}</span><span class="mono">${d.reverts}</span>` : null}
-        ${d.reverted_by ? html`<span>${t("reverted_by")}</span><span class="mono">${d.reverted_by}</span>` : null}
+      <div class="detail-head">
+        <div class="inbox-meta"><span class="dot ${task.status === "failed" ? "danger" : RUNNING.includes(task.status) ? "warn" : "ok"}"></span>
+          <span>${task.project}</span><span class="sep">/</span><span class="mono">${task.id}</span><span class="sep">·</span><span>${ago(task.created_at)}</span></div>
+        <div class="title-row"><h2>${d.scenario ? d.scenario : firstLine(task.prompt)}</h2><${Pill} status=${task.status} /></div>
+        ${task.status === "waiting" && d.waiting_until ? html`<span class="muted">${t("waiting_until", { time: clock(d.waiting_until) })}</span>` : null}
+        ${d.scenario_result ? html`<div class="row"><${Pill} status=${d.scenario_result === "works" ? "done" : d.scenario_result === "broken" ? "failed" : "planned"} label=${t(`scenario_${d.scenario_result}`)} /></div>` : null}
+        <div class="chips">
+          <span class="chip">${task.agent} · ${task.mode}</span>
+          ${task.branch ? html`<span class="chip mono">${task.branch}${task.commit_sha ? ` @ ${task.commit_sha.slice(0, 10)}` : ""}</span>` : null}
+          ${d.published ? html`<span class="chip">${t("ci")}: ${ci.state || "-"}${d.published.url ? html` · <a href=${d.published.url} target="_blank">${t("open_pr")}</a>` : null}</span>` : null}
+          ${d.routed ? html`<span class="chip">${t("routed")}: ${d.routed}</span>` : null}
+          ${d.reverts ? html`<span class="chip">${t("reverts")}: <span class="mono">${d.reverts}</span></span>` : null}
+          ${d.reverted_by ? html`<span class="chip">${t("reverted_by")}: <span class="mono">${d.reverted_by}</span></span>` : null}
+        </div>
       </div>
-
-      <div class="row section">
+      <div class="decision-bar">
+        <div class="decision-checks">
+          ${task.tests_ok !== null ? html`<span class=${task.tests_ok ? "tone-ok" : "tone-danger"}>${task.tests_ok ? html`<${Icon} name="check" size=${13} />` : "✕"} ${t("tests")}: ${tests}</span>` : null}
+          ${lastReview ? html`<span class="muted">${lastReview.reviewer}: ${lastReview.verdict.replace("_", " ")}</span>` : null}
+          ${task.diffstat ? html`<span class="mono"><span class="tone-ok">+${task.diffstat.added}</span> <span class="tone-danger">−${task.diffstat.removed}</span> <span class="faint">· ${t("files_changed", { n: task.diffstat.files })}</span></span>` : null}
+        </div>
+      <div class="decision-actions">
         ${task.status === "planned" ? html`<button class="btn primary" disabled=${busy} onClick=${() => act("run-plan")}>${t("run_plan")}</button>` : null}
-        ${task.commit_sha && !["merged", "discarded"].includes(task.status) ? html`<button class="btn" onClick=${toggleDiff}>${diff === null ? t("show_diff") : t("hide")}</button>` : null}
         ${reviewable ? html`
           <button class="btn" disabled=${busy} onClick=${() => act("review")}>${t("review")}</button>
           <button class="btn primary" disabled=${busy || task.status !== "done"} onClick=${() => decide("merge")}>${t("merge")}</button>
@@ -704,11 +940,27 @@ function TaskDetail({ id, toast, onChanged, onBack }) {
         ${task.status === "merged" && d.merge_commit && !d.reverted_by ? html`<button class="btn danger" disabled=${busy} onClick=${() => confirm(t("rollback_confirm")) && decide("rollback")}>${t("rollback")}</button>` : null}
         ${task.mode === "edit" && ["done", "merged", "published"].includes(task.status) && !d.howto ? html`<button class="btn ghost" disabled=${busy} onClick=${() => act("howto")}>${t("save_howto")}</button>` : null}
         ${task.mode === "check" && task.tests_ok === false && !d.fix_task ? html`<button class="btn primary" disabled=${busy} onClick=${() => act("fix-build")}>${t("fix_build")}</button>` : null}
-        ${task.has_test_log ? html`<button class="btn ghost" onClick=${toggleLog}>${log === null ? t("show_log") : t("hide")}</button>` : null}
       </div>
-      ${diff !== null ? html`<div class="section"><${Diff} text=${diff} /></div>` : null}
-      ${log !== null ? html`<div class="section"><pre class="log mono">${log}</pre></div>` : null}
-
+      </div>
+      <div class="tabs" role="tablist">
+        ${tabs.map(([key, label]) => html`<button role="tab" aria-selected=${shown === key} class="tab ${shown === key ? "active" : ""}" onClick=${() => setTab(key)}>${label}</button>`)}
+      </div>
+      ${shown === "changes" ? html`<div>
+        ${lastReview ? html`<div class="review-note"><strong>${lastReview.reviewer}</strong> <span class="faint">· ${lastReview.verdict.replace("_", " ")}</span>
+          <${RichText} text=${lastReview.findings} class="prose muted" /></div>` : null}
+        ${diff === null ? html`<div class="faint">…</div>` : html`<${Diff} text=${diff} notes=${pending} />`}</div>` : null}
+      ${shown === "tests" ? html`<pre class="log mono">${log ?? "…"}</pre>` : null}
+      ${shown === "review" ? html`<div>
+      ${d.reviews?.length ? html`<div class="section"><div class="label">${t("reviews")}</div>
+        ${d.reviews.map((r) => html`<div class="card" style="margin-bottom:8px">
+          <div class="row"><strong>${r.reviewer}</strong><span class="pill">${r.verdict.replace("_", " ")}</span><span class="faint">#${r.round}</span></div>
+          <${RichText} text=${r.findings} class="prose muted" style="margin-top:6px" /></div>`)}</div>` : null}
+      ${pending.length ? html`<div class="section"><div class="label">${t("comments")}</div>
+        ${pending.map((c) => html`<div class="card" style="margin-bottom:8px"><strong>${c.author}</strong>
+          ${c.path ? html` <span class="faint mono">${c.path}${c.line ? `:${c.line}` : ""}</span>` : null}
+          <${RichText} text=${c.body} class="prose muted" /></div>`)}</div>` : null}
+      </div>` : null}
+      ${shown === "summary" ? html`<div>
       <div class="section"><div class="label">${t("prompt")}</div><div class="card prose">${task.prompt}</div></div>
       ${d.plan && task.status === "planned" ? html`
         <div class="section"><div class="label">${t("plan_steps")}</div>
@@ -731,7 +983,7 @@ function TaskDetail({ id, toast, onChanged, onBack }) {
         <div class="card"><strong>${d.howto.title}</strong> <span class="faint">${d.howto.when}</span>
           <${RichText} text=${d.howto.steps} class="prose muted" style="margin-top:6px" />
           <div class="row" style="margin-top:8px"><button class="btn primary" disabled=${busy} onClick=${() => act("howto-accept")}>${t("keep")}</button></div></div></div>` : null}
-      ${blockers.length && !["merged", "discarded"].includes(task.status) ? html`<div class="section"><div class="label" style="color:${d.override ? "var(--muted)" : "var(--warn)"}">${d.override ? `${t("overridden")}: ${d.override}` : `⚠ ${t("blocked")}`}</div></div>` : null}
+      ${blockers.length && !["merged", "discarded"].includes(task.status) ? html`<div class="section"><div class="label" style="color:${d.override ? "var(--text-muted)" : "var(--warn)"}">${d.override ? `${t("overridden")}: ${d.override}` : `⚠ ${t("blocked")}`}</div></div>` : null}
       ${d.violations?.length ? html`<div class="section"><div class="label">${t("violations")}</div>
         ${d.violations.map((v) => html`<div class="card" style="margin-bottom:8px"><strong>${v.rule}</strong><div class="faint">${v.where} · ${v.by}</div></div>`)}</div>` : null}
       ${d.verification?.checks?.length ? html`<div class="section"><div class="label">${t("verification")}: ${d.verification.held}/${d.verification.total}</div>
@@ -749,54 +1001,421 @@ function TaskDetail({ id, toast, onChanged, onBack }) {
         ${d.retries.map((r) => html`<div class="row faint">${r.kind === "tests" ? `tests → ${r.agent} (${r.round})` : `${r.agent} → ${r.next}: ${(r.error || "").slice(0, 120)}`}</div>`)}</div>` : null}
       ${d.steps ? html`<div class="section"><div class="label">${t("steps")}</div>
         ${d.steps.map((s) => html`<div class="row"><${Pill} status=${s.success ? "done" : "failed"} /> ${s.title} <span class="faint">${s.agent} · ${s.duration_s}s</span></div>`)}</div>` : null}
-      ${d.reviews?.length ? html`<div class="section"><div class="label">${t("reviews")}</div>
-        ${d.reviews.map((r) => html`<div class="card" style="margin-bottom:8px">
-          <div class="row"><strong>${r.reviewer}</strong><span class="pill">${r.verdict.replace("_", " ")}</span><span class="faint">#${r.round}</span></div>
-          <${RichText} text=${r.findings} class="prose muted" style="margin-top:6px" /></div>`)}</div>` : null}
       ${d.learn?.some((f) => f.status === "proposed") ? html`<div class="section"><div class="label">${t("learn")}</div>
         ${d.learn.map((f, i) => f.status === "proposed" ? html`<div class="card row" style="margin-bottom:8px">
           <span style="flex:1">${f.fact}</span>
           <button class="btn primary" disabled=${busy} onClick=${() => act("learn", { accept: [i] })}>${t("remember")}</button>
           <button class="btn ghost" disabled=${busy} onClick=${() => act("learn", { reject: [i] })}>${t("forget")}</button></div>` : null)}</div>` : null}
-      ${pending.length ? html`<div class="section"><div class="label">${t("comments")}</div>
-        ${pending.map((c) => html`<div class="card" style="margin-bottom:8px"><strong>${c.author}</strong>
-          ${c.path ? html` <span class="faint mono">${c.path}${c.line ? `:${c.line}` : ""}</span>` : null}
-          <${RichText} text=${c.body} class="prose muted" /></div>`)}</div>` : null}
+      </div>` : null}
     </div>`;
 }
 
 function TasksView({ tasks, status, selected, select, toast, reload }) {
   const [project, setProject] = useState("");
   const [state, setState] = useState("");
-  const shown = tasks.filter((x) => (!project || x.project === project) && (!state || x.status === state));
+  const [query, setQuery] = useState("");
+  const [composing, setComposing] = useState(false);
+  const words = query.trim().toLowerCase();
+  const shown = tasks.filter((x) => (!project || x.project === project) && (!state || x.status === state)
+    && (!words || `${x.prompt} ${x.id} ${x.branch || ""} ${x.agent}`.toLowerCase().includes(words)));
+  const groups = [
+    ["waiting_for_you", shown.filter(decisionOf)],
+    ["working_now", shown.filter((x) => RUNNING.includes(x.status))],
+    ["earlier", shown.filter((x) => !decisionOf(x) && !RUNNING.includes(x.status))],
+  ].filter(([, list]) => list.length);
+  const row = (x) => html`
+    <button key=${x.id} class="task-row ${x.id === selected ? "active" : ""}" onClick=${() => select(x.id)}>
+      <span class="task-title">${firstLine(x.prompt)}</span><${Pill} status=${x.status} />
+      <span class="task-meta">${x.project} · ${x.agent} · ${ago(x.created_at)}${x.diffstat ? html` · <span class="tone-ok">+${x.diffstat.added}</span> <span class="tone-danger">−${x.diffstat.removed}</span>` : null}</span>
+    </button>`;
   return html`
     <div class="split ${selected ? "has-selected" : ""}">
       <div class="list">
-        <${Composer} status=${status} toast=${toast} onCreated=${(task) => { reload(); select(task.id); }} />
-        <div class="list-head">
-          <select class="select" value=${project} onChange=${(e) => setProject(e.target.value)}>
-            <option value="">${t("all_projects")}</option>
-            ${(status?.projects || []).map((p) => html`<option value=${p.name}>${p.name}</option>`)}
-          </select>
-          <select class="select" value=${state} onChange=${(e) => setState(e.target.value)}>
-            <option value="">${t("all_statuses")}</option>
-            ${STATUS_ORDER.map((s) => html`<option value=${s}>${s}</option>`)}
-          </select>
+        <div class="list-tools">
+          <button class="btn new-task" aria-expanded=${composing} onClick=${() => setComposing(!composing)}>${composing ? t("hide") : `+ ${t("new_task")}`}</button>
+          <input class="input" type="search" placeholder=${t("filter_tasks")} aria-label=${t("filter_tasks")} value=${query} onInput=${(e) => setQuery(e.target.value)} />
+          <div class="row">
+            <select class="chip-select" value=${project} onChange=${(e) => setProject(e.target.value)}>
+              <option value="">${t("all_projects")}</option>
+              ${(status?.projects || []).map((p) => html`<option value=${p.name}>${p.name}</option>`)}
+            </select>
+            <select class="chip-select" value=${state} onChange=${(e) => setState(e.target.value)}>
+              <option value="">${t("all_statuses")}</option>
+              ${STATUS_ORDER.map((st) => html`<option value=${st}>${st}</option>`)}
+            </select>
+          </div>
         </div>
-        ${shown.length ? shown.map((x) => html`
-          <button key=${x.id} class="task-row ${x.id === selected ? "active" : ""}" onClick=${() => select(x.id)}>
-            <span class="task-title">${firstLine(x.prompt)}</span><${Pill} status=${x.status} />
-            <span class="task-meta">${x.project} · ${x.agent} · ${ago(x.created_at)}</span>
-          </button>`) : html`<div class="empty">${t("no_tasks")}</div>`}
+        ${composing ? html`<${Composer} status=${status} toast=${toast} onCreated=${(task) => { reload(); select(task.id); setComposing(false); }} />` : null}
+        ${groups.length ? groups.map(([key, list]) => html`<div class="list-group">${t(key)}</div>${list.map(row)}`)
+          : html`<div class="empty">${t("no_tasks")}</div>`}
       </div>
       ${selected ? html`<${TaskDetail} id=${selected} toast=${toast} onChanged=${reload} onBack=${() => select(null)} />`
         : html`<div class="empty">${t("pick_task")}</div>`}
     </div>`;
 }
 
+// ------------------------------------------------------ Ctrl+K palette ---
+
+function Palette({ tasks, items, onClose, open }) {
+  const [query, setQuery] = useState("");
+  const [index, setIndex] = useState(0);
+  const input = useRef(null);
+  useEffect(() => input.current?.focus(), []);
+  const words = query.trim().toLowerCase().split(/\s+/).filter(Boolean);
+  const matches = (text) => words.every((w) => text.toLowerCase().includes(w));
+  const found = [
+    ...items.filter((x) => matches(x.label)).map((x) => ({ ...x, kind: x.kind })),
+    ...(words.length ? tasks.filter((x) => matches(`${x.prompt} ${x.id} ${x.branch || ""} ${x.project} ${x.agent}`)).slice(0, 8)
+      .map((x) => ({ kind: "task", label: firstLine(x.prompt), hint: `${x.project} · ${x.status} · ${x.id}`, run: () => open(x.id) })) : []),
+  ];
+  const at = Math.min(index, Math.max(0, found.length - 1));
+  const choose = (x) => { if (x) { onClose(); x.run(); } };
+  const onKey = (e) => {
+    if (e.key === "ArrowDown") { e.preventDefault(); setIndex((at + 1) % Math.max(1, found.length)); }
+    else if (e.key === "ArrowUp") { e.preventDefault(); setIndex((at - 1 + found.length) % Math.max(1, found.length)); }
+    else if (e.key === "Enter") { e.preventDefault(); choose(found[at]); }
+    else if (e.key === "Escape") { e.preventDefault(); onClose(); }
+  };
+  return html`<div class="palette-backdrop" onClick=${onClose}>
+    <div class="palette" role="dialog" aria-modal="true" aria-label=${t("search")} onClick=${(e) => e.stopPropagation()}>
+      <div class="palette-input"><${Icon} name="search" size=${17} />
+        <input ref=${input} value=${query} placeholder=${t("palette_hint")} aria-label=${t("search")}
+          role="combobox" aria-expanded="true" aria-controls="palette-list"
+          onInput=${(e) => { setQuery(e.target.value); setIndex(0); }} onKeyDown=${onKey} />
+        <kbd>Esc</kbd></div>
+      <div class="palette-list" id="palette-list" role="listbox">
+        ${found.length ? found.map((x, i) => html`<button role="option" aria-selected=${i === at} class="palette-item ${i === at ? "active" : ""}"
+          onMouseEnter=${() => setIndex(i)} onClick=${() => choose(x)}>
+          <${Icon} name=${x.icon || (x.kind === "task" ? "tasks" : "arrow")} size=${16} />
+          <span class="palette-label">${x.label}</span><span class="faint">${x.hint || t(`kind_${x.kind}`)}</span></button>`)
+          : html`<div class="palette-empty faint">${t("nothing_found")}</div>`}
+      </div>
+    </div></div>`;
+}
+
+// ---------------------------------------------------------------- inbox ---
+
+// What waits for the owner's decision: the same rule as the KDE widget's badge
+// (changes to merge, plans), plus published work whose CI failed or got comments.
+function decisionOf(task) {
+  const d = task.details || {};
+  if (task.status === "done" && task.commit_sha) return "merge";
+  if (task.status === "planned") return "plan";
+  if (task.status === "published" && d.ci?.state === "failed") return "ci";
+  if (task.status === "published" && (d.comments_pending || []).length) return "comments";
+  return null;
+}
+const RUNNING = ["running", "queued", "waiting"];
+
+function InboxCard({ task, kind, open, toast, reload }) {
+  const [busy, setBusy] = useState(false);
+  const d = task.details || {};
+  const blocked = (d.violations || []).length || (d.verification?.checks || []).some((c) => c.held === false);
+  const act = async (action, body) => {
+    setBusy(true);
+    try {
+      const result = await api(`/api/tasks/${task.id}/${action}`, { method: "POST", body });
+      toast(result.message || result.status || action);
+      if (result.url) window.open(result.url, "_blank");
+      reload();
+    } catch (e) { toast(e.message, "error"); }
+    setBusy(false);
+  };
+  const decide = (action) => {
+    const reason = prompt(t("reason_prompt"), "");
+    if (reason !== null) act(action, { reason });
+  };
+  const label = { merge: t("ready_to_merge"), plan: t("plan_to_approve"), ci: t("ci_failed"), comments: t("comments_waiting") }[kind];
+  const tone = { merge: "ok", plan: "info", ci: "danger", comments: "warn" }[kind];
+  return html`
+    <article class="inbox-card ${kind === "ci" ? "alert" : ""}">
+      <div class="inbox-meta"><span class="dot ${tone}"></span><span>${task.project}</span><span class="sep">/</span>
+        <span class="mono">${task.id}</span><span class="sep">·</span><span>${task.agent} · ${ago(task.created_at)}</span>
+        <span class="spacer"></span>
+        ${task.diffstat ? html`<span class="mono stat" title=${t("files_changed", { n: task.diffstat.files })}><span class="tone-ok">+${task.diffstat.added}</span> <span class="tone-danger">−${task.diffstat.removed}</span></span>` : null}
+        <span class="tone-${tone}">${label}</span></div>
+      <button class="inbox-title" onClick=${() => open(task.id)}>${d.scenario || firstLine(task.prompt)}</button>
+      ${kind === "merge" ? html`<div class="inbox-checks">
+        ${task.tests_ok ? html`<span class="tone-ok"><${Icon} name="check" size=${13} />${t("tests")}: ${t("passed")}</span>` : null}
+        ${task.tests_ok === false ? html`<span class="tone-danger">${t("tests")}: FAILED</span>` : null}
+        ${d.reviews?.length ? html`<span class="muted">${t("reviews")}: ${d.reviews[d.reviews.length - 1].verdict.replace("_", " ")}</span>` : null}
+        ${task.branch ? html`<span class="mono faint">${task.branch}</span>` : null}</div>` : null}
+      ${kind === "plan" && d.plan ? html`<ol class="inbox-steps">${d.plan.slice(0, 3).map((s) => html`<li>${s.title || s.agent}</li>`)}
+        ${d.plan.length > 3 ? html`<li class="faint">+${d.plan.length - 3}</li>` : null}</ol>` : null}
+      ${kind === "ci" && d.ci?.failed?.length ? html`<div class="inbox-checks">${d.ci.failed.map((f) => html`<a class="tone-danger mono" href=${f.url} target="_blank">✕ ${f.name}</a>`)}</div>` : null}
+      <div class="row">
+        ${kind === "merge" && !blocked ? html`<button class="btn primary" disabled=${busy} onClick=${() => decide("merge")}>${t("merge")}</button>` : null}
+        ${kind === "merge" && blocked ? html`<span class="tone-warn">⚠ ${t("needs_override")}</span>` : null}
+        ${kind === "plan" ? html`<button class="btn primary" disabled=${busy} onClick=${() => act("run-plan")}>${t("run_plan")}</button>` : null}
+        ${kind === "ci" ? html`<button class="btn primary" disabled=${busy} onClick=${() => act("fix-ci")}>${t("fix_ci")}</button>` : null}
+        ${kind === "comments" ? html`<button class="btn primary" disabled=${busy} onClick=${() => act("address-comments")}>${t("address")} (${d.comments_pending.length})</button>` : null}
+        <button class="btn" onClick=${() => open(task.id)}>${kind === "merge" ? t("review_changes") : t("open_task")} <${Icon} name="arrow" size=${14} /></button>
+        ${kind === "merge" && !blocked ? html`<button class="btn" disabled=${busy} onClick=${() => act("publish")}>${t("publish")}</button>` : null}
+        <span class="spacer"></span>
+        ${kind === "merge" || kind === "plan" ? html`<button class="btn ghost danger" disabled=${busy} onClick=${() => decide("discard")}>${t("discard")}</button>` : null}
+      </div>
+    </article>`;
+}
+
+function MissionCard({ open }) {
+  const [missions, setMissions] = useState(null);
+  useEffect(() => {
+    const load = () => api("/api/missions").then(setMissions).catch(() => setMissions([]));
+    load();
+    const every = setInterval(load, 30000);
+    return () => clearInterval(every);
+  }, []);
+  const live = (missions || []).filter((m) => !["merged", "discarded"].includes(m.status));
+  const mission = live.find((m) => m.status === "running") || live[0];
+  if (!mission) return null;
+  const steps = mission.details.mission.steps;
+  const done = steps.filter((x) => x.status === "done").length;
+  const current = steps.find((x) => x.status === "running") || steps.find((x) => x.status === "pending");
+  return html`<div class="card side-card">
+    <div class="row"><span class="label">${t("mission")}</span><span class="spacer"></span>
+      <button class="btn ghost" onClick=${() => open("missions")}>${t("open_view")}</button></div>
+    <div>${firstLine(mission.prompt)}</div>
+    <div class="steps-bar" role="img" aria-label=${`${done}/${steps.length}`}>
+      ${steps.map((x) => html`<span class="step-seg ${x.status}"></span>`)}</div>
+    <div class="faint">${done}/${steps.length}${current ? ` · ${current.title}` : ""} · <${Pill} status=${mission.status} /></div>
+  </div>`;
+}
+
+function AgentsCard({ status }) {
+  const [usage, setUsage] = useState(null);
+  useEffect(() => {
+    const load = () => api("/api/usage?days=1&weeks=1").then(setUsage).catch(() => setUsage(null));
+    load();
+    const every = setInterval(load, 60000);
+    return () => clearInterval(every);
+  }, []);
+  if (!status) return null;
+  const today = Object.fromEntries((usage?.per_agent || usage?.agents || []).map((a) => [a.agent, a]));
+  return html`<div class="card side-card">
+    <span class="label">${t("agents")}</span>
+    ${status.agents.map((a) => {
+      const used = today[a.name];
+      const state = a.limited_until ? "warn" : a.ok ? "ok" : "danger";
+      return html`<div class="agent-line" title=${a.problem || ""}>
+        <span class="dot ${state}"></span><span class="agent-name">${a.name}</span>
+        <span class="faint">${a.limited_until ? t("limited_until", { time: clock(a.limited_until) })
+          : !a.ok ? t("agent_unavailable")
+          : used ? t("calls_today", { n: used.calls, min: used.minutes }) : t("idle_today")}</span></div>`;
+    })}
+  </div>`;
+}
+
+function InboxView({ tasks, status, open, toast, reload, go }) {
+  const waiting = tasks.map((x) => [x, decisionOf(x)]).filter(([, kind]) => kind)
+    .sort(([a], [b]) => a.created_at.localeCompare(b.created_at));
+  const running = tasks.filter((x) => RUNNING.includes(x.status));
+  const today = new Date().toLocaleDateString(lang === "pl" ? "pl-PL" : "en-GB", { weekday: "long", day: "numeric", month: "long" });
+  return html`
+    <div class="page wide inbox">
+      <div class="page-head">
+        <div class="eyebrow">${today}</div>
+        <h1>${t("inbox")}</h1>
+        <p class="muted">${waiting.length ? t("inbox_waiting", { n: waiting.length }) : t("inbox_clear")}</p>
+      </div>
+      <${Composer} status=${status} toast=${toast} onCreated=${(task) => { reload(); open(task.id); }} />
+      <div class="inbox-cols">
+        <section class="inbox-main">
+          <h2>${t("waiting_for_you")}</h2>
+          ${waiting.length ? waiting.map(([x, kind]) => html`<${InboxCard} key=${x.id} task=${x} kind=${kind} open=${open} toast=${toast} reload=${reload} />`)
+            : html`<div class="card faint">${t("inbox_clear")}</div>`}
+        </section>
+        <aside class="inbox-side">
+          <h2>${t("working_now")}</h2>
+          <div class="card flush">
+            ${running.length ? running.map((x) => html`<button key=${x.id} class="run-row" onClick=${() => open(x.id)}>
+              <span class="dot warn pulse"></span>
+              <span class="run-text"><span>${firstLine(x.prompt)}</span>
+                <span class="faint">${x.project} · ${x.agent} · ${x.status === "running" ? ago(x.created_at) : x.status}</span></span></button>`)
+              : html`<div class="run-row faint">${t("nothing_running")}</div>`}
+          </div>
+          <${MissionCard} open=${go} />
+          <${AgentsCard} status=${status} />
+        </aside>
+      </div>
+    </div>`;
+}
+
 // ----------------------------------------------------------------- chat ---
 
 const SESSION_KEY = "dia-chat-session";
+
+// ---------------------------------------------------------- phone voice ---
+
+// A paired phone may not use the computer's microphone (docs/MOBILE.md), so it
+// talks through its own: it records itself and sends the recording to Dia
+// (/api/talk), whose own Whisper hears it and whose own voice answers. Without
+// speech recognition on the computer, the browser's own recognition stands in.
+const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+const TALK_RATE = 16000;
+
+function wavOf(samples, rate) {
+  const ratio = rate / TALK_RATE;
+  const length = Math.floor(samples.length / ratio);
+  const view = new DataView(new ArrayBuffer(44 + length * 2));
+  const text = (at, word) => [...word].forEach((c, i) => view.setUint8(at + i, c.charCodeAt(0)));
+  text(0, "RIFF"); view.setUint32(4, 36 + length * 2, true); text(8, "WAVE"); text(12, "fmt ");
+  view.setUint32(16, 16, true); view.setUint16(20, 1, true); view.setUint16(22, 1, true);
+  view.setUint32(24, TALK_RATE, true); view.setUint32(28, TALK_RATE * 2, true);
+  view.setUint16(32, 2, true); view.setUint16(34, 16, true); text(36, "data"); view.setUint32(40, length * 2, true);
+  for (let i = 0; i < length; i++) {
+    // the average of the samples this one stands for: a simple low-pass before resampling
+    let sum = 0, n = 0;
+    for (let j = Math.floor(i * ratio); j < Math.floor((i + 1) * ratio) && j < samples.length; j++) { sum += samples[j]; n++; }
+    const value = Math.max(-1, Math.min(1, n ? sum / n : 0));
+    view.setInt16(44 + i * 2, value < 0 ? value * 0x8000 : value * 0x7fff, true);
+  }
+  return new Blob([view], { type: "audio/wav" });
+}
+
+// Records until the speaker stops (a pause after speech), at most 28 s; resolves
+// with a 16 kHz mono WAV, or null when nobody spoke.
+async function recordSpeech(control) {
+  const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } });
+  const ctx = new (window.AudioContext || window.webkitAudioContext)();
+  const source = ctx.createMediaStreamSource(stream);
+  const node = ctx.createScriptProcessor(4096, 1, 1);
+  const chunks = [];
+  let spoke = false, quiet = 0, total = 0, done = false;
+  return new Promise((resolve) => {
+    const finish = () => {
+      if (done) return;
+      done = true;
+      control.stop = null;
+      node.onaudioprocess = null;
+      node.disconnect(); source.disconnect(); stream.getTracks().forEach((track) => track.stop()); ctx.close();
+      if (!spoke) return resolve(null);
+      const samples = new Float32Array(chunks.reduce((n, c) => n + c.length, 0));
+      chunks.reduce((at, c) => { samples.set(c, at); return at + c.length; }, 0);
+      resolve(wavOf(samples, ctx.sampleRate));
+    };
+    control.stop = finish;
+    node.onaudioprocess = (e) => {
+      const data = e.inputBuffer.getChannelData(0);
+      chunks.push(new Float32Array(data));
+      const seconds = data.length / ctx.sampleRate;
+      const level = Math.sqrt(data.reduce((sum, x) => sum + x * x, 0) / data.length);
+      total += seconds;
+      if (level > 0.02) { spoke = true; quiet = 0; } else quiet += seconds;
+      if ((spoke && quiet > 1.2) || total > 28 || (!spoke && total > 8)) finish();
+    };
+    source.connect(node); node.connect(ctx.destination);
+  });
+}
+
+function TalkSheet({ local, quiet, onClose, onType, open }) {
+  const [mode, setMode] = useState(local ? "dia" : Recognition ? "browser" : "none");
+  const [state, setState] = useState(mode === "none" ? "unsupported" : "idle");
+  const [lines, setLines] = useState([]);
+  const control = useRef({});
+  const player = useRef(null);
+  const end = useRef(null);
+  useEffect(() => end.current?.scrollIntoView({ behavior: "smooth" }), [lines, state]);
+  useEffect(() => () => { control.current.stop?.(); control.current.abort?.(); player.current?.pause(); window.speechSynthesis?.cancel(); }, []);
+  const locale = lang === "pl" ? "pl-PL" : "en-US";
+
+  const browserSpeak = (text) => {
+    if (quiet || !text || !window.speechSynthesis) { setState("idle"); return; }
+    const say = new SpeechSynthesisUtterance(text);
+    say.lang = locale;
+    say.onend = say.onerror = () => setState("idle");
+    setState("speaking");
+    window.speechSynthesis.speak(say);
+  };
+  const play = (answer) => {
+    if (!answer.audio) { browserSpeak(quiet ? "" : answer.reply); return; }
+    const audio = player.current;
+    audio.src = `data:${answer.audio_type};base64,${answer.audio}`;
+    audio.onended = audio.onerror = () => setState("idle");
+    setState("speaking");
+    audio.play().catch(() => setState("idle"));
+  };
+  const said = (heard, answer) => {
+    setLines((all) => [...all, { from: "me", text: heard },
+      { from: "dia", text: answer.reply || "", task: answer.task?.id || answer.plan?.id }]);
+  };
+  const failed = (e) => { setLines((all) => [...all, { from: "dia", text: `${t("failed")}: ${e.message}` }]); setState("idle"); };
+  const session = () => store(SESSION_KEY) || "owner";
+
+  const listenWithDia = async () => {
+    // a sound started by the tap itself lets the answer play later (autoplay rules)
+    player.current = player.current || new Audio();
+    player.current.src = URL.createObjectURL(wavOf(new Float32Array(1600), TALK_RATE));
+    player.current.play().catch(() => {});
+    let wav;
+    try {
+      setState("listening");
+      wav = await recordSpeech(control.current);
+    } catch (e) { setState("denied"); return; }
+    if (!wav) { setState("unheard"); return; }
+    setState("thinking");
+    try {
+      const answer = await api(`/api/talk?session=${encodeURIComponent(session())}`, { method: "POST", raw: wav });
+      if (!answer.heard) { setState("unheard"); return; }
+      said(answer.heard, answer);
+      play(answer);
+    } catch (e) {
+      // no speech recognition on the computer (any more): the browser's own, where there is one
+      if (Recognition && /whisper|stt|speech|install/i.test(e.message)) { setMode("browser"); setState("idle"); return; }
+      failed(e);
+    }
+  };
+  const listenWithBrowser = () => {
+    const r = new Recognition();
+    r.lang = locale;
+    r.interimResults = false;
+    let heard = "";
+    r.onresult = (e) => { heard = Array.from(e.results).map((x) => x[0].transcript).join(" ").trim(); };
+    r.onerror = () => {};
+    r.onend = async () => {
+      control.current.stop = null;
+      if (!heard) { setState("unheard"); return; }
+      setState("thinking");
+      try {
+        const answer = await api("/api/chat", { method: "POST", body: { text: heard, session: session() } });
+        said(heard, answer);
+        browserSpeak(answer.reply);
+      } catch (e) { failed(e); }
+    };
+    control.current.stop = () => r.stop();
+    control.current.abort = () => r.abort();
+    setState("listening");
+    r.start();
+  };
+  const tap = () => {
+    if (state === "speaking") { player.current?.pause(); window.speechSynthesis?.cancel(); setState("idle"); return; }
+    if (state === "listening") { control.current.stop?.(); return; }
+    if (!["idle", "unheard", "denied"].includes(state)) return;
+    (mode === "dia" ? listenWithDia : listenWithBrowser)();
+  };
+  const hint = { idle: t("talk_hint"), listening: t("talk_listening"), thinking: t("talk_thinking"),
+    speaking: t("talk_speaking"), unheard: t("talk_unheard"), unsupported: t("talk_unsupported"), denied: t("talk_denied") }[state];
+
+  return html`
+    <div class="talk" role="dialog" aria-modal="true" aria-label=${t("talk_phone")}>
+      <div class="talk-head"><span class="talk-title">${t("talk_phone")}${mode === "dia" ? html` · <span class="faint">${t("talk_local")}</span>` : null}</span>
+        <button class="icon-btn" aria-label=${t("talk_end")} onClick=${onClose}><${Icon} name="close" /></button></div>
+      <div class="talk-lines">
+        ${lines.map((x) => html`<div class="talk-line ${x.from}">${x.text}
+          ${x.task ? html`<button class="btn ghost" onClick=${() => open(x.task)}>${t("open_task")} <${Icon} name="arrow" size=${14} /></button>` : null}</div>`)}
+        <span ref=${end}></span>
+      </div>
+      <div class="talk-orb-wrap">
+        <button class="talk-orb ${state}" onClick=${tap} disabled=${state === "unsupported" || state === "thinking"}
+          aria-label=${t("talk_mic")}><${Icon} name="mic" size=${30} /></button>
+        <div class="talk-hint" aria-live="polite">${hint}</div>
+      </div>
+      <div class="talk-actions">
+        <button class="btn" onClick=${onType}><${Icon} name="chat" size=${16} /> ${t("talk_type")}</button>
+        <button class="btn ghost danger" onClick=${onClose}>${t("talk_end")}</button>
+      </div>
+    </div>`;
+}
+
 
 function ChatView({ open, toast }) {
   const [sessions, setSessions] = useState([]);
@@ -994,29 +1613,6 @@ function AgentPick({ status, value, onChange }) {
       <datalist id=${id}>${info.models.map((m) => html`<option value=${m}></option>`)}</datalist>` : null}</span>`;
 }
 
-function ResearchCard({ status, toast }) {
-  const [topic, setTopic] = useState("");
-  const [project, setProject] = useState("");
-  const [agent, setAgent] = useState("");
-  const start = async (e) => {
-    e.preventDefault();
-    if (!topic.trim()) return;
-    try { await api("/api/research", { method: "POST", body: { topic, project: project || null, agent: agent || undefined } }); toast(t("research_started")); setTopic(""); }
-    catch (err) { toast(err.message, "error"); }
-  };
-  return html`
-    <div class="label section">${t("research")}</div>
-    <form class="card" style="margin:8px 0 16px" onSubmit=${start}>
-      <p class="muted">${t("research_help")}</p>
-      <textarea class="textarea" style="min-height:60px" placeholder=${t("research_topic")} value=${topic} onInput=${(e) => setTopic(e.target.value)}></textarea>
-      <div class="row" style="margin-top:8px">
-        <select class="select" value=${project} onChange=${(e) => setProject(e.target.value)}>
-          <option value="">—</option>${status.projects.map((p) => html`<option value=${p.name}>${p.name}</option>`)}</select>
-        <${AgentPick} status=${status} value=${agent} onChange=${setAgent} />
-        <button class="btn primary">${t("research_start")}</button></div>
-    </form>`;
-}
-
 function ExperimentCard({ status, toast }) {
   const [question, setQuestion] = useState("");
   const [approaches, setApproaches] = useState("");
@@ -1087,7 +1683,50 @@ function HealthCard() {
     ${h.error ? html`<div class="mono faint">${h.error}</div>` : null}</div>`)}`;
 }
 
-function CliView({ toast }) {
+const RESUMABLE = ["claude-code", "codex", "cursor"];  // agents whose conversation can go on
+
+// A new agent session started here: the agent, its model and the project's folder.
+// Submit hands the request to the parent immediately so the form is not stuck on
+// "Starting…" for the whole first answer (which can take minutes).
+function NewCliSession({ status, onSubmit, onCancel }) {
+  const agents = (status?.agents || []).filter((a) => RESUMABLE.includes(a.type));
+  const [agent, setAgent] = useState(agents[0]?.name || "");
+  const [model, setModel] = useState("");
+  const [project, setProject] = useState(status?.projects?.[0]?.name || "");
+  const [text, setText] = useState("");
+  const info = agents.find((a) => a.name === agent);
+  const start = (e) => {
+    e.preventDefault();
+    if (!text.trim() || !project) return;
+    onSubmit({ agent, model, project, text: text.trim() });
+  };
+  if (!agents.length) return html`<div class="empty">${t("cli_new_none")}</div>`;
+  return html`<form class="page cli-new" onSubmit=${start}>
+    <h2>${t("cli_new")}</h2>
+    <p class="muted">${t("cli_new_help")}</p>
+    <label class="field"><span>${t("agent")}</span>
+      <select class="select" value=${agent} onChange=${(e) => { setAgent(e.target.value); setModel(""); }}>
+        ${agents.map((a) => html`<option value=${a.name} disabled=${!a.ok}>${a.name} · ${a.type}${a.ok ? "" : ` (${t("agent_unavailable")})`}</option>`)}
+      </select></label>
+    <label class="field"><span>${t("model")}</span>
+      <input class="input" list="cli-models" value=${model} placeholder=${`${info?.model || t("auto")}`} onInput=${(e) => setModel(e.target.value)} />
+      <datalist id="cli-models">${(info?.models || []).map((m) => html`<option value=${m}></option>`)}</datalist></label>
+    <label class="field"><span>${t("project")}</span>
+      <select class="select" value=${project} onChange=${(e) => setProject(e.target.value)}>
+        ${(status?.projects || []).map((p) => html`<option value=${p.name}>${p.name} · ${p.path}</option>`)}
+      </select></label>
+    <textarea class="textarea" placeholder=${t("cli_new_first")} value=${text} onInput=${(e) => setText(e.target.value)}
+      onKeyDown=${(e) => { if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) start(e); }}></textarea>
+    <div class="row">
+      <button class="btn primary" disabled=${!text.trim() || !project}>${t("cli_new_start")}</button>
+      <button type="button" class="btn ghost" onClick=${onCancel}>${t("cancel")}</button>
+    </div>
+  </form>`;
+}
+
+function CliView({ toast, status }) {
+  const [creating, setCreating] = useState(false);
+  const [pending, setPending] = useState(null);  // {agent, project, text} while the first answer runs
   const [live, setLive] = useState([]);
   const [held, setHeld] = useState([]);
   const [key, setKey] = useState(null);
@@ -1102,10 +1741,31 @@ function CliView({ toast }) {
     const timer = setInterval(() => { load(); loadHeld(); }, 5000);
     return () => clearInterval(timer);
   }, []);
-  const rows = [...held.map((c) => ({ ...c, key: `c:${c.id}`, captured: true })),
-    ...live.map((s) => ({ ...s, key: `p:${s.pid}` }))];
-  const chosen = rows.find((r) => r.key === key) || rows[0];
-  const path = chosen ? (chosen.captured ? `/api/cli-captured/${chosen.id}/transcript` : `/api/cli-sessions/${chosen.pid}/transcript`) : null;
+  const startSession = async (payload) => {
+    setCreating(false);
+    setPending(payload);
+    setTalk({ messages: [{ role: "user", text: payload.text }], available: true });
+    try {
+      const item = await api("/api/cli-captured", { method: "POST", body: payload });
+      setPending(null);
+      await loadHeld();
+      setKey(`c:${item.id}`);
+      toast(t("cli_new_started"));
+    } catch (err) {
+      setPending(null);
+      toast(`${t("cli_new_failed")}: ${err.message}`, "error");
+    }
+  };
+  const rows = [
+    ...(pending ? [{ key: "pending", kind: pending.agent, cwd: pending.project, pending: true, captured: true }] : []),
+    ...held.map((c) => ({ ...c, key: `c:${c.id}`, captured: true })),
+    ...live.map((s) => ({ ...s, key: `p:${s.pid}` })),
+  ];
+  const chosen = pending && (!key || key === "pending") ? rows[0]
+    : rows.find((r) => r.key === key) || rows.find((r) => !r.pending) || rows[0];
+  const path = chosen && !chosen.pending
+    ? (chosen.captured ? `/api/cli-captured/${chosen.id}/transcript` : `/api/cli-sessions/${chosen.pid}/transcript`)
+    : null;
   const refresh = () => (path ? api(path).then(setTalk).catch(() => setTalk({ messages: [], available: false })) : null);
   useEffect(() => {
     if (!path) return undefined;
@@ -1113,9 +1773,9 @@ function CliView({ toast }) {
     const timer = setInterval(refresh, 4000);
     return () => clearInterval(timer);
   }, [path]);
-  useEffect(() => end.current?.scrollIntoView({ block: "end" }), [talk.messages.length, chosen?.key]);
+  useEffect(() => end.current?.scrollIntoView({ block: "end" }), [talk.messages.length, chosen?.key, pending]);
   const age = (s) => (s < 90 ? `${Math.round(s)} s` : s < 5400 ? `${Math.round(s / 60)} min` : `${(s / 3600).toFixed(1)} h`);
-  const folder = (s) => (s.cwd || "").split("/").filter(Boolean).slice(-2).join("/");
+  const folder = (s) => (s.cwd || "").split("/").filter(Boolean).slice(-2).join("/") || s.cwd || "";
   const capture = async () => {
     if (!confirm(t("cli_capture_confirm"))) return;
     try {
@@ -1132,7 +1792,7 @@ function CliView({ toast }) {
   const send = async (e) => {
     e.preventDefault();
     const message = text.trim();
-    if (!message || busy) return;
+    if (!message || busy || chosen?.pending) return;
     setBusy(true);
     try {
       const r = await api(`/api/cli-captured/${chosen.id}/send`, { method: "POST", body: { text: message } });
@@ -1142,28 +1802,33 @@ function CliView({ toast }) {
   };
   return html`<div class="chat-split">
     <div class="chat-sessions">
+      <button class="btn new-task" disabled=${Boolean(pending)} onClick=${() => setCreating(true)}>+ ${t("cli_new")}</button>
       <p class="muted" style="padding:8px">${t("cli_sessions_help")}</p>
-      ${rows.length ? rows.map((r) => html`<div key=${r.key} class="session-row ${chosen?.key === r.key ? "active" : ""}" style="flex-direction:column;align-items:flex-start" onClick=${() => setKey(r.key)}>
+      ${rows.length ? rows.map((r) => html`<div key=${r.key} class="session-row ${!creating && chosen?.key === r.key ? "active" : ""}" style="flex-direction:column;align-items:flex-start" onClick=${() => { if (!r.pending) { setKey(r.key); setCreating(false); } }}>
         <span class="session-title" style="max-width:100%"><strong>${r.kind}</strong> · ${folder(r)}</span>
-        <span class="faint">${r.captured ? t("cli_in_app") : `${r.from_dia ? t("cli_from_dia") : t("cli_external")} · ${r.model || t("auto")} · ${age(r.age_s)}`}</span></div>`)
+        <span class="faint">${r.pending ? t("cli_new_starting")
+          : r.captured ? `${r.started_in_app ? t("cli_new_here") : t("cli_in_app")}${r.model ? ` · ${r.model}` : ""}`
+          : `${r.from_dia ? t("cli_from_dia") : t("cli_external")} · ${r.model || t("auto")} · ${age(r.age_s)}`}</span></div>`)
         : html`<p class="faint" style="padding:8px">${t("cli_none")}</p>`}
     </div>
+    ${creating ? html`<${NewCliSession} status=${status} onCancel=${() => setCreating(false)} onSubmit=${startSession} />` : html`
     <div class="chat">
       <div class="chat-head"><strong style="flex:1">${chosen ? `${chosen.kind} · ${chosen.cwd || ""}` : ""}</strong>
-        ${chosen && !chosen.captured ? html`<button class="btn" title=${t("cli_capture_help")} onClick=${capture}>${t("cli_capture")}</button>` : null}
-        ${chosen?.captured ? html`<button class="btn ghost" title=${chosen.resume} onClick=${release}>${t("cli_release")}</button>` : null}</div>
+        ${chosen && !chosen.captured && !chosen.pending ? html`<button class="btn" title=${t("cli_capture_help")} onClick=${capture}>${t("cli_capture")}</button>` : null}
+        ${chosen?.captured && !chosen.pending ? html`<button class="btn ghost" title=${chosen.resume} onClick=${release}>${t("cli_release")}</button>` : null}</div>
       <div class="messages">
-        ${chosen && !talk.available ? html`<div class="empty">${t("cli_no_transcript")}</div>` : null}
-        ${chosen && talk.available && !talk.messages.length ? html`<div class="empty">${t("cli_empty")}</div>` : null}
+        ${chosen?.pending ? html`<div class="empty">${t("cli_new_working")}</div>` : null}
+        ${chosen && !chosen.pending && !talk.available ? html`<div class="empty">${t("cli_no_transcript")}</div>` : null}
+        ${chosen && !chosen.pending && talk.available && !talk.messages.length ? html`<div class="empty">${t("cli_empty")}</div>` : null}
         ${talk.messages.map((m, i) => html`<div key=${i} class="msg ${m.role === "user" ? "me" : "dia"}"><${RichText} text=${m.text} class="" /></div>`)}
-        ${busy ? html`<div class="msg dia">…</div>` : null}
+        ${busy || chosen?.pending ? html`<div class="msg dia">…</div>` : null}
         <div ref=${end}></div>
       </div>
-      ${chosen?.captured ? html`<form class="chat-input" onSubmit=${send}>
+      ${chosen?.captured && !chosen.pending ? html`<form class="chat-input" onSubmit=${send}>
         <input class="input" placeholder=${t("cli_reply")} value=${text} disabled=${busy} onInput=${(e) => setText(e.target.value)} />
         <button class="btn primary" disabled=${busy || !text.trim()}>${t("send")}</button></form>`
-        : chosen ? html`<div class="chat-input"><span class="faint">${t("cli_capture_help")}</span></div>` : null}
-    </div></div>`;
+        : chosen && !chosen.pending ? html`<div class="chat-input"><span class="faint">${t("cli_capture_help")}</span></div>` : null}
+    </div>`}</div>`;
 }
 
 function DebugCard({ status, toast }) {
@@ -1325,7 +1990,6 @@ function StatusView({ status, reload, toast }) {
       <${SystemCard} />
       <${SecurityCard} toast=${toast} />
       <${TidyCard} toast=${toast} />
-      <${ResearchCard} status=${status} toast=${toast} />
       ${status.projects.length ? html`<${ExperimentCard} status=${status} toast=${toast} />` : null}
       ${status.projects.length ? html`<${DebugCard} status=${status} toast=${toast} />` : null}
       <${HeldCard} />
@@ -1415,10 +2079,12 @@ function settingsForms(meta) {
   const v = meta.values;
   const forms = {
     assistant: [
+      { section: "s_identity" },
       ["assistant.name", "f_name", "text"],
       ["assistant.user_name", "f_user_name", "text"],
       ["assistant.personality", "f_personality", "personality"],
       ["dia.language", "language", "select", ["pl", "en"]],
+      { section: "s_skills_brief" },
       ["skills.weather.place", "f_weather_place", "text"],
       ["skills.news.feeds", "f_news_feeds", "lines"],
       ["skills.stocks.symbols", "f_stocks", "list"],
@@ -1426,8 +2092,9 @@ function settingsForms(meta) {
       ["skills.crypto.coins", "f_crypto", "list"],
       ["skills.crypto.currency", "f_crypto_currency", "select", ["", "usd", "pln", "eur"]],
       ["skills.briefing.sections", "f_briefing", "list"],
-      ["assistant.learn_preferences", "f_learn_prefs", "bool"],
       ["assistant.skills", "f_skills", "list"],
+      { section: "s_conversation" },
+      ["assistant.learn_preferences", "f_learn_prefs", "bool"],
       ["assistant.history_turns", "f_history_turns", "number"],
       ["assistant.history_minutes", "f_history_minutes", "number"],
       ["assistant.one_conversation", "f_one_conversation", "bool", null, false, true],
@@ -1435,30 +2102,35 @@ function settingsForms(meta) {
       ["assistant.log_intents", "f_log_intents", "bool", null, false, true],
     ],
     agents: [
+      { section: "s_defaults" },
       ["dia.default_agent", "default_agent", "select", ["", ...meta.agents]],
       ["dia.max_parallel_tasks", "f_parallel", "number"],
+      ["routing.auto", "f_routing_auto", "bool"],
       ["limits.fallback", "f_fallback", "list"],
       ["limits.wait", "f_limit_wait", "bool"],
       ["limits.max_wait_hours", "f_max_wait", "number"],
+      ["limits.cooldown_minutes", "f_cooldown", "number"],
+      { section: "s_review_retry" },
       ["review.auto", "f_auto_review", "bool"],
       ["review.reviewer", "f_reviewer", "select", ["", ...meta.agents]],
+      ["review.fix_rounds", "f_fix_rounds", "number"],
       ["retry.agent_errors", "f_retry_errors", "number"],
       ["retry.switch_agent", "f_retry_switch", "bool"],
       ["retry.test_fixes", "f_retry_tests", "number"],
-      ["routing.auto", "f_routing_auto", "bool"],
+      { section: "s_task_limits" },
       ["task_limits.minutes", "f_task_minutes", "number"],
       ["task_limits.calls", "f_task_calls", "number"],
       ["task_limits.agent_timeout", "f_agent_timeout", "number"],
       ["task_limits.nice", "f_nice", "number"],
-      ["limits.cooldown_minutes", "f_cooldown", "number"],
+      { section: "s_plans_missions" },
       ["plans.planner", "f_planner", "select", ["", ...meta.agents]],
       ["plans.max_steps", "f_plan_steps", "number"],
-      ["review.fix_rounds", "f_fix_rounds", "number"],
       ["missions.planner", "f_mission_planner", "select", ["", ...meta.agents]],
       ["missions.max_steps", "f_mission_steps", "number"],
       ["missions.budget_calls", "f_mission_calls", "number"],
       ["missions.budget_minutes", "f_mission_minutes", "number"],
       ["missions.step_tests", "f_mission_tests", "bool", null, false, true],
+      { section: "s_specialists" },
       ["council.members", "f_council_members", "list"],
       ["council.moderator", "f_council_moderator", "select", ["", ...meta.agents]],
       ["experiments.agents", "f_experiment_agents", "list"],
@@ -1467,70 +2139,86 @@ function settingsForms(meta) {
       ["debug.max_checks", "f_debug_checks", "number"],
       ["profile.agent", "f_profile_agent", "select", ["", ...meta.agents]],
       ["contradictions.agent", "f_contradictions_agent", "select", ["", ...meta.agents]],
-    ],
-    automation: [
-      ["watch.enabled", "f_watch", "bool", null, true],
-      ["watch.interval", "f_watch_interval", "number", null, true],
-      ["issues.enabled", "f_issues", "bool", null, true],
-      ["issues.label", "f_issues_label", "text", null, true],
-      ["issues.planner", "f_issues_planner", "bool"],
-      ["ci.autofix", "f_ci_autofix", "bool"],
-      ["push.events", "f_push_events", "list"],
-      ["system.cpu_temp", "f_cpu_temp", "number"],
-      ["system.disk_used", "f_disk_used", "number"],
-      ["system.battery_low", "f_battery_low", "number"],
-      ["system.check_urls", "f_check_urls", "lines"],
-      ["notifications.quiet_hours", "f_quiet_hours", "text"],
-      ["notifications.budget", "f_budget", "number"],
-      ["tidy.folders", "f_tidy_folders", "list"],
-      ["watch.projects", "f_watch_projects", "list", null, true],
-      ["watch.branch", "f_watch_branch", "text", null, true],
-      ["issues.interval", "f_issues_interval", "number", null, true],
-      ["ci.watch", "f_ci_watch", "bool", null, false, true],
-      ["ci.interval", "f_ci_interval", "number"],
-      ["ci.fix_rounds", "f_ci_fix_rounds", "number"],
-      ["ci.watch_comments", "f_ci_comments", "bool"],
-      ["ci.autofix_comments", "f_ci_autofix_comments", "bool"],
-      ["goals.review_days", "f_goal_days", "number"],
-      ["suggestions.per_day", "f_suggest_per_day", "number"],
-      ["suggestions.repeat_days", "f_suggest_repeat", "number"],
+      ["research.agent", "f_research_agent", "select", ["", ...meta.agents]],
+      { section: "s_quality" },
       ["verification.min_lines", "f_verify_lines", "number"],
       ["verification.always", "f_verify_always", "bool"],
       ["debt.function_lines", "f_debt_function", "number"],
       ["debt.nesting", "f_debt_nesting", "number"],
       ["debt.file_lines", "f_debt_file", "number"],
-      ["push.subject", "f_push_subject", "text"],
+    ],
+    automation: [
+      { section: "s_watchers" },
+      ["watch.enabled", "f_watch", "bool", null, true],
+      ["watch.interval", "f_watch_interval", "number", null, true],
+      ["watch.projects", "f_watch_projects", "list", null, true],
+      ["watch.branch", "f_watch_branch", "text", null, true],
+      ["issues.enabled", "f_issues", "bool", null, true],
+      ["issues.label", "f_issues_label", "text", null, true],
+      ["issues.interval", "f_issues_interval", "number", null, true],
+      ["issues.planner", "f_issues_planner", "bool"],
+      ["ci.autofix", "f_ci_autofix", "bool"],
+      ["ci.watch", "f_ci_watch", "bool", null, false, true],
+      ["ci.interval", "f_ci_interval", "number"],
+      ["ci.fix_rounds", "f_ci_fix_rounds", "number"],
+      ["ci.watch_comments", "f_ci_comments", "bool"],
+      ["ci.autofix_comments", "f_ci_autofix_comments", "bool"],
+      { section: "s_system_tidy" },
+      ["system.cpu_temp", "f_cpu_temp", "number"],
+      ["system.disk_used", "f_disk_used", "number"],
+      ["system.battery_low", "f_battery_low", "number"],
+      ["system.check_urls", "f_check_urls", "lines"],
+      ["tidy.folders", "f_tidy_folders", "list"],
+      { section: "s_suggestions" },
+      ["suggestions.per_day", "f_suggest_per_day", "number"],
+      ["suggestions.repeat_days", "f_suggest_repeat", "number"],
+      ["goals.review_days", "f_goal_days", "number"],
     ],
     integrations: [
+      { section: "s_mail_home" },
       ["skills.mail.host", "f_mail_host", "text"],
       ["skills.mail.user", "f_mail_user", "text"],
       ["skills.home.url", "f_home_url", "text"],
-      ["security.hosts", "f_security_hosts", "list"],
-      ["security.networks", "f_networks", "list"],
-      ["screen.agent", "f_screen_agent", "select", ["", ...meta.agents]],
-      ["sandbox.enabled", "f_sandbox", "select", ["", "auto", "true", "false"]],
-      ["sandbox.decoys", "f_sandbox_decoys", "bool"],
-      ["sandbox.allow_read", "f_sandbox_read", "list"],
-      ["lab.engine", "f_lab_engine", "select", ["", "podman", "docker"]],
-      ["camera.device", "f_camera_device", "text"],
-      ["research.agent", "f_research_agent", "select", ["", ...meta.agents]],
       ["skills.notion.parent", "f_notion_parent", "text"],
+      { section: "s_senses" },
+      ["camera.device", "f_camera_device", "text"],
+      ["screen.agent", "f_screen_agent", "select", ["", ...meta.agents]],
+      { section: "s_publish" },
       ["builds.itch", "f_itch", "text"],
       ["builds.steam.app_id", "f_steam_app", "number"],
       ["builds.steam.username", "f_steam_user", "text"],
       ["builds.steam.branch", "f_steam_branch", "text"],
       ["builds.presets", "f_presets", "list"],
     ],
+    security: [
+      { section: "s_security_hosts" },
+      ["security.hosts", "f_security_hosts", "list"],
+      ["security.networks", "f_networks", "list"],
+      { section: "s_sandbox" },
+      ["sandbox.enabled", "f_sandbox", "select", ["", "auto", "true", "false"]],
+      ["sandbox.decoys", "f_sandbox_decoys", "bool"],
+      ["sandbox.allow_read", "f_sandbox_read", "list"],
+      ["lab.engine", "f_lab_engine", "select", ["", "podman", "docker"]],
+    ],
+    notify: [
+      { section: "s_notify_policy" },
+      ["push.events", "f_push_events", "list"],
+      ["push.subject", "f_push_subject", "text"],
+      ["notifications.quiet_hours", "f_quiet_hours", "text"],
+      ["notifications.budget", "f_budget", "number"],
+    ],
   };
   forms.memory = [
+    { section: "s_vault" },
     ["memory.type", "f_memory_type", "select", ["", "obsidian", "markdown"]],
     ["memory.vault", "f_vault", "text"],
     ["memory.folder", "f_memory_folder", "text"],
     ["memory.projects_dir", "f_projects_dir", "text"],
     ["memory.journal_dir", "f_journal_dir", "text"],
     ["memory.profile_note", "f_profile_note", "text"],
-    ["memory.max_context_chars", "f_context_chars", "number"],
     ["memory.exclude", "f_memory_exclude", "list"],
+    { section: "s_memory_search" },
+    ["memory.max_context_chars", "f_context_chars", "number"],
     ["memory.search_results", "f_search_results", "number"],
     ["memory.learn_agent", "f_learn_agent", "select", ["", ...meta.agents]],
   ];
@@ -1554,7 +2242,7 @@ function settingsForms(meta) {
     ["app.custom_titlebar", "f_app_titlebar", "bool", null, false, true],
   ];
   if (v.memory) {
-    forms.automation.push(
+    forms.memory.push(
       ["memory.learn", "f_learn", "bool"],
       ["memory.learn_model", "f_learn_model", "text"],
       ["memory.search", "f_memory_search", "select", ["", "folder", "vault", "off"]],
@@ -1584,14 +2272,16 @@ function settingsForms(meta) {
 
 function Form({ fields, meta, onSaved, toast }) {
   // A field's sixth element is its default, shown when the config leaves it out.
-  const initial = Object.fromEntries(fields.map(([path, , type, , , fallback]) => [path, toForm(getPath(meta.values, path) ?? fallback, type)]));
+  // { section: "key" } entries are headings, not fields.
+  const entries = fields.filter((f) => Array.isArray(f));
+  const initial = Object.fromEntries(entries.map(([path, , type, , , fallback]) => [path, toForm(getPath(meta.values, path) ?? fallback, type)]));
   const [form, setForm] = useState(initial);
   const [custom, setCustom] = useState(false);
   useEffect(() => setForm(initial), [meta]);
   const set = (path, value) => setForm({ ...form, [path]: value });
   const save = async () => {
     const changes = {};
-    for (const [path, , type] of fields) {
+    for (const [path, , type] of entries) {
       if (form[path] !== initial[path]) setPath(changes, path, fromForm(form[path], type));
     }
     if (!Object.keys(changes).length) return;
@@ -1625,16 +2315,18 @@ function Form({ fields, meta, onSaved, toast }) {
     return html`<input class="input" type=${type === "number" ? "number" : "text"} step="any" value=${value} onInput=${(e) => set(path, e.target.value)} />`;
   };
   return html`<div class="card form">
-    ${fields.map((field) => html`<label class="field"><span>${t(field[1])}${field[4] ? html` <span class="faint">↻</span>` : null}</span>${input(field)}</label>`)}
-    <div class="row"><button class="btn primary" onClick=${save}>${t("save")}</button>
-      ${fields.some((f) => f[4]) ? html`<span class="faint">↻ ${t("needs_restart")}</span>` : null}</div>
+    ${fields.map((field) => field.section
+      ? html`<div class="form-section">${t(field.section)}</div>`
+      : html`<label class="field"><span>${t(field[1])}${field[4] ? html` <span class="faint">↻</span>` : null}</span>${input(field)}</label>`)}
+    <div class="row form-actions"><button class="btn primary" onClick=${save}>${t("save")}</button>
+      ${entries.some((f) => f[4]) ? html`<span class="faint">↻ ${t("needs_restart")}</span>` : null}</div>
   </div>`;
 }
 
 function LocalBrain({ meta, onSaved, toast }) {
   const local = meta.values.brains?.local;
   const [on, setOn] = useState(Boolean(local));
-  const [model, setModel] = useState(local?.model || "qwen2.5:3b");
+  const [model, setModel] = useState(local?.model || "qwen3.5:4b");
   const save = async () => {
     const order = meta.values.dia?.default_agent ? ["rules", "local", "default-agent"] : ["rules", "local"];
     const changes = on
@@ -1838,7 +2530,37 @@ function DesktopCard({ toast }) {
     </div>`;
 }
 
-const SETTINGS_TABS = ["assistant", "voice_brain", "agents_tab", "projects_tab", "memory_tab", "automation", "integrations_tab", "schedule", "secrets", "devices_tab", "look", "config_file"];
+const SETTINGS_TABS = [
+  "assistant", "voice_brain", "look",
+  "agents_tab", "projects_tab", "memory_tab", "automation", "schedule",
+  "integrations_tab", "devices_tab", "secrets",
+  "desktop_tab", "security_tab", "config_file",
+];
+const SETTINGS_NAV = [
+  { group: "settings_you", items: ["assistant", "voice_brain", "look"] },
+  { group: "settings_work", items: ["agents_tab", "projects_tab", "memory_tab", "automation", "schedule"] },
+  { group: "settings_connect", items: ["integrations_tab", "devices_tab", "secrets"] },
+  { group: "settings_computer", items: ["desktop_tab", "security_tab", "config_file"] },
+];
+
+// One theme choice: the app's, or the phone's / the widget's, which can follow the app's.
+function ThemeChoice({ label, help, value, follows, themes, onPick }) {
+  const own = follows === undefined || Boolean(value);
+  const names = [...themes.built_in, ...themes.custom];
+  return html`<section class="theme-choice">
+    <div class="label">${label}</div>
+    <p class="muted">${help}</p>
+    ${follows !== undefined ? html`<div class="segmented" role="radiogroup" aria-label=${label}>
+      <button role="radio" aria-checked=${!own} class=${!own ? "on" : ""} onClick=${() => onPick(null)}>${t("theme_same", { name: follows })}</button>
+      <button role="radio" aria-checked=${own} class=${own ? "on" : ""} onClick=${() => !own && onPick(follows)}>${t("theme_own")}</button>
+    </div>` : null}
+    ${own ? html`<div class="theme-list">
+      ${names.map((name) => html`<button class="theme-pick ${value === name ? "on" : ""}" aria-pressed=${value === name}
+        onClick=${() => onPick(name)}><span class="theme-dot" data-theme=${name}></span>${name}
+        ${themes.custom.includes(name) ? html`<span class="faint">${t("custom_theme")}</span>` : null}</button>`)}
+    </div>` : null}
+  </section>`;
+}
 
 function SettingsView({ toast, device: remote, full }) {
   // A paired phone sees its look and schedule; one with full access nearly everything.
@@ -1846,62 +2568,105 @@ function SettingsView({ toast, device: remote, full }) {
   const [tab, setTab] = useState(device ? "look" : "assistant");
   const [meta, setMeta] = useState(null);
   const [themes, setThemes] = useState(null);
-  const [current, setCurrent] = useState(store(THEME_KEY) || "dark");
+  const [chosen, setChosen] = useState(null);  // {name, phone, widget}
   const [config, setConfig] = useState(null);
   const loadMeta = () => api("/api/settings").then(setMeta).catch((e) => toast(e.message, "error"));
   useEffect(() => {
     api("/api/themes").then(setThemes).catch((e) => toast(e.message, "error"));
+    api("/api/theme").then(setChosen).catch((e) => toast(e.message, "error"));
     if (!device) { loadMeta(); api("/api/config").then(setConfig).catch((e) => toast(e.message, "error")); }
   }, [device]);
-  const pick = (name) => { applyTheme(name); setCurrent(name); };
+  // which: "name" (the app), "phone" or "widget"; value: a theme, or null for the app's
+  const pick = async (which, value) => {
+    try {
+      const answer = await api("/api/theme", { method: "PUT", body: { [which]: value } });
+      setChosen(answer);
+      applyTheme(answer.effective);
+    } catch (e) { toast(e.message, "error"); }
+  };
+  useEffect(() => {  // switched elsewhere (another window, the phone)
+    const onTheme = (e) => setChosen((was) => ({ ...was, ...e.detail }));
+    window.addEventListener("dia-theme", onTheme);
+    return () => window.removeEventListener("dia-theme", onTheme);
+  }, []);
   const saveFile = async () => {
     try { await api("/api/config", { method: "PUT", body: { text: config.text } }); toast(t("saved_restart")); }
     catch (e) { toast(e.message, "error"); }
   };
-  const tabs = device ? ["look", "schedule"] : remote ? SETTINGS_TABS.filter((k) => !["secrets", "devices_tab"].includes(k)) : SETTINGS_TABS;
+  // Phone: look + schedule. Paired remote without full access: no secrets/devices/desktop.
+  const hidden = device ? SETTINGS_TABS.filter((k) => !["look", "schedule"].includes(k))
+    : remote ? ["secrets", "devices_tab", "desktop_tab"] : [];
+  const tabs = SETTINGS_TABS.filter((k) => !hidden.includes(k));
+  const allowed = new Set(tabs);
+  const nav = SETTINGS_NAV.map((g) => ({ ...g, items: g.items.filter((k) => allowed.has(k)) })).filter((g) => g.items.length);
   const forms = meta ? settingsForms(meta) : null;
   const form = (key) => (forms ? html`<${Form} fields=${forms[key]} meta=${meta} onSaved=${loadMeta} toast=${toast} />` : "…");
+  const body = (() => {
+    if (tab === "assistant") return form("assistant");
+    if (tab === "voice_brain") return html`
+      ${forms?.voice ? form("voice") : html`<p class="muted">${t("voice_off")}</p>`}
+      <div class="label section">${t("brains")}</div>
+      ${meta ? html`<${LocalBrain} meta=${meta} onSaved=${loadMeta} toast=${toast} />` : null}
+      <${BrainTest} toast=${toast} />`;
+    if (tab === "agents_tab") return html`${form("agents")}
+      <div class="label section">${t("your_agents")}</div>
+      ${meta ? html`<${EntityEditor} kind="agents" fields=${AGENT_FIELDS(meta)} meta=${meta} onSaved=${loadMeta} toast=${toast} />` : null}`;
+    if (tab === "projects_tab") return html`<p class="muted">${t("projects_help")}</p>
+      ${meta ? html`<${EntityEditor} kind="projects" fields=${PROJECT_FIELDS(meta)} meta=${meta} onSaved=${loadMeta} toast=${toast} />` : null}`;
+    if (tab === "memory_tab") return html`${form("memory")}<p class="muted">${t("memory_help")}</p>`;
+    if (tab === "automation") return form("automation");
+    if (tab === "integrations_tab") return html`${form("integrations")}<p class="muted">${t("integrations_help")}</p>`;
+    if (tab === "schedule") return html`<${ScheduleList} toast=${toast} />`;
+    if (tab === "secrets") return html`<${Secrets} toast=${toast} />`;
+    if (tab === "devices_tab") return html`
+      <${Notifications} toast=${toast} />
+      ${form("notify")}
+      <${Devices} toast=${toast} />
+      <div class="label section">${t("remote_access")}</div>${form("remote")}
+      ${forms?.discord ? html`<div class="label section">Discord</div>${form("discord")}` : null}`;
+    if (tab === "look") return html`
+      ${chosen && themes ? html`
+        ${device ? null : html`<${ThemeChoice} label=${t("theme_app")} help=${t("theme_app_help")} value=${chosen.name}
+          themes=${themes} onPick=${(name) => pick("name", name)} />`}
+        <${ThemeChoice} label=${t("theme_phone")} help=${t("theme_phone_help")} value=${chosen.phone} follows=${chosen.name}
+          themes=${themes} onPick=${(name) => pick("phone", name)} />
+        ${device ? null : html`<${ThemeChoice} label=${t("theme_widget")} help=${t("theme_widget_help")} value=${chosen.widget}
+          follows=${chosen.name} themes=${themes} onPick=${(name) => pick("widget", name)} />`}` : "…"}
+      <p class="muted">${t("themes_help")} <code>${themes?.dir || "~/.config/dia/themes"}</code></p>
+      ${device ? html`<${Notifications} toast=${toast} /><p class="muted section">${t("device_note", { name: device })}</p>` : null}`;
+    if (tab === "desktop_tab") return html`
+      <${DesktopCard} toast=${toast} />
+      ${forms ? html`<div class="label section">${t("app_window")}</div>${form("app")}<p class="muted">${t("app_window_help")}</p>` : null}`;
+    if (tab === "security_tab") return form("security");
+    if (tab === "config_file") return config ? html`
+      <p class="faint mono">${config.path}</p>
+      ${meta?.settings_path ? html`<p class="muted">${t("overlay_note")} <code>${meta.settings_path}</code></p>` : null}
+      <textarea class="textarea config-editor" value=${config.text}
+        onInput=${(e) => setConfig({ ...config, text: e.target.value })}></textarea>
+      <div class="row" style="margin-top:8px"><button class="btn primary" onClick=${saveFile}>${t("save")}</button></div>` : "…";
+    return null;
+  })();
   return html`
-    <div class="page">
-      <div class="tabs">${tabs.map((k) => html`<button class="tab ${tab === k ? "active" : ""}" onClick=${() => setTab(k)}>${t(k)}</button>`)}</div>
-      ${tab === "assistant" ? form("assistant") : null}
-      ${tab === "voice_brain" ? html`
-        ${forms?.voice ? form("voice") : html`<p class="muted">${t("voice_off")}</p>`}
-        <div class="label section">${t("brains")}</div>
-        ${meta ? html`<${LocalBrain} meta=${meta} onSaved=${loadMeta} toast=${toast} />` : null}
-        <${BrainTest} toast=${toast} />` : null}
-      ${tab === "agents_tab" ? html`${form("agents")}
-        <div class="label section">${t("your_agents")}</div>
-        ${meta ? html`<${EntityEditor} kind="agents" fields=${AGENT_FIELDS(meta)} meta=${meta} onSaved=${loadMeta} toast=${toast} />` : null}` : null}
-      ${tab === "projects_tab" ? html`<p class="muted">${t("projects_help")}</p>
-        ${meta ? html`<${EntityEditor} kind="projects" fields=${PROJECT_FIELDS(meta)} meta=${meta} onSaved=${loadMeta} toast=${toast} />` : null}` : null}
-      ${tab === "memory_tab" ? html`${form("memory")}<p class="muted">${t("memory_help")}</p>` : null}
-      ${tab === "automation" ? form("automation") : null}
-      ${tab === "integrations_tab" ? html`${form("integrations")}<p class="muted">${t("integrations_help")}</p>` : null}
-      ${tab === "schedule" ? html`<${ScheduleList} toast=${toast} />` : null}
-      ${tab === "secrets" ? html`<${Secrets} toast=${toast} />` : null}
-      ${tab === "devices_tab" ? html`<${Notifications} toast=${toast} /><${Devices} toast=${toast} />
-        <div class="label section">${t("remote_access")}</div>${form("remote")}
-        ${forms?.discord ? html`<div class="label section">Discord</div>${form("discord")}` : null}` : null}
-      ${tab === "look" ? html`
-        <div class="label">${t("theme")}</div>
-        <div class="row" style="margin-top:8px">
-          ${(themes?.built_in || []).map((name) => html`<button class="btn ${current === name ? "primary" : ""}" onClick=${() => pick(name)}>${name}</button>`)}
+    <div class="page wide settings">
+      <div class="page-head">
+        <h1>${t("settings")}</h1>
+        <p class="muted">${t("settings_help")}</p>
+      </div>
+      <div class="settings-layout">
+        <nav class="settings-nav" aria-label=${t("settings")}>
+          ${nav.map((g) => html`<div class="settings-group">
+            <div class="nav-group">${t(g.group)}</div>
+            ${g.items.map((k) => html`<button type="button" class="settings-nav-item ${tab === k ? "active" : ""}"
+              onClick=${() => setTab(k)}>${t(k)}</button>`)}
+          </div>`)}
+        </nav>
+        <div class="settings-main">
+          <div class="settings-panel-head">
+            <h2>${t(tab)}</h2>
+          </div>
+          ${body}
         </div>
-        <div class="label section">${t("custom_themes")}</div>
-        <div class="row" style="margin-top:8px">
-          ${(themes?.custom || []).map((name) => html`<button class="btn ${current === name ? "primary" : ""}" onClick=${() => pick(name)}>${name}</button>`)}
-        </div>
-        <p class="muted">${t("themes_help")} <code>${themes?.dir || "~/.config/dia/themes"}</code></p>
-        ${!device && forms ? html`<div class="label section">${t("app_window")}</div>${form("app")}<p class="muted">${t("app_window_help")}</p>
-          ${remote ? null : html`<${DesktopCard} toast=${toast} />`}` : null}
-        ${device ? html`<${Notifications} toast=${toast} /><p class="muted section">${t("device_note", { name: device })}</p>` : null}` : null}
-      ${tab === "config_file" ? (config ? html`
-        <p class="faint mono">${config.path}</p>
-        ${meta?.settings_path ? html`<p class="muted">${t("overlay_note")} <code>${meta.settings_path}</code></p>` : null}
-        <textarea class="textarea config-editor" value=${config.text}
-          onInput=${(e) => setConfig({ ...config, text: e.target.value })}></textarea>
-        <div class="row" style="margin-top:8px"><button class="btn primary" onClick=${saveFile}>${t("save")}</button></div>` : "…") : null}
+      </div>
     </div>`;
 }
 
@@ -2033,10 +2798,17 @@ function GoalsCard({ status, toast }) {
     setBusy(false);
   };
   const project = status?.projects[0]?.name;
-  return html`<div class="memory-group"><div class="label">${t("goals")}</div>
-    <div class="row"><input class="input" style="flex:1" placeholder=${t("goal_new")} value=${text} onInput=${(e) => setText(e.target.value)} />
-      <input class="input" style="width:90px" type="number" placeholder=${t("goal_weeks")} value=${weeks} onInput=${(e) => setWeeks(e.target.value)} />
-      <button class="btn" disabled=${busy || !text.trim() || !project} onClick=${() => { call("/api/goals", { project, goal: text, weeks }); setText(""); }}>${t("goal_create")}</button></div>
+  const create = () => { call("/api/goals", { project, goal: text, weeks }); setText(""); };
+  return html`<div class="goals"><div class="label">${t("goals")}</div>
+    <div class="composer goal-form">
+      <input class="goal-input" placeholder=${t("goal_new")} aria-label=${t("goal_new")} value=${text} onInput=${(e) => setText(e.target.value)}
+        onKeyDown=${(e) => { if (e.key === "Enter" && text.trim() && project) create(); }} />
+      <div class="composer-bar">
+        <label class="chip-number" title=${t("goal_weeks")}><span>${t("goal_weeks")}</span>
+          <input type="number" min="1" placeholder="4" value=${weeks} onInput=${(e) => setWeeks(e.target.value)} /></label>
+        <span class="spacer"></span>
+        <button class="btn" disabled=${busy || !text.trim() || !project} onClick=${create}>${t("goal_create")}</button>
+      </div></div>
     ${goals.filter((g) => g.status !== "failed").map((g) => {
       const review = (g.details.reviews || []).slice(-1)[0];
       const ms = g.details.milestones || [];
@@ -2081,17 +2853,19 @@ function MissionsView({ status, toast, open }) {
     <div class="split ${selected ? "has-selected" : ""}">
       <div class="list">
         <div class="composer">
-          <div class="row">
-            <select class="select" value=${form.project || status?.projects[0]?.name} onChange=${(e) => setForm({ ...form, project: e.target.value })}>
+          <textarea class="textarea" rows="3" placeholder=${t("mission_goal")} value=${form.goal} aria-label=${t("mission_goal")}
+            onInput=${(e) => setForm({ ...form, goal: e.target.value })}
+            onKeyDown=${(e) => { if (e.key === "Enter" && (e.ctrlKey || e.metaKey) && form.goal.trim()) create(); }}></textarea>
+          <div class="composer-bar">
+            <select class="chip-select" title=${t("project")} value=${form.project || status?.projects[0]?.name} onChange=${(e) => setForm({ ...form, project: e.target.value })}>
               ${(status?.projects || []).map((p) => html`<option value=${p.name}>${p.name}</option>`)}</select>
-            <select class="select" value=${form.priority} onChange=${(e) => setForm({ ...form, priority: e.target.value })}>
+            <select class="chip-select" title=${t("priority")} value=${form.priority} onChange=${(e) => setForm({ ...form, priority: e.target.value })}>
               ${["low", "normal", "high"].map((p) => html`<option value=${p}>${t(`prio_${p}`)}</option>`)}</select>
-          </div>
-          <textarea class="textarea" rows="3" placeholder=${t("mission_goal")} value=${form.goal}
-            onInput=${(e) => setForm({ ...form, goal: e.target.value })}></textarea>
-          <div class="row">
-            <input class="input" style="width:150px" type="number" placeholder=${t("budget_calls")} value=${form.calls} onInput=${(e) => setForm({ ...form, calls: e.target.value })} />
-            <input class="input" style="width:150px" type="number" placeholder=${t("budget_minutes")} value=${form.minutes} onInput=${(e) => setForm({ ...form, minutes: e.target.value })} />
+            <label class="chip-number" title=${t("budget_calls")}><span>${t("budget_calls_short")}</span>
+              <input type="number" min="0" placeholder="∞" value=${form.calls} onInput=${(e) => setForm({ ...form, calls: e.target.value })} /></label>
+            <label class="chip-number" title=${t("budget_minutes")}><span>${t("budget_minutes_short")}</span>
+              <input type="number" min="0" placeholder="∞" value=${form.minutes} onInput=${(e) => setForm({ ...form, minutes: e.target.value })} /></label>
+            <span class="spacer"></span>
             <button class="btn primary" disabled=${busy || !form.goal.trim()} onClick=${create}>${busy ? t("planning") : t("plan_mission")}</button>
           </div>
         </div>
@@ -2419,7 +3193,7 @@ function Login({ onToken }) {
   return html`
     ${FRAMELESS ? html`<div class="login-bar" data-drag><span class="spacer"></span><${WindowControls} /></div><${WindowEdges} />` : null}
     <div class="login"><div class="card">
-      <div class="brand"><img class="brand-logo" src="/static/icons/dia.svg" alt="" />Dia</div>
+      <div class="brand"><${DiaLogo} />Dia</div>
       <strong>${t("login_title")}</strong>
       <span class="muted">${t("login_help")}</span>
       <input class="input" placeholder=${t("token")} value=${value} onInput=${(e) => setValue(e.target.value)} />
@@ -2429,7 +3203,11 @@ function Login({ onToken }) {
 
 function App() {
   const [authed, setAuthed] = useState(Boolean(token));
-  const [view, setView] = useState(START_VIEW || "tasks");
+  const [view, setView] = useState(START_VIEW || (START_TASK ? "tasks" : "inbox"));
+  const [collapsed, setCollapsed] = useState(store(SIDEBAR_KEY) === "collapsed");
+  const [talking, setTalking] = useState(false);
+  const [more, setMore] = useState(false);
+  const [palette, setPalette] = useState(false);
   const [tasks, setTasks] = useState([]);
   const [status, setStatus] = useState(null);
   const [selected, setSelected] = useState(START_TASK);
@@ -2450,6 +3228,9 @@ function App() {
   }), []);
   const loadStatus = useCallback(() => api("/api/status").then((s) => {
     if (s.language !== lang) { lang = s.language; rerender((n) => n + 1); }
+    // Dia keeps the theme: the app's, or on a paired phone the phone's (Settings → Look)
+    onPhone = Boolean(s.device);
+    if (s.theme && s.theme !== store(THEME_KEY)) applyTheme(s.theme);
     setStatus(s);
   }).catch(() => {}), []);
 
@@ -2457,9 +3238,11 @@ function App() {
   // The desktop window's tray menu (and links like #view=chat) switch the tab.
   useEffect(() => {
     window.diaNavigate = (name, task) => {
+      setMore(false);
       if (task) { setSelected(task); setView("tasks"); } else if (VIEWS.includes(name)) setView(name);
     };
     const onHash = () => {
+      setMore(false);
       const name = hashParam("view");
       if (VIEWS.includes(name)) setView(name);
       const task = hashParam("task");
@@ -2469,6 +3252,20 @@ function App() {
     return () => window.removeEventListener("hashchange", onHash);
   }, []);
   useEffect(() => { if (authed) { loadTasks(); loadStatus(); } }, [authed]);
+  // Ctrl+B folds the sidebar down to its icons (and back); remembered on this device.
+  const toggleSidebar = useCallback(() => setCollapsed((was) => {
+    store(SIDEBAR_KEY, was ? "open" : "collapsed");
+    return !was;
+  }), []);
+  useEffect(() => {
+    const onKey = (e) => {
+      if (!(e.ctrlKey || e.metaKey) || e.altKey || e.shiftKey) return;
+      if (e.key.toLowerCase() === "b") { e.preventDefault(); toggleSidebar(); }
+      if (e.key.toLowerCase() === "k") { e.preventDefault(); setPalette((was) => !was); }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
 
   // Live updates: task changes, CI/review news and the voice state.
   useEffect(() => {
@@ -2482,9 +3279,18 @@ function App() {
       ws.onmessage = (message) => {
         const data = JSON.parse(message.data);
         if (data.type === "task") {
-          setTasks((all) => [data.task, ...all.filter((x) => x.id !== data.task.id)]
-            .sort((a, b) => b.created_at.localeCompare(a.created_at)));
+          setTasks((all) => {
+            const before = all.find((x) => x.id === data.task.id);
+            const kept = before && before.commit_sha === data.task.commit_sha ? before.diffstat : undefined;
+            return [{ diffstat: kept, ...data.task }, ...all.filter((x) => x.id !== data.task.id)]
+              .sort((a, b) => b.created_at.localeCompare(a.created_at));
+          });
+          // a new commit waits for a decision: fetch its +/- once
+          if (data.task.commit_sha && ["done", "failed", "published"].includes(data.task.status)) loadTasks();
           window.dispatchEvent(new CustomEvent("dia-task", { detail: data.task }));
+        } else if (data.type === "theme") {
+          applyTheme((onPhone && data.phone) || data.name);
+          window.dispatchEvent(new CustomEvent("dia-theme", { detail: data }));
         } else if (data.type === "event" && data.kind === "voice") {
           setVoice(data.message.split(":")[0]);
         } else if (data.type === "event" && data.kind === "camera") {
@@ -2540,42 +3346,73 @@ function App() {
   const toggleVoice = async () => {
     try { await api("/api/voice/toggle", { method: "POST" }); } catch (e) { toast(e.message, "error"); }
   };
-  const active = tasks.filter((x) => ["running", "queued", "waiting"].includes(x.status)).length;
-  const nav = [["tasks", active || ""], ["missions", ""], ["chat", ""], ["cli", ""], ["memory", ""], ["status", ""], ["usage", ""], ["settings", ""]];
-  const open = (id) => { setSelected(id); setView("tasks"); };
+  const active = tasks.filter((x) => RUNNING.includes(x.status)).length;
+  const decisions = tasks.filter(decisionOf).length;
+  const work = [["inbox", decisions || ""], ["tasks", active || ""], ["missions", ""], ["chat", ""], ["cli", ""]];
+  const system = [["memory", ""], ["status", ""], ["usage", ""]];
+  const open = (id) => { setSelected(id); setView("tasks"); setTalking(false); };
+  const go = (key) => { setView(key); setMore(false); };
+  // On the computer the microphone is Dia's own; a paired phone talks through its own.
+  const talk = () => (status?.device ? setTalking(true) : toggleVoice());
+  const navItem = ([key, count]) => html`
+    <button class="nav-item ${view === key ? "active" : ""} ${key === "inbox" && count ? "has-badge" : ""}" title=${t(key)}
+      aria-current=${view === key ? "page" : undefined} onClick=${() => go(key)}>
+      <${Icon} name=${key} /><span class="nav-label">${t(key)}</span><span class="nav-count">${count}</span></button>`;
+  const okAgents = status ? status.agents.filter((a) => a.ok).length : 0;
 
   return html`
-    <div class="shell">
+    <div class="shell ${collapsed ? "collapsed" : ""}">
       <aside class="sidebar">
-        <div class="brand" data-drag><img class="brand-logo" src="/static/icons/dia.svg" alt="" />Dia${status?.version ? html`<span class="brand-version">${status.version}</span>` : null}</div>
-        ${nav.map(([key, count]) => html`
-          <button class="nav-item ${view === key ? "active" : ""}" onClick=${() => setView(key)}>
-            ${t(key)}<span class="nav-count">${count}</span></button>`)}
+        <div class="brand" data-drag><${DiaLogo} /><span class="brand-name">dia</span>
+          ${status?.version ? html`<span class="brand-version">${status.version}</span>` : null}</div>
+        <nav class="nav" aria-label="Dia">
+          <div class="nav-group">${t("nav_work")}</div>
+          ${work.map(navItem)}
+          <div class="nav-group">${t("nav_system")}</div>
+          <span class="nav-rule" aria-hidden="true"></span>
+          ${system.map(navItem)}
+          <span class="nav-fill"></span>
+          ${navItem(["settings", ""])}
+        </nav>
         <div class="sidebar-foot">
-          ${status && !status.device ? html`<button class="mic ${voice}" onClick=${toggleVoice} title="dia voice toggle">
-            <span class="mic-orb"></span><span class="mic-label">${t(`voice_${voice}`) || t("voice_idle")}</span></button>` : null}
-          ${status ? html`<button class="quiet ${status.screen ? "on" : ""} ${looking ? "looking" : ""}" title=${t("screen_help")} onClick=${toggleScreen}>
-            ${status.screen ? "👁" : "◌"}<span class="mic-label">${status.screen ? t("screen_on") : t("screen_off")}</span></button>` : null}
-          ${status ? html`<button class="quiet ${status.camera ? "on" : ""}" title=${t("camera_help")} onClick=${toggleCamera}>
-            ${status.camera ? "📷" : "◌"}<span class="mic-label">${status.camera ? t("camera_on") : t("camera_off")}</span></button>` : null}
-          ${status ? html`<button class="quiet ${status.quiet ? "on" : ""}" title=${t("quiet_help")} onClick=${toggleQuiet}>
-            ${status.quiet ? "🔇" : status.quiet_hours ? "🌙" : "🔈"}<span class="mic-label">${status.quiet ? t("quiet_on") : status.quiet_hours ? t("quiet_hours_on") : t("quiet_off")}</span></button>` : null}
-          <div class="conn"><span class="conn-dot ${connected ? "on" : ""}"></span>${connected ? t("connected") : t("offline")}
+          ${status ? html`<button class="mic ${status.device ? "" : voice}" onClick=${talk} title=${status.device ? t("talk_to_dia") : `${t("talk_to_dia")} · dia voice toggle`} aria-label=${t("talk_to_dia")}>
+            <span class="mic-orb"><${Icon} name="mic" size=${16} /></span>
+            <span class="mic-text"><span class="mic-title">${t("talk_to_dia")}</span>
+              <span class="mic-label">${status.device || voice === "idle" ? t("voice_ready") : t(`voice_${voice}`)}</span></span></button>` : null}
+          ${status ? html`<div class="senses" role="group" aria-label=${t("senses")}>
+            <button class="sense ${status.screen ? "on" : ""} ${looking ? "looking" : ""}" aria-pressed=${Boolean(status.screen)}
+              title="${status.screen ? t("screen_on") : t("screen_off")} · ${t("screen_help")}" onClick=${toggleScreen}><${Icon} name="screen" size=${16} /></button>
+            <button class="sense ${status.camera ? "on" : ""}" aria-pressed=${Boolean(status.camera)}
+              title="${status.camera ? t("camera_on") : t("camera_off")} · ${t("camera_help")}" onClick=${toggleCamera}><${Icon} name="camera" size=${16} /></button>
+            <button class="sense ${status.quiet || status.quiet_hours ? "on" : ""}" aria-pressed=${Boolean(status.quiet)}
+              title="${status.quiet ? t("quiet_on") : status.quiet_hours ? t("quiet_hours_on") : t("quiet_off")} · ${t("quiet_help")}" onClick=${toggleQuiet}>
+              <${Icon} name=${status.quiet ? "muted" : status.quiet_hours ? "moon" : "speaker"} size=${16} /></button>
+          </div>` : null}
+          <div class="conn" title=${connected ? t("connected") : t("offline")}><span class="conn-dot ${connected ? "on" : ""}"></span>
+            <span class="conn-text">${connected ? t("local_dia") : t("offline")}</span>
+            ${status ? html`<span class="conn-agents">${t("agents_ready", { ok: okAgents, all: status.agents.length })}</span>` : null}
             ${IN_APP ? html` · <a href="#" onClick=${(e) => { e.preventDefault(); location.href = APP_HOME; }}>${t("change_server")}</a>` : null}</div>
         </div>
       </aside>
       <main class="main">
-        <div class="topbar" data-drag><h1>${t(view)}</h1><span class="spacer"></span>
-          ${status ? html`<span class="faint hide-phone">${status.agents.filter((a) => a.ok).length}/${status.agents.length} ${t("agents").toLowerCase()}</span>` : null}
-          ${status && !status.halted ? html`<button class="btn danger stop-btn" title=${t("stop_help")} onClick=${stopAll}>■ ${t("stop")}</button>` : null}
-        <${WindowControls} />
+        <div class="topbar" data-drag>
+          <button class="icon-btn sidebar-toggle" onClick=${toggleSidebar} aria-expanded=${!collapsed}
+            title="${collapsed ? t("menu_expand") : t("menu_collapse")} (Ctrl+B)" aria-label=${collapsed ? t("menu_expand") : t("menu_collapse")}><${Icon} name="panel" /></button>
+          <nav class="crumbs" aria-label="breadcrumb"><span class="hide-phone">${t("workspace")}</span><span class="sep hide-phone">/</span><h1>${t(view)}</h1></nav>
+          <span class="spacer"></span>
+          <button class="search-btn" onClick=${() => setPalette(true)} title=${t("search")} aria-label=${t("search")}>
+            <${Icon} name="search" size=${16} /><span class="hide-phone">${t("search")}</span><kbd class="hide-phone">Ctrl K</kbd></button>
+          ${active ? html`<span class="tag ok hide-phone">${t("running_count", { n: active })}</span>` : null}
+          ${status && !status.halted ? html`<button class="btn danger-outline stop-btn" title=${t("stop_help")} onClick=${stopAll}><${Icon} name="stop" size=${11} /> ${t("stop")}</button>` : null}
+          <${WindowControls} />
         </div>
         ${status?.halted ? html`<div class="halted-bar">🛑 ${t("halted")}
           <button class="btn primary" onClick=${resumeAll}>${t("resume_btn")}</button></div>` : null}
         <div class="content">
+          ${view === "inbox" ? html`<${InboxView} tasks=${tasks} status=${status} open=${open} go=${go} toast=${toast} reload=${loadTasks} />` : null}
           ${view === "tasks" ? html`<${TasksView} tasks=${tasks} status=${status} selected=${selected} select=${setSelected} toast=${toast} reload=${loadTasks} />` : null}
           ${view === "chat" ? html`<${ChatView} open=${open} toast=${toast} />` : null}
-          ${view === "cli" ? html`<${CliView} toast=${toast} />` : null}
+          ${view === "cli" ? html`<${CliView} toast=${toast} status=${status} />` : null}
           ${view === "status" ? html`<${StatusView} status=${status} reload=${loadStatus} toast=${toast} />` : null}
           ${view === "usage" ? html`<${UsageView} toast=${toast} />` : null}
           ${view === "memory" ? html`<${MemoryView} toast=${toast} />` : null}
@@ -2583,6 +3420,37 @@ function App() {
           ${view === "settings" ? html`<${SettingsView} toast=${toast} device=${status?.device} full=${status?.device_full} />` : null}
         </div>
       </main>
+      <nav class="phone-bar" aria-label="Dia">
+        ${[["inbox", decisions], ["tasks", active]].map(([key, count]) => html`<button class="phone-tab ${view === key && !more ? "active" : ""}"
+          aria-current=${view === key && !more ? "page" : undefined} onClick=${() => go(key)}>
+          <span class="phone-icon"><${Icon} name=${key} size=${22} />${count ? html`<span class="phone-badge">${count}</span>` : null}</span>${t(key)}</button>`)}
+        <button class="phone-mic ${status?.device ? "" : voice}" onClick=${talk} aria-label=${t("talk_to_dia")}><${Icon} name="mic" size=${26} /></button>
+        <button class="phone-tab ${view === "chat" && !more ? "active" : ""}" onClick=${() => go("chat")}>
+          <span class="phone-icon"><${Icon} name="chat" size=${22} /></span>${t("chat")}</button>
+        <button class="phone-tab ${more ? "active" : ""}" aria-expanded=${more} onClick=${() => setMore(!more)}>
+          <span class="phone-icon"><${Icon} name="more" size=${22} /></span>${t("more")}</button>
+      </nav>
+      ${more ? html`<div class="sheet-backdrop" onClick=${() => setMore(false)}></div>
+        <div class="sheet" role="dialog" aria-label=${t("more")}>
+          ${[...work.slice(2).filter(([key]) => key !== "chat" && !(key === "cli" && status?.device)), ...system, ["settings", ""]].map(([key]) => html`
+            <button class="sheet-item ${view === key ? "active" : ""}" onClick=${() => go(key)}><${Icon} name=${key} />${t(key)}</button>`)}
+          ${status ? html`<div class="sheet-row">
+            <button class="sense ${status.screen ? "on" : ""}" aria-pressed=${Boolean(status.screen)} title=${t("screen_help")} onClick=${toggleScreen}><${Icon} name="screen" size=${16} /> ${status.screen ? t("screen_on") : t("screen_off")}</button>
+            <button class="sense ${status.camera ? "on" : ""}" aria-pressed=${Boolean(status.camera)} title=${t("camera_help")} onClick=${toggleCamera}><${Icon} name="camera" size=${16} /> ${status.camera ? t("camera_on") : t("camera_off")}</button>
+            <button class="sense ${status.quiet ? "on" : ""}" aria-pressed=${Boolean(status.quiet)} title=${t("quiet_help")} onClick=${toggleQuiet}><${Icon} name=${status.quiet ? "muted" : "speaker"} size=${16} /> ${status.quiet ? t("quiet_on") : t("quiet_off")}</button>
+          </div>` : null}
+          <div class="conn"><span class="conn-dot ${connected ? "on" : ""}"></span><span class="conn-text">${connected ? t("connected") : t("offline")}</span>
+            ${IN_APP ? html`<a href="#" onClick=${(e) => { e.preventDefault(); location.href = APP_HOME; }}>${t("change_server")}</a>` : null}</div>
+        </div>` : null}
+      ${palette ? html`<${Palette} tasks=${tasks} open=${open} onClose=${() => setPalette(false)} items=${[
+        ...VIEWS.map((key) => ({ kind: "view", icon: key, label: t(key), run: () => go(key) })),
+        { kind: "action", icon: "tasks", label: t("new_task"), run: () => go("inbox") },
+        { kind: "action", icon: "mic", label: t("talk_to_dia"), run: talk },
+        { kind: "action", icon: "panel", label: collapsed ? t("menu_expand") : t("menu_collapse"), hint: "Ctrl+B", run: toggleSidebar },
+        ...(status ? [{ kind: "action", icon: status.quiet ? "speaker" : "muted", label: status.quiet ? t("quiet_off_action") : t("quiet_on_action"), run: toggleQuiet }] : []),
+      ]} />` : null}
+      ${talking ? html`<${TalkSheet} local=${status?.talk} quiet=${status?.quiet} open=${open} onClose=${() => setTalking(false)}
+        onType=${() => { setTalking(false); go("chat"); }} />` : null}
       <div class="toasts">${toasts.map((x) => html`<div key=${x.id} class="toast ${x.kind}">${x.text}</div>`)}</div>
       <${WindowEdges} />
     </div>`;

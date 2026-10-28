@@ -315,10 +315,11 @@ type = "cursor"
 # "rules" (fixed phrases, no model), then the default agent as brain.
 
 # A local model: private and free. Ollama, LM Studio, llama.cpp, vLLM...
-# (sudo pacman -S ollama; ollama pull qwen2.5:3b; test: dia brains --test "...")
+# (sudo pacman -S ollama; ollama pull qwen3.5:4b; test: dia brains --test "...")
+# Best measured for routing 25.10.2026: qwen3.5:4b (8/9). qwen2.5:3b scored 2/5.
 # [brains.local]
 # type = "ollama"                   # or "openai" with base_url = "http://localhost:1234/v1"
-# model = "qwen2.5:3b"              # small models are enough for routing, even on a CPU
+# model = "qwen3.5:4b"              # small models are enough for routing, even on a CPU
 
 # Any configured agent, on its subscription (Claude runs without tools here):
 # [brains.claude-brain]

@@ -40,7 +40,7 @@ from typing import TYPE_CHECKING, Any
 
 from dia.agents import AgentRequest, Mode
 from dia.store import TaskRecord, now
-from dia.workspace import GitError, Workspace, git
+from dia.workspace import GitError, Workspace, git, worktree
 
 if TYPE_CHECKING:
     from dia.orchestrator import Orchestrator
@@ -295,7 +295,7 @@ class Releases:
         try:
             async with self.dia._slots:
                 path.parent.mkdir(parents=True, exist_ok=True)
-                await git(project.path, "worktree", "add", "--detach", str(path), sha)
+                await worktree(project.path, "add", "--detach", str(path), sha)
                 if self.options.get("test_first", True):
                     task.tests_ok, _ = await self.dia._test(project, workspace)
                     if task.tests_ok is False:

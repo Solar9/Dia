@@ -44,7 +44,7 @@ async def test_variants_are_measured_and_the_best_recommended(tmp_path, repo) ->
     task = await run_experiment(dia, "demo", "make rendering faster", ["slow", "fast", "broken"])
     assert task.mode == "experiment" and task.status == "done"
     rows = {r["agent"]: r for r in task.details["results"]}
-    assert rows["fast"]["metrics"] == {"frame_ms": 7.0}
+    assert rows["fast"].get("metrics") == {"frame_ms": 7.0}, rows["fast"]
     assert rows["slow"]["changes"][0]["worse"]
     assert rows["broken"]["tests_ok"] is False and "metrics" not in rows["broken"]
     assert task.details["best"] == rows["fast"]["index"]

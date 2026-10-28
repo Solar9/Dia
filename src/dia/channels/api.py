@@ -17,6 +17,7 @@ Started by ``dia serve`` unless ``[ui] enabled = false``.
 from __future__ import annotations
 
 import asyncio
+import base64
 import json
 import logging
 import os
@@ -163,6 +164,8 @@ class ApiChannel(Channel):
         self._sockets: set[web.WebSocketResponse] = set()
         self._background: set[asyncio.Task] = set()
         self.voice_state = "idle"
+        self._diff_stats: dict[tuple[str, str], dict[str, int] | None] = {}
+        self._talk_engines: Any = None  # the phone's own voice (dia.voice.talk), on first use
         self._tool_lock = asyncio.Lock()
         self.local_hosts = {f"{h}:{self.port}" for h in LOOPBACK}
         self.devices = Devices(dia.config.data_dir)
@@ -193,6 +196,7 @@ class ApiChannel(Channel):
         r.add_get("/api/cli-sessions/{pid}/transcript", self.cli_transcript)
         r.add_post("/api/cli-sessions/{pid}/capture", self.cli_capture)
         r.add_get("/api/cli-captured", self.cli_captured)
+        r.add_post("/api/cli-captured", self.cli_new_session)
         r.add_get("/api/cli-captured/{id}/transcript", self.cli_captured_transcript)
         r.add_post("/api/cli-captured/{id}/send", self.cli_captured_send)
         r.add_delete("/api/cli-captured/{id}", self.cli_release)
@@ -204,6 +208,7 @@ class ApiChannel(Channel):
         r.add_post("/api/tasks/{id}/{action}", self.task_action)
         r.add_post("/api/plans", self.create_plan)
         r.add_post("/api/chat", self.chat)
+        r.add_post("/api/talk", self.talk)
         r.add_get("/api/chat/providers", self.chat_providers)
         r.add_get("/api/sessions", self.list_sessions)
         r.add_post("/api/sessions", self.create_session)
@@ -215,6 +220,8 @@ class ApiChannel(Channel):
         r.add_put("/api/config", self.put_config)
         r.add_get("/api/themes", self.themes)
         r.add_get("/themes/{name}.css", self.theme_css)
+        r.add_get("/api/theme", self.get_theme)
+        r.add_put("/api/theme", self.put_theme)
         r.add_get("/api/devices", self.list_devices)
         r.add_post("/api/devices", self.pair_device)
         r.add_delete("/api/devices/{id}", self.revoke_device)
@@ -436,6 +443,8 @@ class ApiChannel(Channel):
                 "processes": len(processes.running()),
                 "pending_plan": self.assistant.pending_plan,
                 "voice": self.voice_state,
+                "talk": self._talk().check() is None,
+                **self._theme_status(request),
                 "device": request[DEVICE].name if request[DEVICE] else None,
                 "device_full": bool(request[DEVICE] and request[DEVICE].full),
                 "remote": self.remote,
@@ -755,6 +764,49 @@ class ApiChannel(Channel):
         self.dia.audit("cli.capture", session_id, f"{session.kind} in {session.cwd}")
         return web.json_response({**item.__dict__, "resume": item.resume})
 
+    async def cli_new_session(self, request: web.Request) -> web.Response:
+        """A new agent session started in the app: the chosen agent and model, in a
+        project's folder; its first answer opens a conversation kept like a taken-over one."""
+        from dia.agents import AgentRequest, Mode
+        from dia.sessions import RESUME_HINT, Captured
+
+        body = await request.json()
+        text = str(body.get("text", "")).strip()
+        if not text:
+            raise ValueError("write the first message")
+        name = str(body.get("agent", ""))
+        options = self.dia.config.agents.get(name)
+        if options is None or options.get("type", name) not in RESUME_HINT:
+            kinds = ", ".join(RESUME_HINT)
+            raise ValueError(f"pick an agent whose conversation can go on ({kinds})")
+        project = self.dia.config.project(str(body.get("project", "")))
+        model = str(body.get("model") or "").strip() or None
+        # Interactive: never wait for a usage-limit reset, and always cap the call
+        # so the UI cannot sit on "Starting…" forever when the CLI hangs.
+        used, result = await self.dia.call_agent(
+            self.dia.config.agent(name),
+            AgentRequest(prompt=text, cwd=project.path, mode=Mode.EDIT, model=model, timeout=600),
+            purpose="cli-session",
+        )
+        if not result.success:
+            raise ValueError(f"{used.name}: {result.error or 'no answer'}")
+        kind = self.dia.config.agents.get(used.name, {}).get("type", used.name)
+        if not result.session_id or kind not in RESUME_HINT:
+            raise ValueError(f"{used.name} answered but gave no conversation id to continue")
+        item = Captured(
+            id=result.session_id,
+            kind=kind,
+            cwd=str(project.path),
+            model=model,
+            taken_at=datetime.now().isoformat(timespec="seconds"),
+            started_in_app=True,
+        )
+        self._captured().add(item)
+        self.dia.audit("cli.new", item.id, f"{kind} in {project.path}")
+        return web.json_response(
+            {**item.__dict__, "resume": item.resume, "reply": result.summary}, status=201
+        )
+
     async def cli_captured(self, request: web.Request) -> web.Response:
         return web.json_response(
             [{**c.__dict__, "resume": c.resume} for c in self._captured().all()]
@@ -799,6 +851,7 @@ class ApiChannel(Channel):
                 mode=Mode.EDIT,
                 session_id=item.id,
                 model=item.model,
+                timeout=600,
             ),
             purpose="cli-session",
         )
@@ -1382,7 +1435,19 @@ class ApiChannel(Channel):
     async def tasks(self, request: web.Request) -> web.Response:
         limit = int(request.query.get("limit", 50))
         tasks = self.dia.store.recent(limit, request.query.get("project") or None)
-        return web.json_response([task_json(t) for t in tasks])
+        stats = await asyncio.gather(*(self._diff_stat(t) for t in tasks))
+        return web.json_response(
+            [{**task_json(t), "diffstat": d} for t, d in zip(tasks, stats, strict=True)]
+        )
+
+    async def _diff_stat(self, task: TaskRecord) -> dict[str, int] | None:
+        """+/- lines of a task waiting for a decision; kept per commit, a branch never changes."""
+        if task.status not in ("done", "failed", "published") or not task.commit_sha:
+            return None
+        key = (task.id, task.commit_sha)
+        if key not in self._diff_stats:
+            self._diff_stats[key] = await self.dia.diff_stat(task)
+        return self._diff_stats[key]
 
     def _get(self, request: web.Request) -> TaskRecord:
         task = self.dia.store.get(request.match_info["id"])
@@ -1394,6 +1459,7 @@ class ApiChannel(Channel):
         task = self._get(request)
         data = task_json(task)
         data["has_test_log"] = self.dia.test_log_path(task.id).exists()
+        data["diffstat"] = await self._diff_stat(task)
         return web.json_response(data)
 
     async def diff(self, request: web.Request) -> web.Response:
@@ -1509,16 +1575,64 @@ class ApiChannel(Channel):
     async def chat(self, request: web.Request) -> web.Response:
         """Free-form request, understood by the brain, as on Discord or by voice."""
         body = await request.json()
-        text = body["text"]
+        return web.json_response(await self._answer(request, body["text"], body.get("session")))
+
+    async def talk(self, request: web.Request) -> web.Response:
+        """A phone's own voice: its recording (WAV) in; what Dia heard, her answer
+        and the answer spoken (base64, unless quiet mode) out. All on this computer."""
+        from dia.channels.voice import speakable
+        from dia.voice.talk import MAX_BYTES, audio_type
+
+        talk = self._talk()
+        if problem := talk.check():
+            return web.json_response({"error": problem}, status=409)
+        if (request.content_length or 0) > MAX_BYTES:
+            raise web.HTTPRequestEntityTooLarge(
+                max_size=MAX_BYTES, actual_size=request.content_length or 0
+            )
+        audio = await request.read()
+        if audio[:4] != b"RIFF" or len(audio) > MAX_BYTES:
+            raise web.HTTPBadRequest(text="expected a WAV recording")
+        heard = await talk.hear(audio)
+        if not heard:
+            return web.json_response({"heard": ""})
+        answer = await self._answer(request, heard, request.query.get("session"))
+        answer["heard"] = heard
+        if answer.get("reply") and not self.dia.quiet:
+            spoken = await talk.speak(speakable(answer["reply"]))
+            if spoken:
+                answer["audio"] = base64.b64encode(spoken).decode()
+                answer["audio_type"] = audio_type(spoken)
+        return web.json_response(answer)
+
+    def _theme_status(self, request: web.Request) -> dict[str, Any]:
+        from dia.ui import theme
+
+        data_dir = self.dia.config.data_dir
+        name = theme.current(data_dir, "phone" if request[DEVICE] else None)
+        return {
+            "theme": name,
+            "theme_colors": theme.colors(name),
+            "widget_theme_colors": theme.colors(theme.current(data_dir, "widget")),
+        }
+
+    def _talk(self) -> Any:
+        if self._talk_engines is None:
+            from dia.voice.talk import Talk
+
+            self._talk_engines = Talk.from_config(self.dia.config)
+        return self._talk_engines
+
+    async def _answer(self, request: web.Request, text: str, session: str | None) -> dict[str, Any]:
         device = request[DEVICE].name if request[DEVICE] else "ui"
         surface = "phone" if request[DEVICE] else "desktop"
         conversation = device
-        if session := body.get("session"):
+        if session:
             self.dia.conversations._session(session)  # it must exist (KeyError: 400)
             conversation = session
             provider, model = self.dia.conversations.engine(session)
             if provider != "dia":
-                return web.json_response(await self._plain_chat(session, provider, model, text))
+                return await self._plain_chat(session, provider, model, text)
         intent = await self.assistant.interpret(text, conversation=conversation, surface=surface)
         answer: dict[str, Any] = {"action": intent.action, "brain": intent.brain}
         starts_plan = intent.action == "confirm" and not self.assistant.pending_action
@@ -1535,7 +1649,7 @@ class ApiChannel(Channel):
             plan_id = self.dia.conversations.pending_plan(conversation)
             if intent.action in ("plan", "mission") and plan_id:
                 answer["plan"] = task_json(self.dia.store.get(plan_id))
-        return web.json_response(answer)
+        return answer
 
     async def _plain_chat(self, session: str, provider: str, model: str, text: str) -> dict:
         """A session that talks straight to a model (dia.plainchat), not to Dia."""
@@ -1643,6 +1757,33 @@ class ApiChannel(Channel):
         user_dir = user_themes_dir()
         custom = sorted(p.stem for p in user_dir.glob("*.css")) if user_dir.is_dir() else []
         return web.json_response({"built_in": built_in, "custom": custom, "dir": str(user_dir)})
+
+    async def get_theme(self, request: web.Request) -> web.Response:
+        from dia.ui import theme
+
+        data_dir = self.dia.config.data_dir
+        mine = theme.current(data_dir, "phone" if request[DEVICE] else None)
+        return web.json_response(
+            {**theme.settings(data_dir), "effective": mine, "colors": theme.colors(mine)}
+        )
+
+    async def put_theme(self, request: web.Request) -> web.Response:
+        """The app's theme, and the phone's and the widget's (their own, or None: the app's).
+        Every open page switches at once. A paired phone sets only its own."""
+        from dia.ui import theme
+
+        body = await request.json()
+        changes = dict(body) if isinstance(body, dict) else {}
+        device = request[DEVICE]
+        if device and not device.full and set(changes) - {"phone"}:
+            return web.json_response({"error": "a phone sets only its own theme"}, status=403)
+        try:
+            chosen = theme.update(self.dia.config.data_dir, changes)
+        except ValueError as exc:
+            return web.json_response({"error": str(exc)}, status=400)
+        await self._broadcast({"type": "theme", **chosen})
+        mine = theme.current(self.dia.config.data_dir, "phone" if device else None)
+        return web.json_response({**chosen, "effective": mine, "colors": theme.colors(mine)})
 
     async def theme_css(self, request: web.Request) -> web.FileResponse:
         name = request.match_info["name"]

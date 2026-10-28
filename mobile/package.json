@@ -1,6 +1,6 @@
 {
   "name": "dia-mobile",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "description": "Dia for Android and iOS: Dia's interface in a native app that pairs with your Dia",
   "license": "PolyForm-Noncommercial-1.0.0",

@@ -9,7 +9,9 @@ and asks before anything irreversible.
   Dia moves from an assistant that does what it is asked to one that can be
   trusted with more, because it is **contained**, it **measures** what it does
   and it **remembers why**.
-- **Next**: not planned yet; see "Later, or not planned" below.
+- **0.1.1** (2026-10-28): UI 2.0 and release hygiene; see [PLAN-0.1.1.md](PLAN-0.1.1.md)
+  and [CHANGELOG.md](../CHANGELOG.md).
+- **Next**: not planned yet; remaining items in PLAN-0.1.1 (DIA-01 smoke, nice leftovers).
 
 ## Milestones
 

@@ -1,5 +1,8 @@
 import asyncio
+import base64
+import io
 import re
+import wave
 from pathlib import Path
 
 import pytest
@@ -10,6 +13,8 @@ from aiohttp.test_utils import TestClient, TestServer  # noqa: E402
 from dia.channels.api import ApiChannel  # noqa: E402
 from dia.config import parse_config  # noqa: E402
 from dia.orchestrator import Orchestrator  # noqa: E402
+from dia.voice import SpeechToText, TextToSpeech  # noqa: E402
+from dia.voice.talk import Talk, audio_type  # noqa: E402
 
 
 @pytest.fixture
@@ -83,6 +88,8 @@ async def test_run_task_review_and_merge(client, repo: Path) -> None:
 
     diff = await (await client.get(f"/api/tasks/{task['id']}/diff", headers=client.auth)).text()
     assert "+x" in diff
+    listed = await (await client.get("/api/tasks", headers=client.auth)).json()
+    assert listed[0]["diffstat"] == {"files": 1, "added": 1, "removed": 0}
     merged = await client.post(f"/api/tasks/{task['id']}/merge", headers=client.auth)
     assert (await merged.json())["message"].startswith("merged as")
     assert (repo / "x.txt").exists()
@@ -478,3 +485,186 @@ async def test_a_terminal_session_can_be_taken_over_and_continued(client, tmp_pa
     released = await (await client.delete("/api/cli-captured/sid1", headers=h)).json()
     assert released["resume"] == "claude --resume sid1"
     assert await (await client.get("/api/cli-captured", headers=h)).json() == []
+
+
+# ------------------------------------------------- a phone's own voice ---
+# /api/talk: the phone's recording in, Dia's answer and her speech out.
+
+
+class HeardSTT(SpeechToText):
+    kind = "fake"
+
+    def __init__(self, text: str, problem: str | None = None) -> None:
+        super().__init__()
+        self.text, self.problem, self.heard = text, problem, []
+
+    def check(self) -> str | None:
+        return self.problem
+
+    async def transcribe(self, audio: Path, language: str | None = None) -> str:
+        self.heard.append((audio.read_bytes()[:4], language))
+        return self.text
+
+
+class WavTTS(TextToSpeech):
+    kind = "fake"
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.said: list[str] = []
+
+    async def synthesize(self, text: str, output: Path) -> None:
+        self.said.append(text)
+        output.write_bytes(b"RIFF....WAVEfake")
+
+
+def recording(seconds: float = 0.5) -> bytes:
+    buffer = io.BytesIO()
+    with wave.open(buffer, "wb") as wav:
+        wav.setnchannels(1)
+        wav.setsampwidth(2)
+        wav.setframerate(16000)
+        wav.writeframes(b"\0\0" * int(16000 * seconds))
+    return buffer.getvalue()
+
+
+def engines(api, text: str = "Dziastatus", problem: str | None = None) -> tuple:
+    talk = Talk({}, "pl")
+    talk._stt, talk._tts = HeardSTT(text, problem), WavTTS()
+    api._talk_engines = talk
+    return talk._stt, talk._tts
+
+
+async def test_phone_talks_through_dias_own_speech(client) -> None:
+    stt, tts = engines(client.api)
+    response = await client.post("/api/talk", data=recording(), headers=client.auth)
+    answer = await response.json()
+    assert stt.heard == [(b"RIFF", "pl")]
+    assert answer["heard"] == "Dziastatus" and answer["action"] == "status"
+    assert answer["reply"].startswith("Gotowi agenci: fake.")
+    assert tts.said and tts.said[0].startswith("Gotowi agenci")
+    assert base64.b64decode(answer["audio"]).startswith(b"RIFF")
+    assert answer["audio_type"] == "audio/wav"
+    status = await (await client.get("/api/status", headers=client.auth)).json()
+    assert status["talk"] is True
+
+
+async def test_quiet_mode_answers_in_text_only(client) -> None:
+    _, tts = engines(client.api)
+    client.api.dia.set_quiet(True)
+    answer = await (await client.post("/api/talk", data=recording(), headers=client.auth)).json()
+    assert answer["reply"] and "audio" not in answer and tts.said == []
+
+
+async def test_nothing_heard_and_bad_input(client) -> None:
+    engines(client.api, text="")
+    answer = await (await client.post("/api/talk", data=recording(), headers=client.auth)).json()
+    assert answer == {"heard": ""}
+    bad = await client.post("/api/talk", data=b"not audio", headers=client.auth)
+    assert bad.status == 400
+    big = await client.post("/api/talk", data=recording(31), headers=client.auth)
+    assert big.status == 413
+
+
+async def test_without_speech_recognition_the_phone_is_told_why(client) -> None:
+    engines(client.api, problem="faster-whisper is not installed")
+    response = await client.post("/api/talk", data=recording(), headers=client.auth)
+    assert response.status == 409 and "faster-whisper" in (await response.json())["error"]
+    status = await (await client.get("/api/status", headers=client.auth)).json()
+    assert status["talk"] is False
+
+
+async def test_a_paired_phone_may_talk_but_not_use_the_computers_microphone(client) -> None:
+    engines(client.api)
+    api = client.api
+    api.remote = True
+    api.allowed_hosts.add("dia.example.ts.net")
+    paired = await (
+        await client.post("/api/devices", json={"name": "phone"}, headers=client.auth)
+    ).json()
+    phone = {"Host": "dia.example.ts.net", "Authorization": f"Bearer {paired['token']}"}
+    assert (await client.post("/api/voice/toggle", headers=phone)).status == 403
+    answer = await (await client.post("/api/talk", data=recording(), headers=phone)).json()
+    assert answer["heard"] == "Dziastatus" and answer["reply"]
+
+
+def test_audio_type() -> None:
+    assert audio_type(b"RIFF....WAVE") == "audio/wav"
+    assert audio_type(b"ID3\x04") == "audio/mpeg"
+    assert audio_type(b"OggS") == "audio/ogg"
+
+
+def test_talk_uses_the_voice_channels_engines_and_language() -> None:
+    class Config:
+        language = "en"
+        channels = {"voice": {"type": "voice", "language": "pl", "stt": {"type": "command"}}}
+
+    talk = Talk.from_config(Config())
+    assert talk.language == "pl" and talk.options["stt"] == {"type": "command"}
+    assert "argv" in (talk.check() or "")
+
+
+async def test_themes_of_the_app_the_phone_and_the_widget(client) -> None:
+    h = client.auth
+    first = await (await client.get("/api/theme", headers=h)).json()
+    assert first == {**first, "name": "dark", "phone": None, "widget": None, "effective": "dark"}
+    assert first["colors"]["accent"] == "#b4a2ff"
+
+    # The app's theme: every open page switches at once; phone and widget follow it.
+    ws = await client.ws_connect(f"/ws?token={client.api.token}")
+    saved = await client.put("/api/theme", json={"name": "midnight"}, headers=h)
+    assert (await saved.json())["colors"]["accent"] == "#22d3ee"
+    message = await ws.receive_json(timeout=2)
+    assert message == {"type": "theme", "name": "midnight", "phone": None, "widget": None}
+    await ws.close()
+    status = await (await client.get("/api/status", headers=h)).json()
+    assert status["theme"] == "midnight" and status["theme_colors"]["bg"] == "#070b14"
+    assert status["widget_theme_colors"]["accent"] == "#22d3ee"
+    # see-through colours as Qt reads them (#AARRGGBB) for the KDE widget
+    assert status["theme_colors"]["accent-soft"] == "#1f22d3ee"
+
+    # The widget's own theme; then the same as the app's again.
+    await client.put("/api/theme", json={"widget": "light"}, headers=h)
+    status = await (await client.get("/api/status", headers=h)).json()
+    assert status["theme"] == "midnight" and status["widget_theme_colors"]["bg"] == "#fbfbfc"
+    await client.put("/api/theme", json={"widget": None}, headers=h)
+    status = await (await client.get("/api/status", headers=h)).json()
+    assert status["widget_theme_colors"]["bg"] == "#070b14"
+
+    for bad in ({"name": "nope"}, {"name": "../api-token"}, {"name": None}, {"colour": "dark"}):
+        assert (await client.put("/api/theme", json=bad, headers=h)).status == 400
+
+    # A paired phone: its own theme, or the app's; it may set only its own.
+    api = client.api
+    api.remote = True
+    api.allowed_hosts.add("dia.example.ts.net")
+    paired = await (await client.post("/api/devices", json={"name": "phone"}, headers=h)).json()
+    phone = {"Host": "dia.example.ts.net", "Authorization": f"Bearer {paired['token']}"}
+    assert (await (await client.get("/api/status", headers=phone)).json())["theme"] == "midnight"
+    assert (await client.put("/api/theme", json={"name": "light"}, headers=phone)).status == 403
+    own = await (await client.put("/api/theme", json={"phone": "light"}, headers=phone)).json()
+    assert own["effective"] == "light" and own["name"] == "midnight"
+    assert (await (await client.get("/api/status", headers=phone)).json())["theme"] == "light"
+    assert (await (await client.get("/api/status", headers=h)).json())["theme"] == "midnight"
+
+
+async def test_new_cli_session_with_a_chosen_agent_and_model(client, tmp_path: Path) -> None:
+    script = tmp_path / "claude"
+    script.write_text(
+        '#!/bin/sh\nprintf \'{"result": "ready", "session_id": "s-123"}\'\necho "$*" > "$0.args"\n'
+    )
+    script.chmod(0o755)
+    client.api.dia.config.agents["cc"] = {"type": "claude-code", "command": str(script)}
+    h = client.auth
+    body = {"agent": "cc", "model": "opus", "project": "demo", "text": "hello"}
+    made = await client.post("/api/cli-captured", json=body, headers=h)
+    item = await made.json()
+    assert made.status == 201 and item["id"] == "s-123" and item["reply"] == "ready"
+    assert item["kind"] == "claude-code" and item["model"] == "opus" and item["started_in_app"]
+    assert item["resume"] == "claude --resume s-123"
+    assert "--model opus" in (tmp_path / "claude.args").read_text()
+    listed = await (await client.get("/api/cli-captured", headers=h)).json()
+    assert [c["id"] for c in listed] == ["s-123"]
+    # an agent whose conversation can't go on, an unknown project, nothing to say
+    for bad in ({**body, "agent": "fake"}, {**body, "project": "nope"}, {**body, "text": " "}):
+        assert (await client.post("/api/cli-captured", json=bad, headers=h)).status == 400

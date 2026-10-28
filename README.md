@@ -14,7 +14,7 @@ forges, toolchains and chat and voice interfaces are plugins chosen in
 a config file. It works with subscription-logged CLIs, so no API keys are
 required.
 
-> Status: **0.1.0**, the first public release: see [CHANGELOG.md](CHANGELOG.md) for what it does and
+> Status: **0.1.1** (UI 2.0 + release hygiene): see [CHANGELOG.md](CHANGELOG.md) for what it does and
 > [docs/ROADMAP.md](docs/ROADMAP.md) for what is next. Architecture:
 > [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
@@ -253,8 +253,8 @@ agents' record, and a balance report from playtest telemetry (`dia balance`).
 Bind `dia voice toggle` to a shortcut in your desktop's settings (KDE, GNOME,
 Xfce, Hyprland, Sway... on Wayland or X11), press it, speak, press again: Dia
 transcribes locally with Whisper, acts, and answers with a local Piper voice.
-Optionally hands-free with a wake word ("Hey Jarvis" out of the box, or train
-your own "Hey Dia").
+Optionally hands-free with a wake word ("Hej Dia" via whisper-keyword without
+training, or a trained openWakeWord model).
 Setup: [docs/VOICE.md](docs/VOICE.md).
 
 ## Discord

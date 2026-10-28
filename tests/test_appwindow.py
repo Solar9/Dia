@@ -54,8 +54,8 @@ def test_labels_cover_every_view():
         assert all(view in words for view in appwindow.VIEWS)
 
 
-def test_window_hides_to_the_tray(monkeypatch, tmp_path):
-    """The real window, offscreen: X and minimize hide it, the tray menu has every tab."""
+def test_qt_offscreen_window_hides_to_the_tray(monkeypatch, tmp_path):
+    """Qt offscreen (timing-sensitive on CI): X/minimize hide; tray menu has every tab."""
     os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
     os.environ.setdefault("QTWEBENGINE_CHROMIUM_FLAGS", "--no-sandbox")
     try:
@@ -117,6 +117,27 @@ def test_window_hides_to_the_tray(monkeypatch, tmp_path):
         seen["maximized_hidden"] = not window.isVisible()
         open_window()
         seen["maximized_restored"] = window.isVisible() and window.isMaximized()
+        # The page's maximize button toggles; the page hears the new state.
+        window.centralWidget().page().javaScriptConsoleMessage(
+            None, "dia-window:maximize", 1, "http://127.0.0.1:9/static/app.js"
+        )
+        seen["button_unmaximized"] = window.isVisible() and not window.isMaximized()
+        window.centralWidget().page().javaScriptConsoleMessage(
+            None, "dia-window:maximize", 1, "http://127.0.0.1:9/static/app.js"
+        )
+        seen["button_maximized"] = window.isMaximized()
+        # Another site's page can't drive the window.
+        window.centralWidget().page().javaScriptConsoleMessage(
+            None, "dia-window:maximize", 1, "https://example.com/"
+        )
+        seen["foreign_ignored"] = window.isMaximized()
+        # The page's theme accent recolours the window's and the tray's icon, and is kept.
+        before = window.windowIcon().cacheKey()
+        window.centralWidget().page().javaScriptConsoleMessage(
+            None, "dia-window:accent:22d3ee", 1, "http://127.0.0.1:9/static/app.js"
+        )
+        seen["accent_icon"] = window.windowIcon().cacheKey() != before and not tray.icon().isNull()
+        seen["accent_saved"] = (tmp_path / "app-accent").read_text() == "22d3ee"
         # A queued hide must not hide a window restored before the timer runs.
         window.showMinimized()
         open_window()
@@ -142,11 +163,17 @@ def test_window_hides_to_the_tray(monkeypatch, tmp_path):
         "native_restored",
         "maximized_hidden",
         "maximized_restored",
+        "button_unmaximized",
+        "button_maximized",
+        "foreign_ignored",
+        "accent_icon",
+        "accent_saved",
         "quick_restore",
     ):
         assert seen[key], key
     assert seen["menu"][0] == "Otwórz Dia" and seen["menu"][-1] == "Zamknij ikonę i okno"
     assert seen["tabs"] == [
+        "Skrzynka",
         "Zadania",
         "Misje",
         "Czat",
@@ -221,3 +248,97 @@ assert seen == [True] * 8, seen
         },
     )
     assert result.returncode == 0, result.stderr
+
+
+def test_offline_page_is_the_title_bar_too() -> None:
+    page = appwindow.offline_page(True, True)
+    assert "Uruchom Dia" in page and "dia-window:start-services" in page
+    for action in ("minimize", "maximize", "close"):
+        assert f"call(\\'{action}\\')" in page or f"call('{action}')" in page
+    assert page.count("data-edge=") == 8 and "data-drag" in page and "__" not in page
+    assert 'src="data:image/svg+xml;base64,' in page  # Dia's icon, served by nobody
+    # With the system's own title bar the page draws none.
+    plain = appwindow.offline_page(False, False)
+    assert "Start Dia" in plain and "call('minimize')" not in plain and 'data-edge="' not in plain
+
+
+def test_offline_page_buttons_drive_the_real_window(tmp_path):
+    """Dia stopped: the window's only page must still maximize, minimize and close it.
+
+    The buttons are clicked in the page; their messages reach Qt a little later, so
+    the script waits for each result. A fresh Qt process, like the login test."""
+    import subprocess
+    import sys
+
+    if not appwindow.available():
+        pytest.skip("QtWebEngine is not installed")
+    script = """
+import os, tempfile
+from pathlib import Path
+from PySide6.QtCore import QTimer
+from PySide6.QtWidgets import QApplication
+from dia import appwindow, runtime
+runtime.status = lambda: {"available": False}
+appwindow.server_name = lambda: "dia-offline-test-" + str(os.getpid())
+app = QApplication(["test"])
+seen = {}
+def window():
+    return next(w for w in app.topLevelWidgets() if w.windowTitle() == "Dia")
+def click(index):
+    window().centralWidget().page().runJavaScript(
+        "document.querySelectorAll('.win')[%d].click()" % index)
+def wait(key, done, then, left=80):
+    if done() or left == 0:
+        seen[key] = done()
+        then()
+    else:
+        QTimer.singleShot(100, lambda: wait(key, done, then, left - 1))
+def close():
+    window().showNormal()
+    click(2)  # no tray: closing the window quits Dia's app
+def minimize():
+    click(0)
+    wait("minimized", lambda: window().isMinimized(), close)
+def start():
+    click(1)
+    wait("maximized", lambda: window().isMaximized(), minimize)
+QTimer.singleShot(2500, start)
+QTimer.singleShot(25000, app.quit)
+rc = appwindow.run("http://127.0.0.1:9/", "t", language="pl",
+                   data_dir=Path(tempfile.mkdtemp()), load_options=lambda: {"tray": False})
+assert rc == 0 and seen == {"maximized": True, "minimized": True}, seen
+"""
+    result = subprocess.run(
+        [sys.executable, "-c", script],
+        capture_output=True,
+        text=True,
+        timeout=40,
+        env={
+            **os.environ,
+            "QT_QPA_PLATFORM": "offscreen",
+            "QTWEBENGINE_CHROMIUM_FLAGS": "--no-sandbox",
+        },
+    )
+    assert result.returncode == 0, result.stderr[-2000:]
+
+
+def test_dias_icon_takes_the_themes_accent(tmp_path) -> None:
+    assert appwindow.window_command("dia-window:accent:B4A2FF") == ("accent", ["b4a2ff"])
+    for bad in ("dia-window:accent:#b4a2ff", "dia-window:accent:b4a2", "dia-window:accent:zzzzzz"):
+        assert appwindow.window_command(bad) is None
+    svg = appwindow.tinted_svg("b4a2ff").decode()
+    import xml.etree.ElementTree as ET
+
+    stops = [
+        s.get("stop-color") for s in ET.fromstring(svg).iter("{http://www.w3.org/2000/svg}stop")
+    ]
+    assert stops[1] == "#b4a2ff" and stops[0] > stops[1] > stops[2] > stops[3]  # light to dark
+    assert appwindow.saved_accent(tmp_path) is None
+    (tmp_path / "app-accent").write_text("22d3ee\n")
+    assert appwindow.saved_accent(tmp_path) == "22d3ee"
+    (tmp_path / "app-accent").write_text("url(evil)")
+    assert appwindow.saved_accent(tmp_path) is None
+    import base64
+
+    tinted = base64.b64encode(appwindow.tinted_svg("22d3ee")).decode()
+    assert tinted in appwindow.offline_page(True, True, "22d3ee")

@@ -7,7 +7,7 @@ starts recording; pressing it again stops, transcribes, lets the brain decide
 and speaks the reply. Tasks keep running in the background and Dia speaks
 again when they finish.
 
-Optionally, a wake word ("Hey Jarvis", or a custom "Hey Dia") starts listening
+Optionally, a wake word ("Hej Dia", or a trained openWakeWord model) starts listening
 hands-free; recording then stops by itself after you stop speaking. The
 shortcut keeps working and shares the same microphone stream.
 

@@ -180,8 +180,10 @@ Rules:
 - "reply": in the user's language and in your own personality: one short
   sentence saying what you will do, or your full answer (chat), or a
   clarifying question (e.g. which project).
-- Merging, discarding or deleting work is never done by you: use "chat" and tell
-  the user to use the Merge/Discard buttons or `dia merge` / `dia discard`.
+- Merging, discarding, pushing or publishing a branch/PR is never done by you:
+  use "chat" and tell the user to use the Merge/Discard/PR-MR buttons or
+  `dia merge` / `dia discard` / `dia publish`. Never choose "run", "ask", "plan"
+  or "mission" for those requests.
 
 Examples (projects: nova, dia):
 - "napraw zapisywanie gry w nova" -> {"action": "run", "project": "nova", "agent": null,
@@ -192,10 +194,60 @@ Examples (projects: nova, dia):
   "args": {"place": "Gdańsk", "day": "tomorrow"}, "reply": ""}
 - "co rano o 7:30 w dni robocze daj mi briefing" -> {"action": "schedule",
   "cron": "30 7 * * 1-5", "prompt": "briefing", "reply": ""}
+- "scal to / merge this / wypchnij na github / push the branch" ->
+  {"action": "chat", "reply": "Scalanie i push tylko po Twoim Merge / dia merge / dia publish."}
 - "dodaj tryb co-op" (no project named) -> {"action": "chat", "project": null,
   "reply": "Do którego projektu? nova czy dia?"}
 - "jak się masz?" -> {"action": "chat", "reply": "<a short answer in your personality>"}
 """
+
+
+# Requests that must never become run/ask/plan (DIA-11): irreversible git actions.
+# Keep "push"/"merge"/"discard" tied to git wording so "push notifications" still runs.
+_IRREVERSIBLE = re.compile(
+    r"(?ix)"
+    r"(?:"
+    r"\b(?:scal|zmerguj)\b|"
+    r"\bmerge\s+(?:this|it|the|to|into|do|branch|gałą[zź]|zmiany|changes|prace|pr|mr)\b|"
+    r"\bwypchnij\b|"
+    r"\bpush\s+(?:this|it|the|to|na|branch|gałą[zź]|origin|github|gitlab|remote)\b|"
+    r"\bodrzu[cć]\w*\b(?:\s+\w+){0,3}\s+(?:zadani\w*|zmian\w*|task|change|branch)\b|"
+    r"\bdiscard\s+(?:this|the|that)?\s*(?:task|change|branch|work)\b|"
+    r"\b(?:opublikuj|publish)\s+(?:the\s+)?(?:pr|mr|branch|pull\s*request|na\s+git\w*)\b|"
+    r"\bdia\s+(?:merge|publish|discard)\b"
+    r")"
+)
+
+_GUARD_REPLY = {
+    "pl": (
+        "Scalanie, push i odrzucenie zmian robię tylko na Twój klik "
+        "(Merge / Discard / PR-MR) albo `dia merge` / `dia publish` / `dia discard`."
+    ),
+    "en": (
+        "Merging, pushing and discarding only happen when you click "
+        "Merge / Discard / PR-MR, or run `dia merge` / `dia publish` / `dia discard`."
+    ),
+}
+
+
+def guard_irreversible(intent: Intent, text: str, language: str = "en") -> Intent:
+    """Force merge/push/discard wording to chat — never start an agent task (DIA-11)."""
+    if intent.action not in ("run", "ask", "plan", "mission"):
+        return intent
+    blob = f"{text}\n{intent.prompt or ''}"
+    if not _IRREVERSIBLE.search(blob):
+        return intent
+    reply = _GUARD_REPLY.get(language, _GUARD_REPLY["en"])
+    return Intent(
+        "chat",
+        reply=reply,
+        project=None,
+        agent=None,
+        prompt=None,
+        text=intent.text or text,
+        conversation=intent.conversation,
+        brain=intent.brain or "guard",
+    )
 
 
 # How the "reply" should look where it will be read or heard.

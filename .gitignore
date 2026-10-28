@@ -9,3 +9,4 @@ dist/
 .ruff_cache/
 # local config may contain tokens and private paths
 /dia.toml
+.directory

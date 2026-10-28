@@ -41,4 +41,6 @@ pytest
 ruff check . && ruff format --check .
 ```
 
-Please make sure tests and lint pass before opening a pull request.
+Optional: `pip install pre-commit && pre-commit install` runs the same ruff
+checks before each commit (DIA-03). Please make sure tests and lint pass before
+opening a pull request. Prefer PRs into `main` rather than pushing straight to it.

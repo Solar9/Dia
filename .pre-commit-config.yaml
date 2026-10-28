@@ -1,0 +1,10 @@
+# Local hooks: pip install pre-commit && pre-commit install
+# CI already runs the same ruff checks (DIA-03). Protecting `main` on GitHub
+# is a repo setting — enable required status checks for the CI workflow.
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.14.0
+    hooks:
+      - id: ruff
+        args: [--fix]
+      - id: ruff-format

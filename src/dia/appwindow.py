@@ -17,7 +17,9 @@ packages); otherwise pywebview, otherwise a browser app window.
 
 from __future__ import annotations
 
+import base64
 import concurrent.futures
+import contextlib
 import getpass
 import json
 import re
@@ -30,12 +32,13 @@ from pathlib import Path
 from typing import Any
 
 ICONS = Path(__file__).resolve().parent / "ui" / "static" / "icons"
-VIEWS = ["tasks", "missions", "chat", "cli", "memory", "status", "usage", "settings"]
+VIEWS = ["inbox", "tasks", "missions", "chat", "cli", "memory", "status", "usage", "settings"]
 LABELS = {
     "pl": {
         "open": "Otwórz Dia", "hide": "Ukryj okno", "talk": "Mów do Dia",
         "quiet": "Tryb cichy", "quit": "Zakończ", "views": "Przejdź do",
-        "tasks": "Zadania", "missions": "Misje", "chat": "Czat", "cli": "Sesje CLI",
+        "inbox": "Skrzynka", "tasks": "Zadania", "missions": "Misje", "chat": "Czat",
+        "cli": "Sesje CLI",
         "memory": "Pamięć",
         "status": "Status", "usage": "Zużycie", "settings": "Ustawienia",
         "in_tray": "Dia działa dalej w zasobniku. Zakończysz ją z menu tej ikony.",
@@ -43,7 +46,8 @@ LABELS = {
     "en": {
         "open": "Open Dia", "hide": "Hide window", "talk": "Talk to Dia",
         "quiet": "Quiet mode", "quit": "Quit", "views": "Go to",
-        "tasks": "Tasks", "missions": "Missions", "chat": "Chat", "cli": "CLI sessions",
+        "inbox": "Inbox", "tasks": "Tasks", "missions": "Missions", "chat": "Chat",
+        "cli": "CLI sessions",
         "memory": "Memory",
         "status": "Status", "usage": "Usage", "settings": "Settings",
         "in_tray": "Dia keeps running in the tray. Quit it from this icon's menu.",
@@ -83,6 +87,103 @@ def on_minimize(opts: dict[str, bool], tray: bool) -> bool:
     return tray and opts["tray"] and opts["minimize_to_tray"]
 
 
+# Shown while Dia is stopped or starting. Without a system frame this page is the
+# title bar too: drag it, double-click it, resize from its edges, the three buttons.
+OFFLINE_PAGE = """<!doctype html><html><head><meta charset="utf-8"><style>
+html, body { height: 100%; margin: 0; }
+body { background: #131317; color: #ececf1; font: 14px/1.5 Inter, system-ui, sans-serif;
+  display: flex; flex-direction: column; user-select: none; }
+.bar { display: flex; align-items: center; gap: 10px; height: 52px; padding: 0 8px 0 20px;
+  border-bottom: 1px solid #26262d; }
+.brand { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 18px;
+  letter-spacing: -.03em; flex: 1; }
+.brand img { width: 22px; height: 22px; }
+.win { width: 44px; height: 36px; display: grid; place-items: center; border: 0; border-radius: 6px;
+  background: none; color: #a1a1aa; cursor: pointer; }
+.win:hover { background: #1f1f25; color: #ececf1; }
+.win.close:hover { background: #c42b1c; color: #fff; }
+.win svg { width: 12px; height: 12px; fill: none; stroke: currentColor; stroke-width: 1.2; }
+main { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 14px; padding: 32px; text-align: center; }
+.dot { width: 10px; height: 10px; border-radius: 50%; background: #f2b55a;
+  box-shadow: 0 0 0 6px rgba(242, 181, 90, .14); animation: pulse 1.6s infinite; }
+@keyframes pulse { 50% { opacity: .45; } }
+h1 { margin: 0; font-size: 22px; font-weight: 600; }
+p { margin: 0; color: #a1a1aa; max-width: 440px; }
+.start { height: 40px; padding: 0 18px; border: 0; border-radius: 8px; background: #b4a2ff;
+  color: #17131f; font: 600 14px Inter, system-ui, sans-serif; cursor: pointer; }
+.edge { position: fixed; z-index: 10; }
+.maximized .edge { display: none; }
+</style></head><body>
+<div class="bar" data-drag>
+<span class="brand"><img src="__ICON__" alt="">dia</span>__CONTROLS__</div>
+<main><span class="dot"></span><h1>__TITLE__</h1><p>__TEXT__</p>
+<button class="start" onclick="console.log('dia-window:start-services')">__START__</button></main>
+__EDGES__
+<script>
+const call = (action) => console.log("dia-window:" + action);
+document.addEventListener("mousedown", (e) => {
+  if (e.button !== 0) return;
+  const edge = e.target.closest("[data-edge]");
+  if (edge) { e.preventDefault(); call("resize:" + edge.dataset.edge); return; }
+  if (!e.target.closest("[data-drag]") || e.target.closest("button")) return;
+  e.preventDefault();
+  call("move");
+});
+document.addEventListener("dblclick", (e) => {
+  if (e.target.closest("[data-drag]") && !e.target.closest("button")) call("maximize");
+});
+window.diaWindowState = (state) =>
+  document.documentElement.classList.toggle("maximized", state === "maximized");
+</script></body></html>"""
+OFFLINE_CONTROLS = (
+    '<button class="win" title="__MIN__" onclick="call(\'minimize\')">'
+    '<svg viewBox="0 0 12 12"><path d="M2 6.5h8"/></svg></button>'
+    '<button class="win" title="__MAX__" onclick="call(\'maximize\')">'
+    '<svg viewBox="0 0 12 12"><path d="M2.5 2.5h7v7h-7z"/></svg></button>'
+    '<button class="win close" title="__CLOSE__" onclick="call(\'close\')">'
+    '<svg viewBox="0 0 12 12"><path d="M2.5 2.5l7 7M9.5 2.5l-7 7"/></svg></button>'
+)
+OFFLINE_EDGES = {
+    "top": "top:0;left:8px;right:8px;height:4px;cursor:ns-resize",
+    "bottom": "bottom:0;left:8px;right:8px;height:4px;cursor:ns-resize",
+    "left": "left:0;top:8px;bottom:8px;width:4px;cursor:ew-resize",
+    "right": "right:0;top:8px;bottom:8px;width:4px;cursor:ew-resize",
+    "top-left": "top:0;left:0;width:8px;height:8px;cursor:nwse-resize",
+    "bottom-right": "bottom:0;right:0;width:8px;height:8px;cursor:nwse-resize",
+    "top-right": "top:0;right:0;width:8px;height:8px;cursor:nesw-resize",
+    "bottom-left": "bottom:0;left:0;width:8px;height:8px;cursor:nesw-resize",
+}
+
+
+def offline_page(pl: bool, frameless: bool, accent: str | None = None) -> str:
+    """The page shown while Dia is stopped or starting, with its own title bar when frameless."""
+    words = {
+        "__TITLE__": "Dia jest zatrzymana lub uruchamia się"
+        if pl
+        else "Dia is stopped or starting",
+        "__TEXT__": "Usługami możesz zarządzać także z traya i widgetu."
+        if pl
+        else "You can also manage services from the tray and widget.",
+        "__START__": "Uruchom Dia" if pl else "Start Dia",
+        "__MIN__": "Minimalizuj" if pl else "Minimize",
+        "__MAX__": "Maksymalizuj" if pl else "Maximize",
+        "__CLOSE__": "Zamknij" if pl else "Close",
+    }
+    # Inline: while Dia is stopped nothing serves /static/icons.
+    svg = tinted_svg(accent) if accent else (ICONS / "dia.svg").read_bytes()
+    words["__ICON__"] = "data:image/svg+xml;base64," + base64.b64encode(svg).decode()
+    edges = "".join(
+        f'<div class="edge" data-edge="{name}" style="{style}"></div>'
+        for name, style in OFFLINE_EDGES.items()
+    )
+    page = OFFLINE_PAGE.replace("__CONTROLS__", OFFLINE_CONTROLS if frameless else "")
+    page = page.replace("__EDGES__", edges if frameless else "")
+    for key, value in words.items():
+        page = page.replace(key, value)
+    return page
+
+
 def window_command(text: str) -> tuple[str, list[str]] | None:
     """``dia-window:resize:top-left`` -> ("resize", ["top", "left"]); None: not for us."""
     if not text.startswith(BRIDGE):
@@ -90,6 +191,8 @@ def window_command(text: str) -> tuple[str, list[str]] | None:
     action, _, rest = text[len(BRIDGE) :].partition(":")
     if action in ("move", "minimize", "maximize", "close", "start-services"):
         return action, []
+    if action == "accent" and re.fullmatch(r"[0-9a-fA-F]{6}", rest):
+        return action, [rest.lower()]  # the theme's accent: Dia's icon takes its colour
     edges = [e for e in rest.split("-") if e in EDGES]
     if action == "resize" and edges:
         return action, edges
@@ -124,10 +227,48 @@ def navigate_js(view: str, task: str | None = None) -> str:
     return f"window.diaNavigate && window.diaNavigate({json.dumps(view)}, {json.dumps(task)})"
 
 
-def _icon() -> Any:
-    from PySide6.QtGui import QIcon
+# Dia's icon in a theme's accent: the stops of icons/dia.svg, from lighter to darkest
+# (offset, the accent's share, mixed with white 255 or black 0); the page does the same.
+LOGO_MIX = ((0, 0.45, 255), (0.46, 1.0, 0), (0.72, 0.7, 0), (1, 0.35, 0))
+
+
+def tinted_svg(accent: str) -> bytes:
+    """icons/dia.svg with its gradient made from ``accent`` (6 hex digits)."""
+    rgb = [int(accent[i : i + 2], 16) for i in (0, 2, 4)]
+    stops = "".join(
+        '<stop offset="{}" stop-color="#{}"/>'.format(
+            offset, "".join(f"{round(v * share + other * (1 - share)):02x}" for v in rgb)
+        )
+        for offset, share, other in LOGO_MIX
+    )
+    return (
+        '<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">'
+        f'<defs><linearGradient id="dia" x1="0" y1="0" x2="1" y2="1">{stops}</linearGradient>'
+        '</defs><circle cx="256" cy="256" r="208" fill="none" stroke="url(#dia)" '
+        'stroke-width="54"/><circle cx="256" cy="256" r="112" fill="url(#dia)"/></svg>'
+    ).encode()
+
+
+def saved_accent(data_dir: Path | None) -> str | None:
+    """The accent the window last saw (``app-accent``), so the next start matches it."""
+    try:
+        value = (data_dir / "app-accent").read_text().strip() if data_dir else ""
+    except OSError:
+        return None
+    return value if re.fullmatch(r"[0-9a-f]{6}", value) else None
+
+
+def _icon(accent: str | None = None) -> Any:
+    from PySide6.QtGui import QIcon, QPixmap
 
     icon = QIcon()
+    if accent:
+        for size in (16, 24, 32, 48, 64, 128, 256):
+            pixmap = QPixmap(size, size)
+            if pixmap.loadFromData(tinted_svg(accent), "SVG"):
+                icon.addPixmap(pixmap.scaled(size, size))
+        if not icon.isNull():
+            return icon
     for png in sorted(ICONS.glob("dia-*.png")):
         icon.addFile(str(png))
     if (ICONS / "dia.svg").exists():
@@ -192,7 +333,8 @@ def run(base: str, token: str, *, language: str = "en", view: str | None = None,
     app.setApplicationName("Dia")
     app.setApplicationDisplayName("Dia")
     app.setDesktopFileName("dia")  # Wayland app id: the menu entry, its icon on the taskbar
-    icon = _icon()
+    accent = {"value": saved_accent(data_dir)}
+    icon = _icon(accent["value"])
     app.setWindowIcon(icon)
     opts = options(load_options())
     tray_ok = opts["tray"] and QSystemTrayIcon.isSystemTrayAvailable()
@@ -223,8 +365,10 @@ def run(base: str, token: str, *, language: str = "en", view: str | None = None,
         profile.setPersistentStoragePath(str(data_dir / "app-profile"))
         profile.setCachePath(str(data_dir / "app-profile" / "cache"))
     frameless = opts["custom_titlebar"]
-    if frameless:  # the page draws the title bar: tells it by its user agent
-        profile.setHttpUserAgent(f"{profile.httpUserAgent()} {USER_AGENT_MARK}")
+    # The page learns it is in Dia's window (and whether it draws the title bar) by its
+    # user agent: it then reports its theme's accent for the window's icon.
+    mark = USER_AGENT_MARK if frameless else USER_AGENT_MARK.split("/")[0]
+    profile.setHttpUserAgent(f"{profile.httpUserAgent()} {mark}")
     state: dict[str, Any] = {"told": False, "quitting": False}
 
     class Window(QMainWindow):
@@ -279,21 +423,7 @@ def run(base: str, token: str, *, language: str = "en", view: str | None = None,
     pl = language == "pl"
 
     def offline() -> None:
-        title = "Dia jest zatrzymana lub uruchamia się" if pl else "Dia is stopped or starting"
-        button = "Uruchom Dia" if pl else "Start Dia"
-        web.setHtml(
-            f"""<html><body style="background:#171823;color:#eee;
-            font:18px sans-serif;padding:48px"><h1>{title}</h1>
-            <p>{
-                "Usługami możesz zarządzać także z traya i widgetu."
-                if pl
-                else "You can also manage services from the tray and widget."
-            }</p>
-            <button onclick="console.log('dia-window:start-services')">{button}</button>
-            <button onclick="console.log('dia-window:close')">×</button>
-            </body></html>""",
-            QUrl(base),
-        )
+        web.setHtml(offline_page(pl, frameless, accent["value"]), QUrl(base))
 
     offline()
 
@@ -374,7 +504,18 @@ def run(base: str, token: str, *, language: str = "en", view: str | None = None,
     def handle(action: str, edges: list[str]) -> None:
         """The page's title bar: drag, resize from an edge, the three buttons."""
         handle_ = window.windowHandle()
-        if action == "start-services":
+        if action == "accent":
+            if edges[0] != accent["value"]:
+                accent["value"] = edges[0]
+                tinted = _icon(edges[0])
+                app.setWindowIcon(tinted)
+                window.setWindowIcon(tinted)
+                if tray:
+                    tray.setIcon(tinted)
+                if data_dir:
+                    with contextlib.suppress(OSError):
+                        (data_dir / "app-accent").write_text(edges[0])
+        elif action == "start-services":
             control("dia", "start")
         elif action == "move" and handle_:
             handle_.startSystemMove()
@@ -423,6 +564,22 @@ def run(base: str, token: str, *, language: str = "en", view: str | None = None,
     def ask_update() -> None:
         release = found["release"]
         if not release or "update" in jobs:
+            return
+        if update.system_package():
+            hint = update.package_update_hint()
+            QMessageBox.information(
+                window,
+                "Dia",
+                (
+                    f"Dia {release['version']} jest dostępna, ale ta instalacja jest z "
+                    f"menedżera pakietów. Zaktualizuj tak:\n\n{hint}"
+                    if pl
+                    else (
+                        f"Dia {release['version']} is available, but this install is from "
+                        f"the package manager. Update with:\n\n{hint}"
+                    )
+                ),
+            )
             return
         text = (
             f"Zainstalować Dia {release['version']}? Dia zostanie uruchomiona ponownie."
@@ -488,11 +645,18 @@ def run(base: str, token: str, *, language: str = "en", view: str | None = None,
         release = found["release"]
         update_action.setVisible(bool(release))
         if release:
-            update_action.setText(
-                f"Dostępna aktualizacja {release['version']} — zainstaluj"
-                if pl
-                else f"Update {release['version']} available — install"
-            )
+            if update.system_package():
+                update_action.setText(
+                    f"Dostępna aktualizacja {release['version']} — zaktualizuj menedżerem pakietów"
+                    if pl
+                    else f"Update {release['version']} available — use the package manager"
+                )
+            else:
+                update_action.setText(
+                    f"Dostępna aktualizacja {release['version']} — zainstaluj"
+                    if pl
+                    else f"Update {release['version']} available — install"
+                )
 
     def update_service_status(dia_state: str, ollama_state: str) -> None:
         # The native tray menu is plain text, so the colour is an emoji dot.

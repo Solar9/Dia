@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import asyncio
 import shutil
+import weakref
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -65,6 +66,24 @@ async def git(cwd: Path, *args: str) -> str:
     return out.strip()
 
 
+# `git worktree add/remove/prune` on one repository race on git's own files when they run
+# together (experiments and missions start several tasks at once), so they take turns.
+_WORKTREE_LOCKS: weakref.WeakKeyDictionary[Any, dict[str, asyncio.Lock]] = (
+    weakref.WeakKeyDictionary()
+)
+
+
+def _worktree_lock(repo: Path) -> asyncio.Lock:
+    locks = _WORKTREE_LOCKS.setdefault(asyncio.get_running_loop(), {})
+    return locks.setdefault(str(repo.resolve()), asyncio.Lock())
+
+
+async def worktree(repo: Path, *args: str) -> str:
+    """``git worktree <args>`` in ``repo``, one at a time per repository."""
+    async with _worktree_lock(repo):
+        return await git(repo, "worktree", *args)
+
+
 async def uncommitted_files(repo: Path) -> list[str]:
     """Paths with uncommitted changes. Tasks start from the last commit, without them."""
     # Not via git(): stripping would eat the leading status column (" M path").
@@ -104,7 +123,7 @@ class Workspace:
         branch = f"dia/{task_id}"
         path = root / task_id
         path.parent.mkdir(parents=True, exist_ok=True)
-        await git(repo, "worktree", "add", "-b", branch, str(path), base)
+        await worktree(repo, "add", "-b", branch, str(path), base)
         workspace = cls(repo=repo, path=path, branch=branch, base=base)
         await workspace.mark()
         return workspace
@@ -117,7 +136,7 @@ class Workspace:
         path = root / task_id
         if not path.exists():
             path.parent.mkdir(parents=True, exist_ok=True)
-            await git(repo, "worktree", "add", str(path), branch)
+            await worktree(repo, "add", str(path), branch)
         workspace = cls(repo=repo, path=path, branch=branch, base=base)
         await workspace.mark()
         return workspace
@@ -182,9 +201,10 @@ class Workspace:
         return await git(self.path, "diff", "--stat", f"{self.base}...HEAD")
 
     async def remove(self, delete_branch: bool = False) -> None:
-        await run(["git", "worktree", "remove", "--force", str(self.path)], self.repo)
-        if self.path.exists():
-            shutil.rmtree(self.path, ignore_errors=True)
-            await run(["git", "worktree", "prune"], self.repo)
-        if delete_branch:
-            await run(["git", "branch", "-D", self.branch], self.repo)
+        async with _worktree_lock(self.repo):
+            await run(["git", "worktree", "remove", "--force", str(self.path)], self.repo)
+            if self.path.exists():
+                shutil.rmtree(self.path, ignore_errors=True)
+                await run(["git", "worktree", "prune"], self.repo)
+            if delete_branch:
+                await run(["git", "branch", "-D", self.branch], self.repo)

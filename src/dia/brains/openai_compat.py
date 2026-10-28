@@ -5,7 +5,7 @@ LocalAI... all expose ``/v1/chat/completions``::
 
     [brains.local]
     type = "ollama"              # = "openai" with base_url http://localhost:11434/v1
-    model = "qwen2.5:3b"
+    model = "qwen3.5:4b"
 
     [brains.lmstudio]
     type = "openai"

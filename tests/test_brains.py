@@ -214,3 +214,29 @@ async def test_status_is_in_the_configured_language(tmp_path: Path, repo: Path) 
     orch = orchestrator(tmp_path, repo, {"dia": {"language": "pl", "brain": ["rules"]}})
     response = await Assistant(orch).handle("Dziastatus")
     assert response.text == "Gotowi agenci: worker.\nŻadne zadanie teraz nie trwa."
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "scal to do main",
+        "merge this branch",
+        "wypchnij na github",
+        "push the branch to origin",
+        "odrzuć to zadanie",
+        "discard the task",
+    ],
+)
+def test_merge_push_never_becomes_run(text: str) -> None:
+    from dia.brains import Intent, guard_irreversible
+
+    blocked = guard_irreversible(Intent("run", project="nova", prompt=text), text, "pl")
+    assert blocked.action == "chat" and "Merge" in blocked.reply
+    assert guard_irreversible(Intent("ask", prompt=text), text).action == "chat"
+
+
+def test_merge_guard_leaves_ordinary_coding_alone() -> None:
+    from dia.brains import Intent, guard_irreversible
+
+    for text in ("napraw zapis", "add push notifications", "implement merge sort"):
+        assert guard_irreversible(Intent("run", prompt=text), text).action == "run"

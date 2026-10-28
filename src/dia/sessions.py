@@ -239,11 +239,54 @@ def _text(content: object, kinds: tuple[str, ...]) -> str:
     return ""
 
 
-_NOISE = ("<environment_context>", "<user_instructions>", "<command-", "<local-command", "Caveat:")
+_NOISE = (
+    "<environment_context>",
+    "<user_instructions>",
+    "<command-",
+    "<local-command",
+    "Caveat:",
+    "# AGENTS.md instructions",
+    "<INSTRUCTIONS>",
+    "<git_status>",
+    "<rules>",
+    "<agent_transcripts>",
+)
+
+
+# Some CLIs wrap what you typed: Cursor Agent in <user_query>, after a blob of
+# context (<user_info>, <git_status>, <rules>…). Codex prepends AGENTS.md as
+# <INSTRUCTIONS> and an <environment_context> block (sometimes as the whole
+# first "user" turn). Only what you typed is shown.
+_TYPED = re.compile(r"<user_query>\s*(.*?)\s*</user_query>", re.DOTALL)
+_ADDED = re.compile(
+    r"<("
+    r"timestamp|user_info|git_status|agent_transcripts|rules|"
+    r"system_reminder|system-reminder|attached_files|open_files|"
+    r"open_and_recently_viewed_files"
+    r")>.*?</\1>\s*",
+    re.DOTALL,
+)
+_CODEX_ADDED = re.compile(
+    r"(?:^# AGENTS\.md instructions\s*"
+    r"|<INSTRUCTIONS>.*?</INSTRUCTIONS>\s*"
+    r"|<environment_context>.*?</environment_context>\s*"
+    r"|<user_instructions>.*?</user_instructions>\s*)",
+    re.DOTALL | re.MULTILINE,
+)
+
+
+def _typed(text: str) -> str:
+    if match := _TYPED.search(text):
+        return match.group(1)
+    # Cursor's automatic first turn is only context (user_info, git_status, rules,
+    # skills…): no <user_query>. Drop the whole thing rather than show leftovers.
+    if "<user_info>" in text or "<git_status>" in text or "<agent_transcripts>" in text:
+        return ""
+    return _CODEX_ADDED.sub("", _ADDED.sub("", text)).strip()
 
 
 def _message(role: object, text: str, at: object = "") -> dict[str, str] | None:
-    text = text.strip()
+    text = (_typed(text) if role == "user" else text).strip()
     if role not in ("user", "assistant") or not text or text.startswith(_NOISE):
         return None
     return {"role": str(role), "text": text[:MAX_TEXT], "at": str(at or "")}
@@ -358,6 +401,7 @@ class Captured:
     cwd: str
     model: str | None = None
     taken_at: str = ""
+    started_in_app: bool = False  # a new session started in the app, not taken from a terminal
 
     @property
     def resume(self) -> str:

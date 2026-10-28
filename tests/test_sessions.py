@@ -102,3 +102,61 @@ def test_captured_sessions_are_kept_and_released(tmp_path: Path) -> None:
     assert [c.id for c in store.all()] == ["a2", "b"]
     store.remove("a2")
     assert [c.id for c in store.all()] == ["b"]
+
+
+def test_only_what_you_typed_is_shown() -> None:
+    from dia.sessions import _message
+
+    cursor = (
+        "<timestamp>Wednesday, Oct 28, 2026, 3:15 PM (UTC+1)</timestamp>\n"
+        "<user_query>\nznowu chyba openlogi wisi?\n</user_query>"
+    )
+    assert _message("user", cursor)["text"] == "znowu chyba openlogi wisi?"
+    added = "<timestamp>now</timestamp>\n<system_reminder>be nice</system_reminder>\nhello"
+    assert _message("user", added)["text"] == "hello"
+    # Cursor's first turn is only auto context (git status, rules, skills…) — hide it,
+    # including leftovers that sit outside <rules> and used to leak as a "user" bubble.
+    context = (
+        "<user_info>\nOS Version: linux\n</user_info>\n"
+        "<git_status>\n## ui_v2.0\n M app.js\n</git_status>\n"
+        "<agent_transcripts>\npast chats\n</agent_transcripts>\n"
+        "<rules>\n<user_rules>\nAnalyze all staged changes\n</user_rules>\n</rules>\n"
+        "<available_subagent_types>\ngeneralPurpose: …\n</available_subagent_types>\n"
+        "<agent_skills>\n…\n</agent_skills>\n"
+        "<dynamic_tools>\n…\n</dynamic_tools>"
+    )
+    assert _message("user", context) is None
+    # Real query may follow the same auto context in one blob — show only the query
+    with_query = context + "\n<user_query>\njaki jest aktualny stan repo?\n</user_query>"
+    assert _message("user", with_query)["text"] == "jaki jest aktualny stan repo?"
+    # Codex: AGENTS.md + environment as the first "user" turn — hide it
+    agents = (
+        "# AGENTS.md instructions\n\n<INSTRUCTIONS>\n# Ultraviolet\nnie commituj tego\n"
+        "</INSTRUCTIONS>\n<environment_context>\n  <cwd>/x</cwd>\n</environment_context>"
+    )
+    assert _message("user", agents) is None
+    # Codex may glue the real prompt after the wrappers in one message
+    glued = agents + "\njaki jest stan repo?"
+    assert _message("user", glued)["text"] == "jaki jest stan repo?"
+    # an answer that talks about such tags is left as it is
+    assert "<user_query>" in _message("assistant", "use <user_query> tags")["text"]
+
+
+def test_codex_agents_md_turn_is_hidden(tmp_path: Path) -> None:
+    def item(role, kind, text):
+        content = [{"type": kind, "text": text}]
+        payload = {"type": "message", "role": role, "content": content}
+        return {"type": "response_item", "payload": payload}
+
+    agents = (
+        "# AGENTS.md instructions\n\n<INSTRUCTIONS>\nrules\n</INSTRUCTIONS>\n"
+        "<environment_context><cwd>/x</cwd></environment_context>"
+    )
+    lines = [
+        item("user", "input_text", agents),
+        item("user", "input_text", "jaki jest stan repo?"),
+        item("assistant", "output_text", "na ui_v2.0"),
+    ]
+    f = tmp_path / "rollout-agents.jsonl"
+    f.write_text("\n".join(json.dumps(x) for x in lines))
+    assert [m["text"] for m in parse_transcript(f)] == ["jaki jest stan repo?", "na ui_v2.0"]

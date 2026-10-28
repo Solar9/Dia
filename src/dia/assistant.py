@@ -13,7 +13,7 @@ from dataclasses import dataclass
 from datetime import datetime
 
 from dia.agents import Mode
-from dia.brains import Brain, BrainContext, Intent
+from dia.brains import Brain, BrainContext, Intent, guard_irreversible
 from dia.brains.rules import strip_address
 from dia.orchestrator import Orchestrator, TaskActionError, TaskReport
 from dia.persona import persona_prompt
@@ -203,6 +203,8 @@ class Assistant:
             if intent:
                 intent.brain = brain.name
                 intent.text, intent.conversation = text, conversation
+                lang = self._language or self.dia.config.language or "en"
+                intent = guard_irreversible(intent, text, lang)
                 self._log_intent(intent)
                 return intent
         detail = "; ".join(problems) or "no brain configured"
