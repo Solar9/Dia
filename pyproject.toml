@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "dia"
-version = "0.1.1"
+version = "0.1.2"
 description = "A personal, pluggable AI assistant that orchestrates coding agents (Claude Code, Codex, Cursor, ...) across your repositories."
 readme = "README.md"
 license = "PolyForm-Noncommercial-1.0.0"

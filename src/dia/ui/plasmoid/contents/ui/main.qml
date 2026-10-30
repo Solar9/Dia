@@ -706,43 +706,76 @@ PlasmoidItem {
                 }
                 Item { Layout.fillWidth: true }
                 QQC2.ToolButton {
-                    icon.name: root.quiet ? "audio-volume-muted" : "audio-volume-high"
-                    icon.color: root.quiet ? root.c.accentInk : root.c.muted
+                    id: quietBtn
                     text: root.quiet ? root.tr("Quiet mode: on", "Tryb cichy: włączony")
                         : root.tr("Quiet mode: off", "Tryb cichy: wyłączony")
-                    display: QQC2.AbstractButton.IconOnly
+                    Accessible.name: text
                     checkable: true
                     checked: root.quiet
                     enabled: root.online
-                    implicitWidth: 36; implicitHeight: 36
+                    padding: 0
+                    implicitWidth: 36
+                    implicitHeight: 36
                     onClicked: root.post("api/quiet", { on: !root.quiet })
                     QQC2.ToolTip.visible: hovered
                     QQC2.ToolTip.text: text
-                    background: Rectangle { radius: 8; color: root.quiet ? root.c.active : parent.hovered ? root.c.hover : "transparent" }
+                    // Own SVGs + centered contentItem: theme icons via icon.name often
+                    // render blank here, and a loose RowLayout leaves Stop off-centre.
+                    contentItem: Item {
+                        Kirigami.Icon {
+                            anchors.centerIn: parent
+                            width: 18
+                            height: 18
+                            source: Qt.resolvedUrl(root.quiet ? "../images/icon-muted.svg" : "../images/icon-speaker.svg")
+                            isMask: true
+                            color: root.quiet ? root.c.accentInk : root.c.muted
+                        }
+                    }
+                    background: Rectangle {
+                        radius: 8
+                        color: quietBtn.checked ? root.c.active : quietBtn.hovered ? root.c.hover : "transparent"
+                    }
                 }
                 QQC2.ToolButton {  // two clicks: an emergency stop is not a misclick
-                    icon.name: "process-stop"
-                    icon.color: root.c.danger
+                    id: stopBtn
                     text: root.confirmStop ? root.tr("Click again to stop every agent", "Kliknij jeszcze raz, by zatrzymać wszystkich agentów")
                         : root.tr("Emergency stop", "Zatrzymanie awaryjne")
-                    display: root.confirmStop ? QQC2.AbstractButton.TextBesideIcon : QQC2.AbstractButton.IconOnly
+                    Accessible.name: text
                     visible: !root.halted
                     enabled: root.online
+                    padding: 0
                     implicitHeight: 36
+                    implicitWidth: root.confirmStop ? Math.max(36, stopRow.implicitWidth + 20) : 36
                     onClicked: {
                         if (root.confirmStop) { root.confirmStop = false; root.post("api/stop"); }
                         else { root.confirmStop = true; stopTimeout.restart(); }
                     }
-                    QQC2.ToolTip.visible: hovered
+                    QQC2.ToolTip.visible: hovered && !root.confirmStop
                     QQC2.ToolTip.text: text
-                    contentItem: RowLayout {
-                        spacing: 6
-                        Kirigami.Icon { source: "process-stop"; isMask: true; color: root.c.danger; Layout.preferredWidth: 16; Layout.preferredHeight: 16 }
-                        QQC2.Label { visible: root.confirmStop; text: parent.parent.text; color: root.c.danger; font.pixelSize: 12 }
+                    contentItem: Item {
+                        RowLayout {
+                            id: stopRow
+                            anchors.centerIn: parent
+                            spacing: 6
+                            Kirigami.Icon {
+                                source: Qt.resolvedUrl("../images/icon-stop.svg")
+                                isMask: true
+                                color: root.c.danger
+                                Layout.preferredWidth: 16
+                                Layout.preferredHeight: 16
+                            }
+                            QQC2.Label {
+                                visible: root.confirmStop
+                                text: stopBtn.text
+                                color: root.c.danger
+                                font.pixelSize: 12
+                            }
+                        }
                     }
                     background: Rectangle {
                         radius: 8
-                        color: root.confirmStop ? Qt.rgba(0.94, 0.53, 0.54, 0.12) : parent.hovered ? root.c.hover : "transparent"
+                        color: root.confirmStop ? Qt.rgba(0.94, 0.53, 0.54, 0.12)
+                             : stopBtn.hovered ? root.c.hover : "transparent"
                         border.color: root.confirmStop ? Qt.rgba(0.94, 0.53, 0.54, 0.4) : "transparent"
                     }
                 }

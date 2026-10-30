@@ -31,6 +31,7 @@ from typing import TYPE_CHECKING, Any
 from aiohttp import WSMsgType, web
 
 from dia import __version__, processes
+from dia.about import snapshot as about_snapshot
 from dia.agents import Mode
 from dia.assistant import Assistant
 from dia.attention import Attention
@@ -62,6 +63,7 @@ LOOPBACK = ("127.0.0.1", "localhost", "[::1]")
 OWNER_ONLY = (
     "/api/cli-sessions",
     "/api/cli-captured",
+    "/api/cli-commands",
     "/api/config",
     "/api/voice/",
     "/api/devices",
@@ -192,13 +194,16 @@ class ApiChannel(Channel):
         r = app.router
         r.add_get("/", self.index)
         r.add_get("/api/status", self.status)
+        r.add_get("/api/about", self.about)
         r.add_get("/api/cli-sessions", self.cli_sessions)
         r.add_get("/api/cli-sessions/{pid}/transcript", self.cli_transcript)
         r.add_post("/api/cli-sessions/{pid}/capture", self.cli_capture)
+        r.add_get("/api/cli-commands", self.cli_commands)
         r.add_get("/api/cli-captured", self.cli_captured)
         r.add_post("/api/cli-captured", self.cli_new_session)
         r.add_get("/api/cli-captured/{id}/transcript", self.cli_captured_transcript)
         r.add_post("/api/cli-captured/{id}/send", self.cli_captured_send)
+        r.add_patch("/api/cli-captured/{id}", self.cli_captured_update)
         r.add_delete("/api/cli-captured/{id}", self.cli_release)
         r.add_get("/api/tasks", self.tasks)
         r.add_post("/api/tasks", self.create_task)
@@ -350,9 +355,16 @@ class ApiChannel(Channel):
                     await asyncio.sleep(1)  # slow down guessing
                 raise web.HTTPUnauthorized(text="missing or wrong token")
         try:
-            return await handler(request)
+            response = await handler(request)
         except (TaskActionError, ConfigError, LookupError, ValueError) as exc:
             return web.json_response({"error": str(exc)}, status=400)
+        # The Qt window and the service worker keep a copy of the shell: always
+        # revalidate HTML/JS/CSS so an updated checkout shows up after a reload.
+        if request.method == "GET" and (
+            request.path == "/" or request.path.endswith((".js", ".css", ".html"))
+        ):
+            response.headers["Cache-Control"] = "no-cache"
+        return response
 
     def _spawn(self, coro: Any) -> asyncio.Task:
         task = asyncio.create_task(coro)
@@ -380,8 +392,13 @@ class ApiChannel(Channel):
 
     # --------------------------------------------------------------- pages ---
 
-    async def index(self, request: web.Request) -> web.FileResponse:
-        return web.FileResponse(STATIC / "index.html")
+    async def index(self, request: web.Request) -> web.Response:
+        html = (STATIC / "index.html").read_text()
+        app_v = int((STATIC / "app.js").stat().st_mtime)
+        css_v = int((STATIC / "style.css").stat().st_mtime)
+        html = html.replace('src="/static/app.js"', f'src="/static/app.js?v={app_v}"')
+        html = html.replace('href="/static/style.css"', f'href="/static/style.css?v={css_v}"')
+        return web.Response(text=html, content_type="text/html", charset="utf-8")
 
     # -------------------------------------------------------------- status ---
 
@@ -450,6 +467,9 @@ class ApiChannel(Channel):
                 "remote": self.remote,
             }
         )
+
+    async def about(self, request: web.Request) -> web.Response:
+        return web.json_response(about_snapshot(self.dia.config))
 
     # ------------------------------------------------------------- devices ---
 
@@ -781,11 +801,20 @@ class ApiChannel(Channel):
             raise ValueError(f"pick an agent whose conversation can go on ({kinds})")
         project = self.dia.config.project(str(body.get("project", "")))
         model = str(body.get("model") or "").strip() or None
+        mode = Mode.READ_ONLY if str(body.get("mode", "edit")) == "read-only" else Mode.EDIT
+        use_web = bool(body.get("web"))
         # Interactive: never wait for a usage-limit reset, and always cap the call
         # so the UI cannot sit on "Starting…" forever when the CLI hangs.
         used, result = await self.dia.call_agent(
             self.dia.config.agent(name),
-            AgentRequest(prompt=text, cwd=project.path, mode=Mode.EDIT, model=model, timeout=600),
+            AgentRequest(
+                prompt=text,
+                cwd=project.path,
+                mode=mode,
+                model=model,
+                web=use_web,
+                timeout=600,
+            ),
             purpose="cli-session",
         )
         if not result.success:
@@ -800,6 +829,8 @@ class ApiChannel(Channel):
             model=model,
             taken_at=datetime.now().isoformat(timespec="seconds"),
             started_in_app=True,
+            mode=mode.value,
+            web=use_web,
         )
         self._captured().add(item)
         self.dia.audit("cli.new", item.id, f"{kind} in {project.path}")
@@ -826,13 +857,36 @@ class ApiChannel(Channel):
         messages = await asyncio.to_thread(parse_transcript, path) if path else []
         return web.json_response({"messages": messages, "available": path is not None})
 
+    async def cli_commands(self, request: web.Request) -> web.Response:
+        """Slash commands of each agent CLI (Claude Code, Codex, Cursor), as in a terminal."""
+        from dia.sessions import RESUME_HINT, agent_commands
+
+        language = self.dia.config.language
+        return web.json_response({kind: agent_commands(kind, language) for kind in RESUME_HINT})
+
+    async def cli_captured_update(self, request: web.Request) -> web.Response:
+        """Change a taken-over session (model, mode, web) without sending a message."""
+        item = self._held(request)
+        body = await request.json()
+        fields: dict[str, object] = {}
+        if "model" in body:
+            fields["model"] = str(body.get("model") or "").strip() or None
+        if "mode" in body:
+            mode = str(body.get("mode") or "edit")
+            fields["mode"] = "read-only" if mode == "read-only" else "edit"
+        if "web" in body:
+            fields["web"] = bool(body.get("web"))
+        updated = self._captured().update(item.id, **fields) if fields else item
+        return web.json_response({**updated.__dict__, "resume": updated.resume})
+
     async def cli_captured_send(self, request: web.Request) -> web.Response:
         """Continue a taken-over conversation: the CLI resumes it headless, in its folder."""
         from dia import plugins
         from dia.agents import AgentRequest, Mode
 
         item = self._held(request)
-        text = str((await request.json()).get("text", "")).strip()
+        body = await request.json()
+        text = str(body.get("text", "")).strip()
         if not text:
             raise ValueError("write something first")
         name = next(
@@ -843,14 +897,21 @@ class ApiChannel(Channel):
             if name
             else plugins.load("dia.agents", item.kind)(item.kind, {})
         )
+        mode = Mode.READ_ONLY if (item.mode or "edit") == "read-only" else Mode.EDIT
+        if str(body.get("mode") or "") == "read-only":
+            mode = Mode.READ_ONLY
+        elif str(body.get("mode") or "") == "edit":
+            mode = Mode.EDIT
+        use_web = bool(body["web"]) if "web" in body else bool(item.web)
         used, result = await self.dia.call_agent(
             agent,
             AgentRequest(
                 prompt=text,
                 cwd=Path(item.cwd),
-                mode=Mode.EDIT,
+                mode=mode,
                 session_id=item.id,
                 model=item.model,
+                web=use_web,
                 timeout=600,
             ),
             purpose="cli-session",

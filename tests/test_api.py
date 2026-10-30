@@ -70,7 +70,9 @@ async def test_token_and_host_are_required(client) -> None:
     evil = {**client.auth, "Host": "attacker.example:8765"}
     assert (await client.get("/api/status", headers=evil)).status == 403
     page = await client.get("/")  # the page itself holds no data
-    assert page.status == 200 and "importmap" in await page.text()
+    html = await page.text()
+    assert page.status == 200 and "importmap" in html
+    assert "/static/app.js?v=" in html and page.headers.get("Cache-Control") == "no-cache"
     token_file = client.api.dia.config.data_dir / "api-token"
     assert token_file.stat().st_mode & 0o777 == 0o600
 
@@ -368,6 +370,21 @@ async def test_status_has_the_version(client) -> None:
     assert {i["purpose"] for i in manifest["icons"] if "purpose" in i} == {"any", "maskable"}
 
 
+async def test_about_lists_author_links_and_components(client) -> None:
+    from dia import __version__
+
+    assert (await client.get("/api/about")).status == 401
+    about = await (await client.get("/api/about", headers=client.auth)).json()
+    assert about["version"] == __version__
+    assert about["author"] == "Solar"
+    assert about["website"] == "https://solar9.me"
+    assert about["github"] == "https://github.com/Solar9/Dia"
+    assert about["email"] == "solar@solar9.me"
+    names = [row["name"] for row in about["components"]]
+    assert names[:2] == ["Dia", "Python"]
+    assert about["config"] and about["data_dir"]
+
+
 async def test_a_session_can_talk_straight_to_a_model(client) -> None:
     h = client.auth
     providers = await (await client.get("/api/chat/providers", headers=h)).json()
@@ -461,7 +478,10 @@ async def test_a_terminal_session_can_be_taken_over_and_continued(client, tmp_pa
     folder = re.sub(r"[^A-Za-z0-9]", "-", str(tmp_path))
     transcript = tmp_path / ".claude" / "projects" / folder / "sid1.jsonl"
     transcript.parent.mkdir(parents=True)
-    transcript.write_text('{"type":"user","message":{"role":"user","content":"hej"}}\n')
+    transcript.write_text(
+        '{"type":"user","timestamp":"2026-10-28T14:15:00Z",'
+        '"message":{"role":"user","content":"hej"}}\n'
+    )
     live = sessions.CliSession(7, "claude-code", tmp_path, 5.0, None, None, False)
     ended = []
     monkeypatch.setattr(sessions, "find_sessions", lambda: [live])
@@ -477,8 +497,21 @@ async def test_a_terminal_session_can_be_taken_over_and_continued(client, tmp_pa
     assert [c["id"] for c in await (await client.get("/api/cli-captured", headers=h)).json()] == [
         "sid1"
     ]
+    cmds = await (await client.get("/api/cli-commands", headers=h)).json()
+    assert "/help" in {c["cmd"] for c in cmds["claude-code"]}
+    assert "/mode" in {c["cmd"] for c in cmds["cursor"]}
+    patched = await (
+        await client.patch(
+            "/api/cli-captured/sid1",
+            json={"model": "opus", "web": True, "mode": "read-only"},
+            headers=h,
+        )
+    ).json()
+    assert patched["model"] == "opus" and patched["web"] is True
+    assert patched["mode"] == "read-only"
     talk = await (await client.get("/api/cli-captured/sid1/transcript", headers=h)).json()
     assert talk["messages"][0]["text"] == "hej"
+    assert talk["messages"][0]["at"] == "2026-10-28T14:15:00Z"
     sent = await client.post("/api/cli-captured/sid1/send", json={"text": "go on"}, headers=h)
     answer = await sent.json()
     assert answer.get("reply") == "done", answer
@@ -656,11 +689,19 @@ async def test_new_cli_session_with_a_chosen_agent_and_model(client, tmp_path: P
     script.chmod(0o755)
     client.api.dia.config.agents["cc"] = {"type": "claude-code", "command": str(script)}
     h = client.auth
-    body = {"agent": "cc", "model": "opus", "project": "demo", "text": "hello"}
+    body = {
+        "agent": "cc",
+        "model": "opus",
+        "project": "demo",
+        "text": "hello",
+        "mode": "read-only",
+        "web": True,
+    }
     made = await client.post("/api/cli-captured", json=body, headers=h)
     item = await made.json()
     assert made.status == 201 and item["id"] == "s-123" and item["reply"] == "ready"
     assert item["kind"] == "claude-code" and item["model"] == "opus" and item["started_in_app"]
+    assert item["mode"] == "read-only" and item["web"] is True
     assert item["resume"] == "claude --resume s-123"
     assert "--model opus" in (tmp_path / "claude.args").read_text()
     listed = await (await client.get("/api/cli-captured", headers=h)).json()

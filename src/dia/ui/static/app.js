@@ -129,7 +129,11 @@ const STRINGS = {
     saved: "Saved.", needs_restart: "applies after restarting Dia", add: "Add", remove: "Remove",
     assistant: "Assistant", voice_brain: "Voice & brain", agents_tab: "Agents", automation: "Automation",
     schedule: "Schedule", secrets: "Secrets", devices_tab: "Devices", look: "Appearance", config_file: "Config file",
-    desktop_tab: "Desktop & services", security_tab: "Security",
+    desktop_tab: "Desktop & services", security_tab: "Security", about_tab: "About Dia",
+    about_tagline: "A personal assistant that orchestrates coding agents across your repositories.",
+    about_author: "Author", about_website: "Website", about_github: "GitHub", about_email: "Email",
+    about_license: "License", about_components: "Components", about_instance: "This copy",
+    about_config: "Config", about_data: "Data",
     settings_help: "Who Dia is, how she works, and how she connects to your world.",
     settings_you: "You and Dia", settings_work: "Work", settings_connect: "Connect", settings_computer: "This computer",
     s_identity: "Identity", s_skills_brief: "Skills and briefing", s_conversation: "Conversation",
@@ -235,12 +239,46 @@ const STRINGS = {
     cli_new_started: "The session is on: answer below.", cli_new_working: "The agent is working on the first answer…",
     cli_new_failed: "The session did not start", cancel: "Cancel", cli_new_here: "started in Dia", cli_new_none: "No Claude Code, Codex or Cursor Agent is configured (Settings → Agents).",
     search: "Search", palette_hint: "Go to, find a task, or do something…", nothing_found: "Nothing found.", kind_view: "view", kind_action: "action", kind_task: "task", quiet_on_action: "Quiet mode on", quiet_off_action: "Quiet mode off",
-    files_changed: "files changed: {n}", mission: "Mission", agent_unavailable: "unavailable", calls_today: "24 h: {n} calls · {min} min", idle_today: "no calls in 24 h",
+    files_changed: "files changed: {n}", diff_file_list: "Changed files", diff_added_file: "added",
+    diff_deleted_file: "deleted", diff_renamed_file: "renamed", diff_modified_file: "modified",
+    diff_binary: "Binary file — no text preview", diff_empty: "No changes in this commit.",
+    diff_collapse: "Collapse", diff_expand: "Expand",
+    split_resize: "Drag to resize · double-click resets",
+    mission: "Mission", agent_unavailable: "unavailable", calls_today: "24 h: {n} calls · {min} min", idle_today: "no calls in 24 h",
     more: "More", talk_phone: "Conversation", talk_hint: "Tap the microphone and speak", talk_listening: "Listening…",
     talk_thinking: "Thinking…", talk_speaking: "Speaking… tap to interrupt", talk_unheard: "No speech recognised. Try again.",
     talk_unsupported: "This browser can't take dictation here. Write instead: the keyboard's microphone works too.",
     talk_type: "Write instead", talk_end: "End the conversation", talk_mic: "Microphone",
     talk_denied: "No access to the microphone: allow it in the browser's or the app's settings.", talk_local: "heard and spoken on your computer",
+    today: "Today", yesterday: "Yesterday",
+    cli_commands: "Commands", cli_commands_help: "The same slash commands as in this agent's own CLI. Type / to pick one, or send it like in a terminal.",
+    cli_web: "Web access", cli_cmd_hint: "Type / for this agent's commands",
+    cli_unknown: "Unknown command. Try /help.",
+    cli_model_set: "Next replies use {name}.",
+    cli_mode_set: "This session is now {mode}.",
+    cli_status_text: "{kind} in {cwd}\nmodel: {model}\nmode: {mode}\nweb: {web}\nresume: {resume}",
+    f_check_updates: "Look for Dia updates (tray)",
+    f_max_diff: "Most characters of a diff sent to the reviewer",
+    f_chat_default: "Default chat engine (dia, or a provider id)",
+    f_chat_ollama: "Ollama address for chat models",
+    f_chat_timeout: "Chat timeout (seconds)",
+    f_howtos_dir: "How-tos folder",
+    f_create_notes: "Create missing project notes",
+    f_journal_on: "Write a journal of what agents did",
+    f_snippet_chars: "Snippet length when searching notes",
+    f_howto_results: "How-tos found per search",
+    f_index_per_search: "Notes in the semantic index per search",
+    f_routing_rules: "Routing rules (match => agent, or project:match => agent)",
+    f_routing_min: "Auto-routing after this many tasks",
+    f_ui_enabled: "Local web UI",
+    f_ga_nodes: "Godot: most nodes in a scene",
+    f_ga_depth: "Godot: deepest node tree",
+    f_ga_lights: "Godot: most lights in a scene",
+    f_ga_texture: "Godot: largest texture (px)",
+    s_chat_models: "Direct chat", s_godot: "Godot analysis", s_computer_alerts: "Alerts",
+    s_lab: "Lab", s_tidy: "Tidy",
+    status_now: "Now", status_computer: "Computer", status_work: "Work", status_about: "About",
+    jump_to: "Jump to",
   },
   pl: {
     tasks: "Zadania", chat: "Czat", status: "Status", settings: "Ustawienia",
@@ -363,7 +401,11 @@ const STRINGS = {
     saved: "Zapisano.", needs_restart: "zadziała po ponownym uruchomieniu Dia", add: "Dodaj", remove: "Usuń",
     assistant: "Asystent", voice_brain: "Głos i mózg", agents_tab: "Agenci", automation: "Automatyzacje",
     schedule: "Harmonogram", secrets: "Sekrety", devices_tab: "Urządzenia", look: "Wygląd", config_file: "Plik konfiguracji",
-    desktop_tab: "Pulpit i usługi", security_tab: "Bezpieczeństwo",
+    desktop_tab: "Pulpit i usługi", security_tab: "Bezpieczeństwo", about_tab: "O programie",
+    about_tagline: "Osobista asystentka, która prowadzi agentów kodujących w Twoich repozytoriach.",
+    about_author: "Autor", about_website: "Strona", about_github: "GitHub", about_email: "E-mail",
+    about_license: "Licencja", about_components: "Komponenty", about_instance: "Ta kopia",
+    about_config: "Konfiguracja", about_data: "Dane",
     settings_help: "Kim jest Dia, jak pracuje i jak łączy się z Twoim światem.",
     settings_you: "Ty i Dia", settings_work: "Praca", settings_connect: "Połączenia", settings_computer: "Ten komputer",
     s_identity: "Tożsamość", s_skills_brief: "Umiejętności i briefing", s_conversation: "Rozmowa",
@@ -469,12 +511,46 @@ const STRINGS = {
     cli_new_started: "Sesja działa: odpowiadaj poniżej.", cli_new_working: "Agent pracuje nad pierwszą odpowiedzią…",
     cli_new_failed: "Sesja nie wystartowała", cancel: "Anuluj", cli_new_here: "rozpoczęta w Dii", cli_new_none: "Nie skonfigurowano Claude Code, Codex ani Cursor Agent (Ustawienia → Agenci).",
     search: "Szukaj", palette_hint: "Przejdź do, znajdź zadanie albo zrób coś…", nothing_found: "Nic nie znaleziono.", kind_view: "widok", kind_action: "akcja", kind_task: "zadanie", quiet_on_action: "Włącz tryb cichy", quiet_off_action: "Wyłącz tryb cichy",
-    files_changed: "zmienione pliki: {n}", mission: "Misja", agent_unavailable: "niedostępny", calls_today: "24 h: wywołania {n} · {min} min", idle_today: "brak wywołań w 24 h",
+    files_changed: "zmienione pliki: {n}", diff_file_list: "Zmienione pliki", diff_added_file: "nowy",
+    diff_deleted_file: "usunięty", diff_renamed_file: "przeniesiony", diff_modified_file: "zmieniony",
+    diff_binary: "Plik binarny — bez podglądu tekstu", diff_empty: "Brak zmian w tym commitcie.",
+    diff_collapse: "Zwiń", diff_expand: "Rozwiń",
+    split_resize: "Przeciągnij, by zmienić szerokość · podwójne kliknięcie przywraca domyślną",
+    mission: "Misja", agent_unavailable: "niedostępny", calls_today: "24 h: wywołania {n} · {min} min", idle_today: "brak wywołań w 24 h",
     more: "Więcej", talk_phone: "Rozmowa", talk_hint: "Dotknij mikrofonu i mów", talk_listening: "Słucham…",
     talk_thinking: "Myślę…", talk_speaking: "Mówię… dotknij, żeby przerwać", talk_unheard: "Nie rozpoznano mowy. Spróbuj jeszcze raz.",
     talk_unsupported: "Ta przeglądarka nie przyjmuje tu dyktowania. Napisz: mikrofon klawiatury też działa.",
     talk_type: "Pisz zamiast mówić", talk_end: "Zakończ rozmowę", talk_mic: "Mikrofon",
     talk_denied: "Brak dostępu do mikrofonu: zezwól na niego w ustawieniach przeglądarki lub aplikacji.", talk_local: "słucha i mówi Twój komputer",
+    today: "Dzisiaj", yesterday: "Wczoraj",
+    cli_commands: "Komendy", cli_commands_help: "Te same komendy z ukośnikiem co w CLI tego agenta. Wpisz /, żeby wybrać, albo wyślij jak w terminalu.",
+    cli_web: "Dostęp do sieci", cli_cmd_hint: "Wpisz / po komendy tego agenta",
+    cli_unknown: "Nieznana komenda. Spróbuj /help.",
+    cli_model_set: "Kolejne odpowiedzi użyją {name}.",
+    cli_mode_set: "Ta sesja jest teraz: {mode}.",
+    cli_status_text: "{kind} w {cwd}\nmodel: {model}\ntryb: {mode}\nsieć: {web}\nwznowienie: {resume}",
+    f_check_updates: "Szukaj aktualizacji Dia (zasobnik)",
+    f_max_diff: "Najwięcej znaków diffa dla recenzenta",
+    f_chat_default: "Domyślny silnik czatu (dia albo id dostawcy)",
+    f_chat_ollama: "Adres Ollamy dla modeli czatu",
+    f_chat_timeout: "Limit czasu czatu (sekundy)",
+    f_howtos_dir: "Folder sposobów (how-to)",
+    f_create_notes: "Twórz brakujące notatki projektów",
+    f_journal_on: "Pisz dziennik tego, co zrobili agenci",
+    f_snippet_chars: "Długość fragmentu przy szukaniu notatek",
+    f_howto_results: "Sposobów na wyszukiwanie",
+    f_index_per_search: "Notatek z indeksu semantycznego na szukanie",
+    f_routing_rules: "Reguły routingu (wzorzec => agent albo projekt:wzorzec => agent)",
+    f_routing_min: "Auto-routing po tylu zadaniach",
+    f_ui_enabled: "Lokalny interfejs WWW",
+    f_ga_nodes: "Godot: najwięcej węzłów w scenie",
+    f_ga_depth: "Godot: najgłębsze drzewo węzłów",
+    f_ga_lights: "Godot: najwięcej świateł w scenie",
+    f_ga_texture: "Godot: największa tekstura (px)",
+    s_chat_models: "Czat wprost", s_godot: "Analiza Godota", s_computer_alerts: "Alerty",
+    s_lab: "Laboratorium", s_tidy: "Porządki",
+    status_now: "Teraz", status_computer: "Komputer", status_work: "Praca", status_about: "O Dia",
+    jump_to: "Przejdź do",
   },
 };
 let lang = "en";
@@ -483,6 +559,73 @@ const t = (key, vars) => {
   return vars ? text.replace(/\{(\w+)\}/g, (m, name) => (name in vars ? vars[name] : m)) : text;
 };
 const clock = (iso) => new Date(iso).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+const localeOf = () => (lang === "pl" ? "pl-PL" : "en-GB");
+
+function parseWhen(value) {
+  if (value == null || value === "") return null;
+  if (typeof value === "number") {
+    const d = new Date(value < 1e12 ? value * 1000 : value);
+    return Number.isNaN(d.getTime()) ? null : d;
+  }
+  const raw = String(value).trim();
+  if (!raw) return null;
+  if (/^\d+(\.\d+)?$/.test(raw)) {
+    const n = Number(raw);
+    const d = new Date(n < 1e12 ? n * 1000 : n);
+    return Number.isNaN(d.getTime()) ? null : d;
+  }
+  const d = new Date(raw);
+  if (!Number.isNaN(d.getTime())) return d;
+  const d2 = new Date(raw.replace(/\s*\([^)]*\)\s*$/, ""));
+  return Number.isNaN(d2.getTime()) ? null : d2;
+}
+
+function stamp(value) {
+  const d = parseWhen(value);
+  if (!d) return "";
+  return d.toLocaleString(localeOf(), {
+    day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit",
+  });
+}
+
+function dayKey(value) {
+  const d = parseWhen(value);
+  if (!d) return "";
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
+function dayLabel(value) {
+  const d = parseWhen(value);
+  if (!d) return "";
+  const today = new Date();
+  const yday = new Date(today);
+  yday.setDate(today.getDate() - 1);
+  if (d.toDateString() === today.toDateString()) return t("today");
+  if (d.toDateString() === yday.toDateString()) return t("yesterday");
+  return d.toLocaleDateString(localeOf(), { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+}
+
+function MessageList({ messages, open, pendingPlan, send }) {
+  let lastDay = "";
+  return messages.map((m, i) => {
+    const day = dayKey(m.at);
+    const sep = Boolean(day) && day !== lastDay;
+    if (day) lastDay = day;
+    const mine = m.from === "me" || m.role === "user";
+    const system = m.from === "system" || m.role === "system";
+    return html`<div key=${`${day}-${i}`} class=${`msg-block ${system ? "is-system" : mine ? "is-me" : "is-dia"}`}>
+      ${sep ? html`<div class="day-sep">${dayLabel(m.at)}</div>` : null}
+      <div class=${`msg ${system ? "system" : mine ? "me" : "dia"}`}>
+        <${RichText} text=${m.text} class="" />
+        ${m.task && open ? html`<div class="chip"><button class="btn" onClick=${() => open(m.task)}>${t("open_task")}</button></div>` : null}
+        ${m.plan && pendingPlan === m.plan && send ? html`<div class="chip row">
+          <button class="btn primary" onClick=${() => send(t("yes"))}>${t("run_plan")}</button>
+          <button class="btn" onClick=${() => send(t("no"))}>${t("discard")}</button></div>` : null}
+        ${m.at ? html`<time class="msg-meta" datetime=${parseWhen(m.at)?.toISOString() || ""}>${stamp(m.at)}</time>` : null}
+      </div>
+    </div>`;
+  });
+}
 
 // ------------------------------------------------------------------- api ---
 
@@ -494,6 +637,14 @@ const APP_HOME = /iPhone|iPad|iPod/.test(navigator.userAgent)
 const THEME_KEY = "dia-theme";
 let onPhone = false;  // a paired device: its own theme may differ from the app's
 const SIDEBAR_KEY = "dia-sidebar";
+const SPLIT_SIDEBAR = "dia-split-sidebar";
+const SPLIT_TASKS = "dia-split-tasks";
+const SPLIT_MISSIONS = "dia-split-missions";
+const SPLIT_MEMORY = "dia-split-memory";
+const SPLIT_CHAT = "dia-split-chat";
+const SPLIT_CLI = "dia-split-cli";
+const SPLIT_INBOX = "dia-split-inbox";
+const SPLIT_SETTINGS = "dia-split-settings";
 
 function store(key, value) {
   try {
@@ -502,6 +653,75 @@ function store(key, value) {
     else localStorage.setItem(key, value);
   } catch (e) { /* storage may be unavailable; the UI still works */ }
   return value;
+}
+
+function loadSplitWidth(key, fallback, min, max) {
+  const n = Number(store(key));
+  return Number.isFinite(n) ? Math.min(max, Math.max(min, n)) : fallback;
+}
+
+/** Remembered pane width + a vertical drag handle (like an IDE splitter). */
+function useSplitWidth(key, fallback, min, max) {
+  const [width, setWidth] = useState(() => loadSplitWidth(key, fallback, min, max));
+  const commit = useCallback((next) => {
+    const clamped = Math.min(max, Math.max(min, Math.round(next)));
+    setWidth(clamped);
+    store(key, String(clamped));
+    return clamped;
+  }, [key, min, max]);
+  return [width, setWidth, commit];
+}
+
+/** Vertical drag handle. `reverse` when the sized pane sits to the right of the bar. */
+function VSplitter({ width, setWidth, commit, min, max, def, reverse = false }) {
+  const live = useRef(width);
+  live.current = width;
+  const drag = useRef(null);
+  const [active, setActive] = useState(false);
+  const ceiling = () => Math.min(max, Math.floor(window.innerWidth * 0.55));
+  const apply = (delta) => {
+    const next = Math.min(ceiling(), Math.max(min, live.current + (reverse ? -delta : delta)));
+    live.current = next;
+    setWidth(next);
+    return next;
+  };
+
+  const onPointerDown = (e) => {
+    if (e.button !== 0) return;
+    e.preventDefault();
+    e.currentTarget.setPointerCapture(e.pointerId);
+    drag.current = { x: e.clientX, w: live.current };
+    live.current = drag.current.w;
+    setActive(true);
+    document.body.classList.add("is-resizing");
+  };
+  const onPointerMove = (e) => {
+    if (!drag.current) return;
+    live.current = drag.current.w;
+    apply(e.clientX - drag.current.x);
+  };
+  const end = () => {
+    if (!drag.current) return;
+    drag.current = null;
+    setActive(false);
+    document.body.classList.remove("is-resizing");
+    commit(live.current);
+  };
+  const reset = () => {
+    live.current = def;
+    commit(def);
+  };
+  return html`<div class=${`vsplit${active ? " active" : ""}`} role="separator" aria-orientation="vertical"
+    aria-valuenow=${Math.round(width)} aria-valuemin=${min} aria-valuemax=${max}
+    aria-label=${t("split_resize")} title=${t("split_resize")} tabindex="0"
+    onPointerDown=${onPointerDown} onPointerMove=${onPointerMove}
+    onPointerUp=${end} onPointerCancel=${end} onDblClick=${reset}
+    onKeyDown=${(e) => {
+      const step = e.shiftKey ? 40 : 16;
+      if (e.key === "ArrowLeft") { e.preventDefault(); commit(width + (reverse ? step : -step)); }
+      if (e.key === "ArrowRight") { e.preventDefault(); commit(width + (reverse ? -step : step)); }
+      if (e.key === "Home") { e.preventDefault(); reset(); }
+    }} />`;
 }
 
 // What the address asks for (#token=...&view=chat&task=ID), read before the
@@ -617,6 +837,8 @@ const ICONS = {
   panel: "M5 4h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zM9 4v16",
   check: "M20 6 9 17l-5-5",
   arrow: "M5 12h14M12 5l7 7-7 7",
+  chevronDown: "M6 9l6 6 6-6",
+  chevronUp: "M18 15l-6-6-6 6",
   stop: "M6 6h12v12H6z",
   close: "M6 6l12 12M18 6 6 18",
   search: "M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14zM21 21l-5-5",
@@ -720,31 +942,155 @@ function RichText({ text, class: cls = "card prose", style }) {
   return html`<div class=${`${cls} md`} style=${style}>${out}</div>`;
 }
 
-function Diff({ text, notes = [] }) {
-  let lang = null, file = null, line = 0;
-  const rows = [];
-  text.split("\n").forEach((raw, i) => {
-    if (raw.startsWith("diff --git")) lang = languageOf(raw.split(" ").pop());
-    if (raw.startsWith("+++ ")) file = raw.slice(4).replace(/^b\//, "");
-    const meta = raw.startsWith("diff --git") || raw.startsWith("+++") || raw.startsWith("---")
-      || raw.startsWith("index ") || raw.startsWith("new file") || raw.startsWith("deleted file");
-    if (meta) { rows.push(html`<div key=${i} class="file">${raw}</div>`); return; }
+/** Split a unified diff into per-file patches (path, status, hunks, +/- counts). */
+function parseUnifiedDiff(text) {
+  const files = [];
+  let current = null;
+  let oldLine = 0, newLine = 0;
+  for (const raw of (text || "").split("\n")) {
+    if (raw.startsWith("diff --git ")) {
+      const parts = raw.slice("diff --git ".length).split(" ");
+      const a = (parts[0] || "").replace(/^a\//, "");
+      const b = (parts[1] || "").replace(/^b\//, "");
+      current = {
+        path: b || a || "?", oldPath: a || b || "?", status: "modified",
+        lang: null, added: 0, removed: 0, binary: false, hunks: [],
+      };
+      files.push(current);
+      continue;
+    }
+    if (!current) continue;
+    if (raw.startsWith("new file mode")) { current.status = "added"; continue; }
+    if (raw.startsWith("deleted file mode")) { current.status = "deleted"; continue; }
+    if (raw.startsWith("rename from ")) { current.status = "renamed"; current.oldPath = raw.slice(12); continue; }
+    if (raw.startsWith("rename to ")) { current.path = raw.slice(10); continue; }
+    if (raw.startsWith("Binary files ") || raw.startsWith("GIT binary patch")) {
+      current.binary = true;
+      continue;
+    }
+    if (raw.startsWith("--- ")) {
+      const p = raw.slice(4);
+      if (p === "/dev/null") current.status = current.status === "renamed" ? current.status : "added";
+      else current.oldPath = p.replace(/^a\//, "");
+      continue;
+    }
+    if (raw.startsWith("+++ ")) {
+      const p = raw.slice(4);
+      if (p === "/dev/null") current.status = "deleted";
+      else {
+        current.path = p.replace(/^b\//, "");
+        current.lang = languageOf(current.path);
+      }
+      continue;
+    }
     if (raw.startsWith("@@")) {
-      line = Number((raw.match(/\+(\d+)/) || [])[1] || 0);
-      rows.push(html`<div key=${i} class="hunk">${raw}</div>`);
-      return;
+      const m = raw.match(/@@ -(\d+)(?:,\d+)? \+(\d+)(?:,\d+)? @@/);
+      oldLine = Number(m?.[1] || 0);
+      newLine = Number(m?.[2] || 0);
+      current.hunks.push({ header: raw, lines: [] });
+      continue;
     }
-    const sign = raw[0] === "+" || raw[0] === "-" || raw[0] === " " ? raw[0] : "";
-    const cls = sign === "+" ? "add" : sign === "-" ? "del" : "";
-    rows.push(html`<div key=${i} class=${cls}><span class="sign">${sign || " "}</span><${Code} code=${raw.slice(sign ? 1 : 0)} lang=${lang} /></div>`);
-    if (sign !== "-") {
-      // comments from the PR/MR review, under the line they are about
-      notes.filter((n) => n.path === file && n.line === line).forEach((n, j) => rows.push(html`<div key=${`${i}-${j}`} class="diff-note">
-        <strong>${n.author}</strong><${RichText} text=${n.body} class="prose muted" /></div>`));
-      line += 1;
+    if (!current.hunks.length) continue;
+    const hunk = current.hunks[current.hunks.length - 1];
+    const sign = raw[0];
+    if (sign === "+") {
+      hunk.lines.push({ type: "add", oldLine: null, newLine: newLine++, text: raw.slice(1) });
+      current.added += 1;
+    } else if (sign === "-") {
+      hunk.lines.push({ type: "del", oldLine: oldLine++, newLine: null, text: raw.slice(1) });
+      current.removed += 1;
+    } else if (sign === "\\") {
+      hunk.lines.push({ type: "meta", oldLine: null, newLine: null, text: raw });
+    } else {
+      const textLine = sign === " " ? raw.slice(1) : raw;
+      hunk.lines.push({ type: "ctx", oldLine: oldLine++, newLine: newLine++, text: textLine });
     }
-  });
-  return html`<pre class="diff mono">${rows}</pre>`;
+  }
+  for (const file of files) {
+    if (!file.lang) file.lang = languageOf(file.path);
+  }
+  return files;
+}
+
+function DiffFile({ file, notes, open, onToggle }) {
+  const statusKey = {
+    added: "diff_added_file", deleted: "diff_deleted_file",
+    renamed: "diff_renamed_file", modified: "diff_modified_file",
+  }[file.status] || "diff_modified_file";
+  const rows = [];
+  let rowKey = 0;
+  for (const hunk of file.hunks) {
+    rows.push(html`<div key=${`h-${rowKey++}`} class="diff-hunk" title=${hunk.header}>
+      <span class="diff-ln"></span><span class="diff-ln"></span>
+      <span class="sign"> </span><span class="diff-code">${hunk.header}</span></div>`);
+    for (const line of hunk.lines) {
+      const cls = line.type === "add" ? "add" : line.type === "del" ? "del" : line.type === "meta" ? "hunk" : "";
+      const sign = line.type === "add" ? "+" : line.type === "del" ? "−" : " ";
+      rows.push(html`<div key=${`l-${rowKey++}`} class=${`diff-row ${cls}`}>
+        <span class="diff-ln">${line.oldLine ?? ""}</span>
+        <span class="diff-ln">${line.newLine ?? ""}</span>
+        <span class="sign">${sign}</span>
+        <span class="diff-code"><${Code} code=${line.text || " "} lang=${file.lang} /></span>
+      </div>`);
+      if (line.type !== "del" && line.newLine != null) {
+        notes.filter((n) => n.path === file.path && n.line === line.newLine).forEach((n, j) => {
+          rows.push(html`<div key=${`n-${rowKey++}-${j}`} class="diff-note">
+            <strong>${n.author}</strong><${RichText} text=${n.body} class="prose muted" /></div>`);
+        });
+      }
+    }
+  }
+  const title = file.status === "renamed" && file.oldPath !== file.path
+    ? `${file.oldPath} → ${file.path}` : file.path;
+  return html`<section class="diff-file" data-diff-file=${file.path}>
+    <button type="button" class="diff-file-head" aria-expanded=${open}
+      title=${open ? t("diff_collapse") : t("diff_expand")} onClick=${onToggle}>
+      <span class="diff-chevron" aria-hidden="true">${open ? "▾" : "▸"}</span>
+      <span class="diff-path mono" title=${title}>${title}</span>
+      <span class="diff-badge">${t(statusKey)}</span>
+      <span class="spacer"></span>
+      ${file.added || file.removed ? html`<span class="mono diff-stat">
+        <span class="tone-ok">+${file.added}</span>
+        <span class="tone-danger">−${file.removed}</span></span>` : null}
+    </button>
+    ${open ? html`<div class="diff-file-body mono">
+      ${file.binary ? html`<div class="diff-binary faint">${t("diff_binary")}</div>`
+        : rows.length ? rows : html`<div class="diff-binary faint">${t("diff_empty")}</div>`}
+    </div>` : null}
+  </section>`;
+}
+
+function Diff({ text, notes = [], focusPath = null, onFocused }) {
+  const files = parseUnifiedDiff(text);
+  const [open, setOpen] = useState(() => Object.fromEntries(files.map((f) => [f.path, true])));
+  const [active, setActive] = useState(files[0]?.path || "");
+  const root = useRef(null);
+
+  useEffect(() => {
+    if (!focusPath || !root.current) return;
+    setActive(focusPath);
+    setOpen((prev) => ({ ...prev, [focusPath]: true }));
+    const node = root.current.querySelector(`[data-diff-file="${CSS.escape(focusPath)}"]`);
+    node?.scrollIntoView({ behavior: "smooth", block: "start" });
+    onFocused?.();
+  }, [focusPath]);
+
+  if (text === "") return html`<div class="faint">${t("diff_empty")}</div>`;
+  if (!files.length) {
+    // Unusual payload without git headers: keep a readable fallback.
+    return html`<pre class="diff mono">${text}</pre>`;
+  }
+
+  return html`<div class="diff-view" ref=${root}>
+    <div class="diff-stack">
+      ${files.map((f) => html`<${DiffFile} key=${f.path} file=${f} notes=${notes}
+        open=${open[f.path] !== false}
+        onToggle=${() => {
+          setActive(f.path);
+          setOpen((prev) => ({ ...prev, [f.path]: prev[f.path] === false }));
+        }} />`)}
+    </div>
+  </div>`;
 }
 
 // ---------------------------------------------------------------- tasks ---
@@ -840,10 +1186,14 @@ function TaskDetail({ id, toast, onChanged, onBack }) {
   const [log, setLog] = useState(null);
   const [busy, setBusy] = useState(false);
   const [tab, setTab] = useState(null);
+  const [filesOpen, setFilesOpen] = useState(false);
+  const [focusPath, setFocusPath] = useState(null);
   const asked = useRef({});
 
   const load = useCallback(() => api(`/api/tasks/${id}`).then(setTask).catch((e) => toast(e.message, "error")), [id]);
-  useEffect(() => { setDiff(null); setLog(null); setTab(null); asked.current = {}; load(); }, [id]);
+  useEffect(() => {
+    setDiff(null); setLog(null); setTab(null); setFilesOpen(false); setFocusPath(null); asked.current = {}; load();
+  }, [id]);
   useEffect(() => {
     const onUpdate = (e) => {
       if (e.detail.id !== id) return;
@@ -890,16 +1240,29 @@ function TaskDetail({ id, toast, onChanged, onBack }) {
     task.has_test_log && ["tests", t("tests")], reviewed && ["review", t("reviews")]].filter(Boolean);
   const shown = tab && tabs.some(([key]) => key === tab) ? tab
     : changes && task.status === "done" ? "changes" : "summary";
-  // the diff and the test log are fetched once, when their tab is first shown
-  if (shown === "changes" && !asked.current.diff) {
+  const loadDiff = () => {
+    if (asked.current.diff) return;
     asked.current.diff = true;
     api(`/api/tasks/${id}/diff`).then(setDiff).catch((e) => { setDiff(""); toast(e.message, "error"); });
-  }
+  };
+  // Prefetch the diff whenever there are changes, so the file menu in the
+  // decision bar can open without waiting for the Changes tab.
+  if (changes && diff === null) loadDiff();
   if (shown === "tests" && !asked.current.log) {
     asked.current.log = true;
     api(`/api/tasks/${id}/tests`).then(setLog).catch((e) => { setLog(""); toast(e.message, "error"); });
   }
   const lastReview = d.reviews?.length ? d.reviews[d.reviews.length - 1] : null;
+  const diffFiles = typeof diff === "string" && diff ? parseUnifiedDiff(diff) : [];
+  const pickFile = (path) => {
+    setTab("changes");
+    setFocusPath(path);
+  };
+  const toggleFiles = () => {
+    setTab("changes");
+    loadDiff();
+    setFilesOpen((was) => !was);
+  };
 
   return html`
     <div class="detail">
@@ -919,28 +1282,58 @@ function TaskDetail({ id, toast, onChanged, onBack }) {
           ${d.reverted_by ? html`<span class="chip">${t("reverted_by")}: <span class="mono">${d.reverted_by}</span></span>` : null}
         </div>
       </div>
-      <div class="decision-bar">
-        <div class="decision-checks">
-          ${task.tests_ok !== null ? html`<span class=${task.tests_ok ? "tone-ok" : "tone-danger"}>${task.tests_ok ? html`<${Icon} name="check" size=${13} />` : "✕"} ${t("tests")}: ${tests}</span>` : null}
-          ${lastReview ? html`<span class="muted">${lastReview.reviewer}: ${lastReview.verdict.replace("_", " ")}</span>` : null}
-          ${task.diffstat ? html`<span class="mono"><span class="tone-ok">+${task.diffstat.added}</span> <span class="tone-danger">−${task.diffstat.removed}</span> <span class="faint">· ${t("files_changed", { n: task.diffstat.files })}</span></span>` : null}
+      <div class=${`decision-bar${filesOpen ? " files-open" : ""}`}>
+        <div class="decision-bar-top">
+          <div class="decision-checks">
+            ${task.tests_ok !== null ? html`<span class=${task.tests_ok ? "tone-ok" : "tone-danger"}>${task.tests_ok ? html`<${Icon} name="check" size=${13} />` : "✕"} ${t("tests")}: ${tests}</span>` : null}
+            ${lastReview ? html`<span class="muted">${lastReview.reviewer}: ${lastReview.verdict.replace("_", " ")}</span>` : null}
+            ${task.diffstat ? html`<span class="mono decision-diffstat">
+              <span class="tone-ok">+${task.diffstat.added}</span>
+              <span class="tone-danger">−${task.diffstat.removed}</span>
+              <button type="button" class=${`diff-files-trigger${filesOpen ? " open" : ""}`} aria-expanded=${filesOpen}
+                title=${t("diff_file_list")} onClick=${toggleFiles}>
+                <span>· ${t("files_changed", { n: task.diffstat.files })}</span>
+                <span class="diff-files-caret" aria-hidden="true">
+                  <${Icon} name=${filesOpen ? "chevronUp" : "chevronDown"} size=${16} /></span>
+              </button>
+            </span>` : null}
+          </div>
+          <div class="decision-actions">
+            ${task.status === "planned" ? html`<button class="btn primary" disabled=${busy} onClick=${() => act("run-plan")}>${t("run_plan")}</button>` : null}
+            ${reviewable ? html`
+              <button class="btn" disabled=${busy} onClick=${() => act("review")}>${t("review")}</button>
+              <button class="btn primary" disabled=${busy || task.status !== "done"} onClick=${() => decide("merge")}>${t("merge")}</button>
+              <button class="btn" disabled=${busy || task.status !== "done"} onClick=${() => act("publish")}>${t("publish")}</button>
+              <button class="btn danger" disabled=${busy} onClick=${() => decide("discard")}>${t("discard")}</button>` : null}
+            ${task.status === "planned" ? html`<button class="btn danger" disabled=${busy} onClick=${() => decide("discard")}>${t("discard")}</button>` : null}
+            ${task.status === "published" && ci.state === "failed" ? html`<button class="btn primary" disabled=${busy} onClick=${() => act("fix-ci")}>${t("fix_ci")}</button>` : null}
+            ${task.status === "published" && pending.length ? html`<button class="btn primary" disabled=${busy} onClick=${() => act("address-comments")}>${t("address")} (${pending.length})</button>` : null}
+            ${task.mode === "build" && task.status === "done" && !d.published?.itch ? html`<button class="btn primary" disabled=${busy} onClick=${() => confirm(t("publish_itch_confirm")) && act("publish-itch")}>${t("publish_itch")}</button>` : null}
+            ${task.mode === "build" && task.status === "done" && !d.published?.steam ? html`<button class="btn" disabled=${busy} onClick=${() => confirm(t("publish_steam_confirm")) && act("publish-steam")}>${t("publish_steam")}</button>` : null}
+            ${task.status === "merged" && d.merge_commit && !d.reverted_by ? html`<button class="btn danger" disabled=${busy} onClick=${() => confirm(t("rollback_confirm")) && decide("rollback")}>${t("rollback")}</button>` : null}
+            ${task.mode === "edit" && ["done", "merged", "published"].includes(task.status) && !d.howto ? html`<button class="btn ghost" disabled=${busy} onClick=${() => act("howto")}>${t("save_howto")}</button>` : null}
+            ${task.mode === "check" && task.tests_ok === false && !d.fix_task ? html`<button class="btn primary" disabled=${busy} onClick=${() => act("fix-build")}>${t("fix_build")}</button>` : null}
+          </div>
         </div>
-      <div class="decision-actions">
-        ${task.status === "planned" ? html`<button class="btn primary" disabled=${busy} onClick=${() => act("run-plan")}>${t("run_plan")}</button>` : null}
-        ${reviewable ? html`
-          <button class="btn" disabled=${busy} onClick=${() => act("review")}>${t("review")}</button>
-          <button class="btn primary" disabled=${busy || task.status !== "done"} onClick=${() => decide("merge")}>${t("merge")}</button>
-          <button class="btn" disabled=${busy || task.status !== "done"} onClick=${() => act("publish")}>${t("publish")}</button>
-          <button class="btn danger" disabled=${busy} onClick=${() => decide("discard")}>${t("discard")}</button>` : null}
-        ${task.status === "planned" ? html`<button class="btn danger" disabled=${busy} onClick=${() => decide("discard")}>${t("discard")}</button>` : null}
-        ${task.status === "published" && ci.state === "failed" ? html`<button class="btn primary" disabled=${busy} onClick=${() => act("fix-ci")}>${t("fix_ci")}</button>` : null}
-        ${task.status === "published" && pending.length ? html`<button class="btn primary" disabled=${busy} onClick=${() => act("address-comments")}>${t("address")} (${pending.length})</button>` : null}
-        ${task.mode === "build" && task.status === "done" && !d.published?.itch ? html`<button class="btn primary" disabled=${busy} onClick=${() => confirm(t("publish_itch_confirm")) && act("publish-itch")}>${t("publish_itch")}</button>` : null}
-        ${task.mode === "build" && task.status === "done" && !d.published?.steam ? html`<button class="btn" disabled=${busy} onClick=${() => confirm(t("publish_steam_confirm")) && act("publish-steam")}>${t("publish_steam")}</button>` : null}
-        ${task.status === "merged" && d.merge_commit && !d.reverted_by ? html`<button class="btn danger" disabled=${busy} onClick=${() => confirm(t("rollback_confirm")) && decide("rollback")}>${t("rollback")}</button>` : null}
-        ${task.mode === "edit" && ["done", "merged", "published"].includes(task.status) && !d.howto ? html`<button class="btn ghost" disabled=${busy} onClick=${() => act("howto")}>${t("save_howto")}</button>` : null}
-        ${task.mode === "check" && task.tests_ok === false && !d.fix_task ? html`<button class="btn primary" disabled=${busy} onClick=${() => act("fix-build")}>${t("fix_build")}</button>` : null}
-      </div>
+        ${filesOpen ? html`<div class="decision-files-panel">
+          <div class="decision-files" role="listbox" aria-label=${t("diff_file_list")}>
+            ${diff === null ? html`<div class="diff-files-empty faint">…</div>`
+              : diffFiles.length ? diffFiles.map((f) => html`<button type="button" key=${f.path} role="option"
+                class=${`diff-files-item ${f.path === focusPath ? "active" : ""}`}
+                onClick=${() => pickFile(f.path)}>
+                <span class="diff-path mono" title=${f.path}>${f.path}</span>
+                <span class="mono diff-stat">
+                  ${f.added ? html`<span class="tone-ok">+${f.added}</span>` : null}
+                  ${f.removed ? html`<span class="tone-danger">−${f.removed}</span>` : null}
+                </span>
+              </button>`)
+              : html`<div class="diff-files-empty faint">${t("diff_empty")}</div>`}
+          </div>
+          <button type="button" class="decision-files-fold" title=${t("diff_collapse")}
+            aria-label=${t("diff_collapse")} onClick=${() => setFilesOpen(false)}>
+            <span class="diff-files-caret" aria-hidden="true"><${Icon} name="chevronUp" size=${14} /></span>
+          </button>
+        </div>` : null}
       </div>
       <div class="tabs" role="tablist">
         ${tabs.map(([key, label]) => html`<button role="tab" aria-selected=${shown === key} class="tab ${shown === key ? "active" : ""}" onClick=${() => setTab(key)}>${label}</button>`)}
@@ -948,7 +1341,8 @@ function TaskDetail({ id, toast, onChanged, onBack }) {
       ${shown === "changes" ? html`<div>
         ${lastReview ? html`<div class="review-note"><strong>${lastReview.reviewer}</strong> <span class="faint">· ${lastReview.verdict.replace("_", " ")}</span>
           <${RichText} text=${lastReview.findings} class="prose muted" /></div>` : null}
-        ${diff === null ? html`<div class="faint">…</div>` : html`<${Diff} text=${diff} notes=${pending} />`}</div>` : null}
+        ${diff === null ? html`<div class="faint">…</div>`
+          : html`<${Diff} text=${diff} notes=${pending} focusPath=${focusPath} onFocused=${() => setFocusPath(null)} />`}</div>` : null}
       ${shown === "tests" ? html`<pre class="log mono">${log ?? "…"}</pre>` : null}
       ${shown === "review" ? html`<div>
       ${d.reviews?.length ? html`<div class="section"><div class="label">${t("reviews")}</div>
@@ -1015,6 +1409,7 @@ function TasksView({ tasks, status, selected, select, toast, reload }) {
   const [state, setState] = useState("");
   const [query, setQuery] = useState("");
   const [composing, setComposing] = useState(false);
+  const [listW, setListW, commitListW] = useSplitWidth(SPLIT_TASKS, 360, 260, 560);
   const words = query.trim().toLowerCase();
   const shown = tasks.filter((x) => (!project || x.project === project) && (!state || x.status === state)
     && (!words || `${x.prompt} ${x.id} ${x.branch || ""} ${x.agent}`.toLowerCase().includes(words)));
@@ -1029,7 +1424,7 @@ function TasksView({ tasks, status, selected, select, toast, reload }) {
       <span class="task-meta">${x.project} · ${x.agent} · ${ago(x.created_at)}${x.diffstat ? html` · <span class="tone-ok">+${x.diffstat.added}</span> <span class="tone-danger">−${x.diffstat.removed}</span>` : null}</span>
     </button>`;
   return html`
-    <div class="split ${selected ? "has-selected" : ""}">
+    <div class="split ${selected ? "has-selected" : ""}" style=${{ "--list-w": `${listW}px` }}>
       <div class="list">
         <div class="list-tools">
           <button class="btn new-task" aria-expanded=${composing} onClick=${() => setComposing(!composing)}>${composing ? t("hide") : `+ ${t("new_task")}`}</button>
@@ -1049,6 +1444,7 @@ function TasksView({ tasks, status, selected, select, toast, reload }) {
         ${groups.length ? groups.map(([key, list]) => html`<div class="list-group">${t(key)}</div>${list.map(row)}`)
           : html`<div class="empty">${t("no_tasks")}</div>`}
       </div>
+      <${VSplitter} width=${listW} setWidth=${setListW} commit=${commitListW} min=${260} max=${560} def=${360} />
       ${selected ? html`<${TaskDetail} id=${selected} toast=${toast} onChanged=${reload} onBack=${() => select(null)} />`
         : html`<div class="empty">${t("pick_task")}</div>`}
     </div>`;
@@ -1206,6 +1602,7 @@ function AgentsCard({ status }) {
 }
 
 function InboxView({ tasks, status, open, toast, reload, go }) {
+  const [sideW, setSideW, commitSideW] = useSplitWidth(SPLIT_INBOX, 320, 240, 480);
   const waiting = tasks.map((x) => [x, decisionOf(x)]).filter(([, kind]) => kind)
     .sort(([a], [b]) => a.created_at.localeCompare(b.created_at));
   const running = tasks.filter((x) => RUNNING.includes(x.status));
@@ -1218,12 +1615,13 @@ function InboxView({ tasks, status, open, toast, reload, go }) {
         <p class="muted">${waiting.length ? t("inbox_waiting", { n: waiting.length }) : t("inbox_clear")}</p>
       </div>
       <${Composer} status=${status} toast=${toast} onCreated=${(task) => { reload(); open(task.id); }} />
-      <div class="inbox-cols">
+      <div class="inbox-cols" style=${{ "--inbox-side-w": `${sideW}px` }}>
         <section class="inbox-main">
           <h2>${t("waiting_for_you")}</h2>
           ${waiting.length ? waiting.map(([x, kind]) => html`<${InboxCard} key=${x.id} task=${x} kind=${kind} open=${open} toast=${toast} reload=${reload} />`)
             : html`<div class="card faint">${t("inbox_clear")}</div>`}
         </section>
+        <${VSplitter} width=${sideW} setWidth=${setSideW} commit=${commitSideW} min=${240} max=${480} def=${320} reverse />
         <aside class="inbox-side">
           <h2>${t("working_now")}</h2>
           <div class="card flush">
@@ -1335,10 +1733,11 @@ function TalkSheet({ local, quiet, onClose, onType, open }) {
     audio.play().catch(() => setState("idle"));
   };
   const said = (heard, answer) => {
-    setLines((all) => [...all, { from: "me", text: heard },
-      { from: "dia", text: answer.reply || "", task: answer.task?.id || answer.plan?.id }]);
+    const at = Date.now() / 1000;
+    setLines((all) => [...all, { from: "me", text: heard, at },
+      { from: "dia", text: answer.reply || "", task: answer.task?.id || answer.plan?.id, at }]);
   };
-  const failed = (e) => { setLines((all) => [...all, { from: "dia", text: `${t("failed")}: ${e.message}` }]); setState("idle"); };
+  const failed = (e) => { setLines((all) => [...all, { from: "dia", text: `${t("failed")}: ${e.message}`, at: Date.now() / 1000 }]); setState("idle"); };
   const session = () => store(SESSION_KEY) || "owner";
 
   const listenWithDia = async () => {
@@ -1401,6 +1800,7 @@ function TalkSheet({ local, quiet, onClose, onType, open }) {
         <button class="icon-btn" aria-label=${t("talk_end")} onClick=${onClose}><${Icon} name="close" /></button></div>
       <div class="talk-lines">
         ${lines.map((x) => html`<div class="talk-line ${x.from}">${x.text}
+          ${x.at ? html`<time class="msg-meta">${stamp(x.at)}</time>` : null}
           ${x.task ? html`<button class="btn ghost" onClick=${() => open(x.task)}>${t("open_task")} <${Icon} name="arrow" size=${14} /></button>` : null}</div>`)}
         <span ref=${end}></span>
       </div>
@@ -1425,6 +1825,7 @@ function ChatView({ open, toast }) {
   const [busy, setBusy] = useState(false);
   const [showList, setShowList] = useState(false);
   const [providers, setProviders] = useState([]);
+  const [listW, setListW, commitListW] = useSplitWidth(SPLIT_CHAT, 260, 180, 420);
   const end = useRef(null);
   useEffect(() => { api("/api/chat/providers").then(setProviders).catch(() => setProviders([])); }, []);
   useEffect(() => end.current?.scrollIntoView({ behavior: "smooth" }), [messages]);
@@ -1465,14 +1866,15 @@ function ChatView({ open, toast }) {
     const content = (say ?? text).trim();
     if (!content) return;
     setText("");
-    setMessages((m) => [...m, { from: "me", text: content }]);
+    setMessages((m) => [...m, { from: "me", text: content, at: Date.now() / 1000 }]);
     setBusy(true);
     try {
       const answer = await api("/api/chat", { method: "POST", body: { text: content, session: current } });
-      setMessages((m) => [...m, { from: "dia", text: answer.reply || "", task: answer.task?.id, plan: answer.plan?.id }]);
+      setMessages((m) => [...m, { from: "dia", text: answer.reply || "", task: answer.task?.id, plan: answer.plan?.id, at: Date.now() / 1000 }]);
       loadSessions();
+      loadMessages(current);
     } catch (e) {
-      setMessages((m) => [...m, { from: "dia", text: `${t("failed")}: ${e.message}` }]);
+      setMessages((m) => [...m, { from: "dia", text: `${t("failed")}: ${e.message}`, at: Date.now() / 1000 }]);
     }
     setBusy(false);
   };
@@ -1487,7 +1889,7 @@ function ChatView({ open, toast }) {
     } catch (e) { toast(e.message, "error"); }
   };
   return html`
-    <div class="chat-split ${showList ? "show-list" : ""}">
+    <div class="chat-split ${showList ? "show-list" : ""}" style=${{ "--chat-list-w": `${listW}px` }}>
       <div class="chat-sessions">
         <button class="btn primary" style="width:100%" onClick=${create}>+ ${t("new_session")}</button>
         ${sessions.map((s) => html`<div class="session-row ${s.id === current ? "active" : ""}" onClick=${() => choose(s.id)}>
@@ -1499,6 +1901,7 @@ function ChatView({ open, toast }) {
             <button class="btn ghost" title=${t("delete_session")} onClick=${(e) => { e.stopPropagation(); remove(s); }}>×</button>
           </span></div>`)}
       </div>
+      <${VSplitter} width=${listW} setWidth=${setListW} commit=${commitListW} min=${180} max=${420} def=${260} />
       <div class="chat">
         <div class="chat-head"><button class="btn ghost sessions-toggle" onClick=${() => setShowList(!showList)}>☰ ${t("sessions")}</button>
           <strong style="flex:1">${session ? title(session) : ""}</strong>
@@ -1511,13 +1914,7 @@ function ChatView({ open, toast }) {
           </span>` : null}</div>
         <div class="messages">
           ${messages.length ? null : html`<div class="empty">${t("chat_hint")}</div>`}
-          ${messages.map((m, i) => html`
-            <div key=${i} class="msg ${m.from}"><${RichText} text=${m.text} class="" />
-              ${m.task ? html`<div class="chip"><button class="btn" onClick=${() => open(m.task)}>${t("open_task")}</button></div>` : null}
-              ${m.plan && i === messages.length - 1 && session?.pending_plan === m.plan ? html`<div class="chip row">
-                <button class="btn primary" onClick=${() => send(t("yes"))}>${t("run_plan")}</button>
-                <button class="btn" onClick=${() => send(t("no"))}>${t("discard")}</button></div>` : null}
-            </div>`)}
+          <${MessageList} messages=${messages} open=${open} pendingPlan=${session?.pending_plan} send=${send} />
           <div ref=${end}></div>
         </div>
         <div class="chat-input">
@@ -1693,12 +2090,14 @@ function NewCliSession({ status, onSubmit, onCancel }) {
   const [agent, setAgent] = useState(agents[0]?.name || "");
   const [model, setModel] = useState("");
   const [project, setProject] = useState(status?.projects?.[0]?.name || "");
+  const [mode, setMode] = useState("edit");
+  const [web, setWeb] = useState(false);
   const [text, setText] = useState("");
   const info = agents.find((a) => a.name === agent);
   const start = (e) => {
     e.preventDefault();
     if (!text.trim() || !project) return;
-    onSubmit({ agent, model, project, text: text.trim() });
+    onSubmit({ agent, model, project, mode, web, text: text.trim() });
   };
   if (!agents.length) return html`<div class="empty">${t("cli_new_none")}</div>`;
   return html`<form class="page cli-new" onSubmit=${start}>
@@ -1715,6 +2114,13 @@ function NewCliSession({ status, onSubmit, onCancel }) {
       <select class="select" value=${project} onChange=${(e) => setProject(e.target.value)}>
         ${(status?.projects || []).map((p) => html`<option value=${p.name}>${p.name} · ${p.path}</option>`)}
       </select></label>
+    <label class="field"><span>${t("mode")}</span>
+      <select class="select" value=${mode} onChange=${(e) => setMode(e.target.value)}>
+        <option value="edit">${t("edit")}</option>
+        <option value="read-only">${t("read_only")}</option>
+      </select></label>
+    <label class="field"><span>${t("cli_web")}</span>
+      <input type="checkbox" checked=${web} onChange=${(e) => setWeb(e.target.checked)} /></label>
     <textarea class="textarea" placeholder=${t("cli_new_first")} value=${text} onInput=${(e) => setText(e.target.value)}
       onKeyDown=${(e) => { if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) start(e); }}></textarea>
     <div class="row">
@@ -1731,11 +2137,16 @@ function CliView({ toast, status }) {
   const [held, setHeld] = useState([]);
   const [key, setKey] = useState(null);
   const [talk, setTalk] = useState({ messages: [], available: true });
+  const [notes, setNotes] = useState([]);  // local /help /status replies
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
+  const [cmds, setCmds] = useState({});
+  const [slash, setSlash] = useState(-1);  // highlighted index in the / menu, -1 = closed
+  const [listW, setListW, commitListW] = useSplitWidth(SPLIT_CLI, 280, 200, 480);
   const end = useRef(null);
   const loadHeld = () => api("/api/cli-captured").then(setHeld).catch(() => setHeld([]));
   useEffect(() => {
+    api("/api/cli-commands").then(setCmds).catch(() => setCmds({}));
     const load = () => api("/api/cli-sessions").then(setLive).catch(() => setLive([]));
     load(); loadHeld();
     const timer = setInterval(() => { load(); loadHeld(); }, 5000);
@@ -1744,7 +2155,8 @@ function CliView({ toast, status }) {
   const startSession = async (payload) => {
     setCreating(false);
     setPending(payload);
-    setTalk({ messages: [{ role: "user", text: payload.text }], available: true });
+    setNotes([]);
+    setTalk({ messages: [{ role: "user", text: payload.text, at: Date.now() / 1000 }], available: true });
     try {
       const item = await api("/api/cli-captured", { method: "POST", body: payload });
       setPending(null);
@@ -1768,14 +2180,20 @@ function CliView({ toast, status }) {
     : null;
   const refresh = () => (path ? api(path).then(setTalk).catch(() => setTalk({ messages: [], available: false })) : null);
   useEffect(() => {
+    setNotes([]); setSlash(-1);
     if (!path) return undefined;
     refresh();
     const timer = setInterval(refresh, 4000);
     return () => clearInterval(timer);
   }, [path]);
-  useEffect(() => end.current?.scrollIntoView({ block: "end" }), [talk.messages.length, chosen?.key, pending]);
+  useEffect(() => end.current?.scrollIntoView({ block: "end" }), [talk.messages.length, notes.length, chosen?.key, pending]);
   const age = (s) => (s < 90 ? `${Math.round(s)} s` : s < 5400 ? `${Math.round(s / 60)} min` : `${(s / 3600).toFixed(1)} h`);
   const folder = (s) => (s.cwd || "").split("/").filter(Boolean).slice(-2).join("/") || s.cwd || "";
+  const catalog = cmds[chosen?.kind] || [];
+  const typed = text.startsWith("/") ? text.slice(1).toLowerCase() : "";
+  const matches = text.startsWith("/")
+    ? catalog.filter((c) => c.cmd.slice(1).startsWith(typed) || c.cmd.includes(typed.split(/\s/)[0]))
+    : [];
   const capture = async () => {
     if (!confirm(t("cli_capture_confirm"))) return;
     try {
@@ -1789,18 +2207,110 @@ function CliView({ toast, status }) {
       setKey(null); await loadHeld(); toast(`${t("cli_released")}: ${r.resume}`);
     } catch (e) { toast(e.message, "error"); }
   };
+  const note = (body) => setNotes((all) => [...all, { role: "system", text: body, at: Date.now() / 1000 }]);
+  const patchSession = async (fields) => {
+    const item = await api(`/api/cli-captured/${chosen.id}`, { method: "PATCH", body: fields });
+    await loadHeld();
+    return item;
+  };
+  const sendPrompt = async (message) => {
+    setBusy(true);
+    try {
+      const r = await api(`/api/cli-captured/${chosen.id}/send`, { method: "POST", body: { text: message } });
+      setText(""); setSlash(-1);
+      if (r.id !== chosen.id) { await loadHeld(); setKey(`c:${r.id}`); } else await refresh();
+    } catch (err) { toast(err.message, "error"); }
+    setBusy(false);
+  };
+  const modeOf = (cmd, arg) => {
+    const a = (arg || "").trim().toLowerCase();
+    if (cmd === "plan") return a && a !== "on" ? null : "read-only";
+    if (cmd === "mode") {
+      if (["ask", "plan", "read-only", "readonly"].includes(a)) return "read-only";
+      if (["edit", "agent"].includes(a)) return "edit";
+      return null;
+    }
+    if (cmd === "permissions") {
+      if (a === "plan") return "read-only";
+      if (["default", "acceptedits", "bypasspermissions"].includes(a.replace(/\s/g, ""))) return "edit";
+      return null;
+    }
+    if (cmd === "approvals") {
+      if (["untrusted", "on-request", "on_request"].includes(a)) return "read-only";
+      if (["never", "on-failure", "on_failure"].includes(a)) return "edit";
+      return null;
+    }
+    return null;
+  };
+  const runLocal = async (cmd, arg) => {
+    if (cmd === "help" || cmd === "commands") {
+      const lines = catalog.map((c) => `${c.cmd}${c.args ? ` ${c.args}` : ""}  —  ${c.help}`).join("\n");
+      note(`${t("cli_commands_help")}\n\n${lines}`);
+      return true;
+    }
+    if (cmd === "status" || cmd === "about") {
+      note(t("cli_status_text", {
+        kind: chosen.kind, cwd: chosen.cwd || "—", model: chosen.model || t("auto"),
+        mode: chosen.mode || "edit", web: chosen.web ? "on" : "off", resume: chosen.resume || "—",
+      }));
+      return true;
+    }
+    if (cmd === "release") { await release(); return true; }
+    if (cmd === "model") {
+      if (!arg) { note(`${t("model")}: ${chosen.model || t("auto")}`); return true; }
+      await patchSession({ model: arg });
+      toast(t("cli_model_set", { name: arg }));
+      return true;
+    }
+    if (["plan", "mode", "permissions", "approvals"].includes(cmd)) {
+      if (!arg && cmd !== "plan") {
+        note(`${t("mode")}: ${chosen.mode || "edit"}`);
+        return true;
+      }
+      const next = modeOf(cmd, arg);
+      if (!next) return false;
+      await patchSession({ mode: next });
+      toast(t("cli_mode_set", { mode: next }));
+      return true;
+    }
+    return false;
+  };
   const send = async (e) => {
     e.preventDefault();
     const message = text.trim();
     if (!message || busy || chosen?.pending) return;
-    setBusy(true);
-    try {
-      const r = await api(`/api/cli-captured/${chosen.id}/send`, { method: "POST", body: { text: message } });
-      setText(""); if (r.id !== chosen.id) { await loadHeld(); setKey(`c:${r.id}`); } else await refresh();
-    } catch (err) { toast(err.message, "error"); }
-    setBusy(false);
+    if (message.startsWith("/")) {
+      const [raw, ...rest] = message.slice(1).split(/\s+/);
+      const cmd = (raw || "").toLowerCase();
+      const arg = rest.join(" ");
+      const known = catalog.some((c) => c.cmd.slice(1) === cmd);
+      if (!known) { note(t("cli_unknown")); setText(""); setSlash(-1); return; }
+      setText(""); setSlash(-1);
+      if (await runLocal(cmd, arg)) return;
+    }
+    await sendPrompt(message);
   };
-  return html`<div class="chat-split">
+  const pickCmd = (c) => {
+    setText(c.args ? `${c.cmd} ` : c.cmd);
+    setSlash(-1);
+  };
+  const onInputKey = (e) => {
+    if (slash >= 0 && matches.length) {
+      if (e.key === "ArrowDown") { e.preventDefault(); setSlash((slash + 1) % matches.length); return; }
+      if (e.key === "ArrowUp") { e.preventDefault(); setSlash((slash - 1 + matches.length) % matches.length); return; }
+      if (e.key === "Tab") {
+        e.preventDefault(); pickCmd(matches[Math.max(0, slash)]); return;
+      }
+      if (e.key === "Enter" && !e.shiftKey) {
+        const head = text.trim().split(/\s+/)[0];
+        if (catalog.some((c) => c.cmd === head)) return;
+        e.preventDefault(); pickCmd(matches[Math.max(0, slash)]); return;
+      }
+      if (e.key === "Escape") { e.preventDefault(); setSlash(-1); return; }
+    }
+  };
+  const shown = [...talk.messages, ...notes];
+  return html`<div class="chat-split" style=${{ "--chat-list-w": `${listW}px` }}>
     <div class="chat-sessions">
       <button class="btn new-task" disabled=${Boolean(pending)} onClick=${() => setCreating(true)}>+ ${t("cli_new")}</button>
       <p class="muted" style="padding:8px">${t("cli_sessions_help")}</p>
@@ -1811,21 +2321,38 @@ function CliView({ toast, status }) {
           : `${r.from_dia ? t("cli_from_dia") : t("cli_external")} · ${r.model || t("auto")} · ${age(r.age_s)}`}</span></div>`)
         : html`<p class="faint" style="padding:8px">${t("cli_none")}</p>`}
     </div>
+    <${VSplitter} width=${listW} setWidth=${setListW} commit=${commitListW} min=${200} max=${480} def=${280} />
     ${creating ? html`<${NewCliSession} status=${status} onCancel=${() => setCreating(false)} onSubmit=${startSession} />` : html`
     <div class="chat">
       <div class="chat-head"><strong style="flex:1">${chosen ? `${chosen.kind} · ${chosen.cwd || ""}` : ""}</strong>
+        ${chosen?.captured && !chosen.pending ? html`<select class="chip-select" title=${t("mode")} value=${chosen.mode || "edit"}
+          onChange=${(e) => patchSession({ mode: e.target.value })}>
+          <option value="edit">${t("edit")}</option>
+          <option value="read-only">${t("read_only")}</option></select>
+          <label class="chip-check" title=${t("cli_web")}><input type="checkbox" checked=${Boolean(chosen.web)}
+            onChange=${(e) => patchSession({ web: e.target.checked })} /> ${t("cli_web")}</label>` : null}
         ${chosen && !chosen.captured && !chosen.pending ? html`<button class="btn" title=${t("cli_capture_help")} onClick=${capture}>${t("cli_capture")}</button>` : null}
         ${chosen?.captured && !chosen.pending ? html`<button class="btn ghost" title=${chosen.resume} onClick=${release}>${t("cli_release")}</button>` : null}</div>
       <div class="messages">
         ${chosen?.pending ? html`<div class="empty">${t("cli_new_working")}</div>` : null}
         ${chosen && !chosen.pending && !talk.available ? html`<div class="empty">${t("cli_no_transcript")}</div>` : null}
-        ${chosen && !chosen.pending && talk.available && !talk.messages.length ? html`<div class="empty">${t("cli_empty")}</div>` : null}
-        ${talk.messages.map((m, i) => html`<div key=${i} class="msg ${m.role === "user" ? "me" : "dia"}"><${RichText} text=${m.text} class="" /></div>`)}
+        ${chosen && !chosen.pending && talk.available && !shown.length ? html`<div class="empty">${t("cli_empty")}</div>` : null}
+        <${MessageList} messages=${shown} />
         ${busy || chosen?.pending ? html`<div class="msg dia">…</div>` : null}
         <div ref=${end}></div>
       </div>
-      ${chosen?.captured && !chosen.pending ? html`<form class="chat-input" onSubmit=${send}>
-        <input class="input" placeholder=${t("cli_reply")} value=${text} disabled=${busy} onInput=${(e) => setText(e.target.value)} />
+      ${chosen?.captured && !chosen.pending ? html`<div class="cli-cmds" title=${t("cli_commands_help")}>
+        ${catalog.map((c) => html`<button type="button" class="cli-cmd" title=${c.help} onClick=${() => pickCmd(c)}>${c.cmd}</button>`)}
+      </div>
+      <form class="chat-input" onSubmit=${send}>
+        ${matches.length ? html`<div class="slash-menu" role="listbox">
+          ${matches.map((c, i) => html`<button type="button" role="option" class=${`slash-item ${i === Math.max(0, slash) ? "active" : ""}`}
+            onMouseEnter=${() => setSlash(i)} onClick=${() => pickCmd(c)}>
+            <span class="mono">${c.cmd}${c.args ? ` ${c.args}` : ""}</span><span class="faint">${c.help}</span></button>`)}
+        </div>` : null}
+        <input class="input" placeholder=${t("cli_cmd_hint")} value=${text} disabled=${busy}
+          onInput=${(e) => { setText(e.target.value); setSlash(e.target.value.startsWith("/") ? 0 : -1); }}
+          onKeyDown=${onInputKey} />
         <button class="btn primary" disabled=${busy || !text.trim()}>${t("send")}</button></form>`
         : chosen && !chosen.pending ? html`<div class="chat-input"><span class="faint">${t("cli_capture_help")}</span></div>` : null}
     </div>`}</div>`;
@@ -1949,6 +2476,40 @@ function HeldCard() {
       <span class="faint mono">${clock(h.at)}</span> <strong>${h.title}</strong> <span class="muted">${h.body}</span></div>`)}</div>`;
 }
 
+function AboutCard() {
+  const [about, setAbout] = useState(null);
+  useEffect(() => { api("/api/about").then(setAbout).catch(() => setAbout({})); }, []);
+  if (!about || !about.version) return html`<div class="card">…</div>`;
+  const link = (href, label) => html`<a href=${href} target="_blank" rel="noreferrer">${label}</a>`;
+  return html`<div class="about-card">
+    <div class="about-head">
+      <${DiaLogo} class="about-logo" />
+      <div>
+        <h2>Dia ${about.version}</h2>
+        <p class="muted">${t("about_tagline")}</p>
+      </div>
+    </div>
+    <div class="kv card">
+      <span>${t("about_author")}</span><span>${about.author}</span>
+      <span>${t("about_website")}</span><span>${link(about.website, about.website.replace(/^https:\/\//, ""))}</span>
+      <span>${t("about_github")}</span><span>${link(about.github, about.github.replace(/^https:\/\//, ""))}</span>
+      <span>${t("about_email")}</span><span>${link(`mailto:${about.email}`, about.email)}</span>
+      <span>${t("about_license")}</span><span>${link(about.license_url, about.license)}</span>
+      ${about.config ? html`<span>${t("about_config")}</span><span class="mono faint">${about.config}</span>` : null}
+      ${about.data_dir ? html`<span>${t("about_data")}</span><span class="mono faint">${about.data_dir}</span>` : null}
+    </div>
+    <div class="label">${t("about_components")}</div>
+    <div class="table-wrap">
+      <table class="about-table">
+        ${(about.components || []).map((row) => html`<tr>
+          <td>${row.name}</td>
+          <td>${row.version}</td>
+          <td class="faint">${row.detail || ""}</td></tr>`)}
+      </table>
+    </div>
+  </div>`;
+}
+
 function StatusView({ status, reload, toast }) {
   const [analysis, setAnalysis] = useState({});
   if (!status) return html`<div class="empty">…</div>`;
@@ -1981,69 +2542,98 @@ function StatusView({ status, reload, toast }) {
     try { const out = await runTool(command, args); setAnalysis((all) => ({ ...all, [project]: out })); }
     catch (e) { setAnalysis((all) => ({ ...all, [project]: "" })); toast(e.message, "error"); }
   };
+  const jump = (id) => document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+  const jumps = [
+    ["status-now", "status_now"], ["status-computer", "status_computer"],
+    ["status-agents", "agents"], ["status-projects", "projects"],
+    ["status-work", "status_work"], ["status-about", "status_about"],
+  ];
   return html`
-    <div class="page">
-      <div class="row" style="margin-bottom:16px"><button class="btn" onClick=${reload}>${t("refresh")}</button></div>
-      <${SuggestionsCard} toast=${toast} />
-      <${HealthCard} />
-      <${WorkCard} toast=${toast} />
-      <${SystemCard} />
-      <${SecurityCard} toast=${toast} />
-      <${TidyCard} toast=${toast} />
-      ${status.projects.length ? html`<${ExperimentCard} status=${status} toast=${toast} />` : null}
-      ${status.projects.length ? html`<${DebugCard} status=${status} toast=${toast} />` : null}
-      <${HeldCard} />
-      <${SkillsCard} toast=${toast} />
-      ${status.device && !status.device_full ? null : html`<${ToolsCard} toast=${toast} />`}
-      <div class="label">${t("agents")}</div>
-      <div class="grid section" style="margin-top:8px">
-        ${status.agents.map((a) => html`<div class="card">
-          <div class="stat-title">${a.name}${a.limited_until
-            ? html`<${Pill} status="limited" label=${t("limited")} />`
-            : html`<${Pill} status=${a.ok ? "done" : "failed"} label=${a.ok ? "ok" : t("failed")} />`}</div>
-          <div class="muted">${a.type}${a.role ? ` · ${a.role}` : ""} · ${t("model_label")}: ${a.model || t("auto")}</div>
-          ${a.limited_until ? html`<div style="color:var(--warn);margin-top:6px">${t("limited_until", { time: clock(a.limited_until) })}
-            ${status.device && !status.device_full ? null : html` <button class="btn ghost" onClick=${() => runTool("limits", ["--clear", a.name]).then(reload).catch((e) => toast(e.message, "error"))}>${t("clear_limit")}</button>`}</div>` : null}
-          ${a.problem ? html`<div style="color:var(--danger);margin-top:6px">${a.problem}</div>` : null}</div>`)}
+    <div class="page wide status">
+      <div class="page-head">
+        <h1>${t("status")}</h1>
+        <p class="muted">${t("version")}: Dia ${status.version || "?"}</p>
       </div>
-      <datalist id="agent-specs">${status.agents.flatMap((a) => [a.name, ...a.models.map((m) => `${a.name}:${m}`)]).map((o) => html`<option value=${o}></option>`)}</datalist>
-      <div class="label section">${t("projects")}</div>
-      <div class="grid" style="margin-top:8px">
-        ${status.projects.map((p) => html`<div class="card">
-          <div class="stat-title">${p.name}<${Pill} status=${p.ok ? "done" : "failed"} label=${p.ok ? "ok" : t("failed")} /></div>
-          <div class="muted mono" style="word-break:break-all">${p.path}</div>
-          ${p.toolchain ? html`<div class="faint">${p.toolchain}</div>` : null}
-          ${p.presets?.length ? html`<div class="row" style="margin-top:8px">
-            <button class="btn" onClick=${() => build(p.name)}>${t("build")}</button>
-            <span class="faint">${p.presets.join(", ")}</span></div>` : null}
-          ${p.toolchain?.startsWith("godot") ? html`<div class="row" style="margin-top:8px">
-            <button class="btn ghost" onClick=${() => analyze(p.name)}>${t("analyze")}</button>
-            <button class="btn ghost" onClick=${() => analyze(p.name, "balance")}>${t("balance")}</button></div>` : null}
-          <form class="row" style="margin-top:8px" onSubmit=${(e) => { e.preventDefault(); const q = e.target.elements.q.value.trim(); if (q) impactOf(p.name, q); }}>
-            <input class="input" name="q" style="flex:1" placeholder=${t("impact_placeholder")} />
-            <button class="btn ghost">${t("impact")}</button></form>
-          <div class="row" style="margin-top:8px"><button class="btn ghost" onClick=${() => checkNotes(p.name)}>${t("check_notes")}</button>
-            <button class="btn ghost" onClick=${() => analyze(p.name, "debt?refresh=1")}>${t("debt")}</button></div>
-          ${(analysis[p.name] || "").match(/^\s*\d+\. \[/) ? html`<form class="row" style="margin-top:8px" onSubmit=${(e) => { e.preventDefault(); fixDebt(p.name, e.target.elements.n.value); }}>
-            <input class="input" name="n" type="number" min="1" style="width:80px" placeholder="#" /><button class="btn">${t("debt_fix")}</button></form>` : null}
-          ${p.benchmark ? html`<div class="row" style="margin-top:8px">
-            <button class="btn ghost" onClick=${() => analyze(p.name, "benchmarks")}>${t("benchmarks")}</button>
-            ${status.device && !status.device_full ? null : html`<button class="btn ghost" onClick=${() => tool(p.name, "bench", [p.name])}>${t("bench_now")}</button>`}</div>` : null}
-          ${status.device && !status.device_full ? null : html`<div class="row" style="margin-top:8px">
-            <button class="btn ghost" onClick=${() => tool(p.name, "launch", [p.name])}>${t("launch")}</button>
-            <button class="btn ghost" onClick=${() => tool(p.name, "check", [p.name])}>${t("check_now")}</button></div>
-          <form class="row" style="margin-top:8px" onSubmit=${(e) => { e.preventDefault(); const c = e.target.elements.c.value.trim(); if (c) tool(p.name, "lab", [p.name, c]); }}>
-            <input class="input mono" name="c" style="flex:1" placeholder=${t("lab_placeholder")} />
-            <button class="btn ghost">${t("lab")}</button></form>`}
-          ${analysis[p.name] ? html`<pre class="prose" style="white-space:pre-wrap;margin-top:8px">${analysis[p.name]}</pre>` : null}</div>`)}
+      <div class="page-jump" role="navigation" aria-label=${t("jump_to")}>
+        ${jumps.map(([id, key]) => html`<button type="button" class="jump-chip" onClick=${() => jump(id)}>${t(key)}</button>`)}
+        <span class="spacer"></span>
+        <button class="btn" onClick=${reload}>${t("refresh")}</button>
       </div>
-      <div class="kv card section">
-        <span>${t("brains")}</span><span>${status.brains.join(" → ")}</span>
-        <span>${t("memory")}</span><span>${status.memory || t("off")}</span>
-        <span>${t("sandbox")}</span><span style=${status.sandbox === "on" ? "" : "color:var(--danger)"}>${t(`sandbox_${status.sandbox || "unavailable"}`)}</span>
-        <span>${t("channels")}</span><span>${status.channels.join(", ") || "-"}</span>
-        <span>${t("language")}</span><span>${status.language}</span>
-        <span>${t("version")}</span><span>Dia ${status.version || "?"}</span>
+      <div class="status-board">
+        <section id="status-now" class="status-section">
+          <${SuggestionsCard} toast=${toast} />
+          <${HealthCard} />
+          <${WorkCard} toast=${toast} />
+          <${HeldCard} />
+        </section>
+        <section id="status-computer" class="status-section">
+          <${SystemCard} />
+          <${SecurityCard} toast=${toast} />
+          <${TidyCard} toast=${toast} />
+        </section>
+        <section id="status-agents" class="status-section">
+          <div class="label">${t("agents")}</div>
+          <div class="grid" style="margin-top:8px">
+            ${status.agents.map((a) => html`<div class="card">
+              <div class="stat-title">${a.name}${a.limited_until
+                ? html`<${Pill} status="limited" label=${t("limited")} />`
+                : html`<${Pill} status=${a.ok ? "done" : "failed"} label=${a.ok ? "ok" : t("failed")} />`}</div>
+              <div class="muted">${a.type}${a.role ? ` · ${a.role}` : ""} · ${t("model_label")}: ${a.model || t("auto")}</div>
+              ${a.limited_until ? html`<div style="color:var(--warn);margin-top:6px">${t("limited_until", { time: clock(a.limited_until) })}
+                ${status.device && !status.device_full ? null : html` <button class="btn ghost" onClick=${() => runTool("limits", ["--clear", a.name]).then(reload).catch((e) => toast(e.message, "error"))}>${t("clear_limit")}</button>`}</div>` : null}
+              ${a.problem ? html`<div style="color:var(--danger);margin-top:6px">${a.problem}</div>` : null}</div>`)}
+          </div>
+          <datalist id="agent-specs">${status.agents.flatMap((a) => [a.name, ...a.models.map((m) => `${a.name}:${m}`)]).map((o) => html`<option value=${o}></option>`)}</datalist>
+        </section>
+        <section id="status-projects" class="status-section">
+          <div class="label">${t("projects")}</div>
+          <div class="grid" style="margin-top:8px">
+            ${status.projects.map((p) => html`<div class="card">
+              <div class="stat-title">${p.name}<${Pill} status=${p.ok ? "done" : "failed"} label=${p.ok ? "ok" : t("failed")} /></div>
+              <div class="muted mono" style="word-break:break-all">${p.path}</div>
+              ${p.toolchain ? html`<div class="faint">${p.toolchain}</div>` : null}
+              ${p.presets?.length ? html`<div class="row" style="margin-top:8px">
+                <button class="btn" onClick=${() => build(p.name)}>${t("build")}</button>
+                <span class="faint">${p.presets.join(", ")}</span></div>` : null}
+              ${p.toolchain?.startsWith("godot") ? html`<div class="row" style="margin-top:8px">
+                <button class="btn ghost" onClick=${() => analyze(p.name)}>${t("analyze")}</button>
+                <button class="btn ghost" onClick=${() => analyze(p.name, "balance")}>${t("balance")}</button></div>` : null}
+              <form class="row" style="margin-top:8px" onSubmit=${(e) => { e.preventDefault(); const q = e.target.elements.q.value.trim(); if (q) impactOf(p.name, q); }}>
+                <input class="input" name="q" style="flex:1" placeholder=${t("impact_placeholder")} />
+                <button class="btn ghost">${t("impact")}</button></form>
+              <div class="row" style="margin-top:8px"><button class="btn ghost" onClick=${() => checkNotes(p.name)}>${t("check_notes")}</button>
+                <button class="btn ghost" onClick=${() => analyze(p.name, "debt?refresh=1")}>${t("debt")}</button></div>
+              ${(analysis[p.name] || "").match(/^\s*\d+\. \[/) ? html`<form class="row" style="margin-top:8px" onSubmit=${(e) => { e.preventDefault(); fixDebt(p.name, e.target.elements.n.value); }}>
+                <input class="input" name="n" type="number" min="1" style="width:80px" placeholder="#" /><button class="btn">${t("debt_fix")}</button></form>` : null}
+              ${p.benchmark ? html`<div class="row" style="margin-top:8px">
+                <button class="btn ghost" onClick=${() => analyze(p.name, "benchmarks")}>${t("benchmarks")}</button>
+                ${status.device && !status.device_full ? null : html`<button class="btn ghost" onClick=${() => tool(p.name, "bench", [p.name])}>${t("bench_now")}</button>`}</div>` : null}
+              ${status.device && !status.device_full ? null : html`<div class="row" style="margin-top:8px">
+                <button class="btn ghost" onClick=${() => tool(p.name, "launch", [p.name])}>${t("launch")}</button>
+                <button class="btn ghost" onClick=${() => tool(p.name, "check", [p.name])}>${t("check_now")}</button></div>
+              <form class="row" style="margin-top:8px" onSubmit=${(e) => { e.preventDefault(); const c = e.target.elements.c.value.trim(); if (c) tool(p.name, "lab", [p.name, c]); }}>
+                <input class="input mono" name="c" style="flex:1" placeholder=${t("lab_placeholder")} />
+                <button class="btn ghost">${t("lab")}</button></form>`}
+              ${analysis[p.name] ? html`<pre class="prose status-out">${analysis[p.name]}</pre>` : null}</div>`)}
+          </div>
+        </section>
+        <section id="status-work" class="status-section">
+          ${status.projects.length ? html`<${ExperimentCard} status=${status} toast=${toast} />` : null}
+          ${status.projects.length ? html`<${DebugCard} status=${status} toast=${toast} />` : null}
+          <${SkillsCard} toast=${toast} />
+          ${status.device && !status.device_full ? null : html`<${ToolsCard} toast=${toast} />`}
+        </section>
+        <section id="status-about" class="status-section">
+          <${AboutCard} />
+          <div class="label" style="margin-top:16px">${t("about_instance")}</div>
+          <div class="kv card" style="margin-top:8px">
+            <span>${t("brains")}</span><span>${status.brains.join(" → ")}</span>
+            <span>${t("memory")}</span><span>${status.memory || t("off")}</span>
+            <span>${t("sandbox")}</span><span style=${status.sandbox === "on" ? "" : "color:var(--danger)"}>${t(`sandbox_${status.sandbox || "unavailable"}`)}</span>
+            <span>${t("channels")}</span><span>${status.channels.join(", ") || "-"}</span>
+            <span>${t("language")}</span><span>${status.language}</span>
+          </div>
+        </section>
       </div>
     </div>`;
 }
@@ -2060,10 +2650,16 @@ function setPath(obj, path, value) {
   keys.slice(0, -1).forEach((k) => { o = o[k] = o[k] && typeof o[k] === "object" ? o[k] : {}; });
   o[keys[keys.length - 1]] = value;
 }
+const ruleLine = (r) => `${r.project ? `${r.project}:` : ""}${r.match} => ${r.agent}`;
+const parseRule = (line) => {
+  const m = line.trim().match(/^(?:([\w-]+):)?(.+?)\s*=>\s*([\w.:-]+)$/);
+  return m ? { ...(m[1] ? { project: m[1] } : {}), match: m[2].trim(), agent: m[3] } : null;
+};
 const toForm = (value, type) => {
   if (type === "bool") return Boolean(value);
   if (type === "list") return (value || []).join(", ");
   if (type === "lines") return (value || []).join("\n");
+  if (type === "rules") return (value || []).map(ruleLine).join("\n");
   return value == null ? "" : String(value);
 };
 const fromForm = (value, type) => {
@@ -2072,6 +2668,7 @@ const fromForm = (value, type) => {
   if (type === "number") return Number(value);
   if (type === "list") return value.split(/[,\s]+/).filter(Boolean);
   if (type === "lines") return value.split("\n").map((x) => x.trim()).filter(Boolean);
+  if (type === "rules") return value.split("\n").map(parseRule).filter(Boolean);
   return value;
 };
 
@@ -2100,12 +2697,18 @@ function settingsForms(meta) {
       ["assistant.one_conversation", "f_one_conversation", "bool", null, false, true],
       ["assistant.owner_ids", "f_owner_ids", "list"],
       ["assistant.log_intents", "f_log_intents", "bool", null, false, true],
+      { section: "s_chat_models" },
+      ["chat.default", "f_chat_default", "text"],
+      ["chat.ollama_url", "f_chat_ollama", "text"],
+      ["chat.timeout", "f_chat_timeout", "number"],
     ],
     agents: [
       { section: "s_defaults" },
       ["dia.default_agent", "default_agent", "select", ["", ...meta.agents]],
       ["dia.max_parallel_tasks", "f_parallel", "number"],
       ["routing.auto", "f_routing_auto", "bool"],
+      ["routing.min_tasks", "f_routing_min", "number"],
+      ["routing.rules", "f_routing_rules", "rules"],
       ["limits.fallback", "f_fallback", "list"],
       ["limits.wait", "f_limit_wait", "bool"],
       ["limits.max_wait_hours", "f_max_wait", "number"],
@@ -2114,6 +2717,7 @@ function settingsForms(meta) {
       ["review.auto", "f_auto_review", "bool"],
       ["review.reviewer", "f_reviewer", "select", ["", ...meta.agents]],
       ["review.fix_rounds", "f_fix_rounds", "number"],
+      ["review.max_diff_chars", "f_max_diff", "number"],
       ["retry.agent_errors", "f_retry_errors", "number"],
       ["retry.switch_agent", "f_retry_switch", "bool"],
       ["retry.test_fixes", "f_retry_tests", "number"],
@@ -2163,12 +2767,6 @@ function settingsForms(meta) {
       ["ci.fix_rounds", "f_ci_fix_rounds", "number"],
       ["ci.watch_comments", "f_ci_comments", "bool"],
       ["ci.autofix_comments", "f_ci_autofix_comments", "bool"],
-      { section: "s_system_tidy" },
-      ["system.cpu_temp", "f_cpu_temp", "number"],
-      ["system.disk_used", "f_disk_used", "number"],
-      ["system.battery_low", "f_battery_low", "number"],
-      ["system.check_urls", "f_check_urls", "lines"],
-      ["tidy.folders", "f_tidy_folders", "list"],
       { section: "s_suggestions" },
       ["suggestions.per_day", "f_suggest_per_day", "number"],
       ["suggestions.repeat_days", "f_suggest_repeat", "number"],
@@ -2198,7 +2796,22 @@ function settingsForms(meta) {
       ["sandbox.enabled", "f_sandbox", "select", ["", "auto", "true", "false"]],
       ["sandbox.decoys", "f_sandbox_decoys", "bool"],
       ["sandbox.allow_read", "f_sandbox_read", "list"],
+    ],
+    computer: [
+      { section: "s_computer_alerts" },
+      ["system.cpu_temp", "f_cpu_temp", "number"],
+      ["system.disk_used", "f_disk_used", "number"],
+      ["system.battery_low", "f_battery_low", "number"],
+      ["system.check_urls", "f_check_urls", "lines"],
+      { section: "s_tidy" },
+      ["tidy.folders", "f_tidy_folders", "list"],
+      { section: "s_lab" },
       ["lab.engine", "f_lab_engine", "select", ["", "podman", "docker"]],
+      { section: "s_godot" },
+      ["godot_analysis.max_nodes", "f_ga_nodes", "number"],
+      ["godot_analysis.max_depth", "f_ga_depth", "number"],
+      ["godot_analysis.max_lights", "f_ga_lights", "number"],
+      ["godot_analysis.max_texture", "f_ga_texture", "number"],
     ],
     notify: [
       { section: "s_notify_policy" },
@@ -2217,13 +2830,18 @@ function settingsForms(meta) {
     ["memory.journal_dir", "f_journal_dir", "text"],
     ["memory.profile_note", "f_profile_note", "text"],
     ["memory.exclude", "f_memory_exclude", "list"],
+    ["memory.howtos_dir", "f_howtos_dir", "text"],
+    ["memory.create_project_notes", "f_create_notes", "bool", null, false, true],
+    ["memory.journal", "f_journal_on", "bool", null, false, true],
     { section: "s_memory_search" },
+    ["memory.snippet_chars", "f_snippet_chars", "number"],
+    ["memory.howto_results", "f_howto_results", "number"],
+    ["memory.index_per_search", "f_index_per_search", "number"],
     ["memory.max_context_chars", "f_context_chars", "number"],
     ["memory.search_results", "f_search_results", "number"],
     ["memory.learn_agent", "f_learn_agent", "select", ["", ...meta.agents]],
   ];
   forms.remote = [
-    ["ui.port", "f_ui_port", "number", null, true],
     ["ui.remote", "f_ui_remote", "bool", null, true],
     ["ui.public_url", "f_public_url", "text", null, true],
     ["ui.hosts", "f_ui_hosts", "list", null, true],
@@ -2240,6 +2858,9 @@ function settingsForms(meta) {
     ["app.minimize_to_tray", "f_app_minimize", "bool", null, false, true],
     ["app.close_to_tray", "f_app_close", "bool", null, false, true],
     ["app.custom_titlebar", "f_app_titlebar", "bool", null, false, true],
+    ["app.check_updates", "f_check_updates", "bool", null, false, true],
+    ["ui.enabled", "f_ui_enabled", "bool", null, true, true],
+    ["ui.port", "f_ui_port", "number", null, true],
   ];
   if (v.memory) {
     forms.memory.push(
@@ -2301,7 +2922,7 @@ function Form({ fields, meta, onSaved, toast }) {
       return html`<span><input class="input" list=${id} placeholder=${t("auto")} value=${value ?? ""} onInput=${(e) => set(path, e.target.value)} />
         <datalist id=${id}>${options.map((o) => html`<option value=${o}></option>`)}</datalist></span>`;
     }
-    if (type === "lines") return html`<textarea class="textarea" rows="3" value=${value} onInput=${(e) => set(path, e.target.value)}></textarea>`;
+    if (type === "lines" || type === "rules") return html`<textarea class="textarea" rows="3" value=${value} onInput=${(e) => set(path, e.target.value)}></textarea>`;
     if (type === "personality") {
       const preset = meta.personalities.includes(value) || value === "";
       return html`<div class="stack">
@@ -2314,10 +2935,11 @@ function Form({ fields, meta, onSaved, toast }) {
     }
     return html`<input class="input" type=${type === "number" ? "number" : "text"} step="any" value=${value} onInput=${(e) => set(path, e.target.value)} />`;
   };
+  const fieldClass = (type) => type === "bool" ? "field field-bool" : type === "number" ? "field field-num" : "field";
   return html`<div class="card form">
     ${fields.map((field) => field.section
       ? html`<div class="form-section">${t(field.section)}</div>`
-      : html`<label class="field"><span>${t(field[1])}${field[4] ? html` <span class="faint">↻</span>` : null}</span>${input(field)}</label>`)}
+      : html`<label class=${fieldClass(field[2])}><span>${t(field[1])}${field[4] ? html` <span class="faint">↻</span>` : null}</span>${input(field)}</label>`)}
     <div class="row form-actions"><button class="btn primary" onClick=${save}>${t("save")}</button>
       ${entries.some((f) => f[4]) ? html`<span class="faint">↻ ${t("needs_restart")}</span>` : null}</div>
   </div>`;
@@ -2336,7 +2958,7 @@ function LocalBrain({ meta, onSaved, toast }) {
     catch (e) { toast(e.message, "error"); }
   };
   return html`<div class="card form">
-    <label class="field"><span>${t("f_local_brain")}</span><input type="checkbox" checked=${on} onChange=${(e) => setOn(e.target.checked)} /></label>
+    <label class="field field-bool"><span>${t("f_local_brain")}</span><input type="checkbox" checked=${on} onChange=${(e) => setOn(e.target.checked)} /></label>
     ${on ? html`<label class="field"><span>${t("f_ollama_model")}</span><input class="input" value=${model} onInput=${(e) => setModel(e.target.value)} /></label>` : null}
     <p class="muted">${t("local_brain_help")}</p>
     <div class="row"><button class="btn primary" onClick=${save}>${t("save")}</button></div>
@@ -2531,16 +3153,16 @@ function DesktopCard({ toast }) {
 }
 
 const SETTINGS_TABS = [
-  "assistant", "voice_brain", "look",
+  "assistant", "voice_brain", "look", "notifications",
   "agents_tab", "projects_tab", "memory_tab", "automation", "schedule",
   "integrations_tab", "devices_tab", "secrets",
-  "desktop_tab", "security_tab", "config_file",
+  "desktop_tab", "security_tab", "config_file", "about_tab",
 ];
 const SETTINGS_NAV = [
-  { group: "settings_you", items: ["assistant", "voice_brain", "look"] },
+  { group: "settings_you", items: ["assistant", "voice_brain", "look", "notifications"] },
   { group: "settings_work", items: ["agents_tab", "projects_tab", "memory_tab", "automation", "schedule"] },
   { group: "settings_connect", items: ["integrations_tab", "devices_tab", "secrets"] },
-  { group: "settings_computer", items: ["desktop_tab", "security_tab", "config_file"] },
+  { group: "settings_computer", items: ["desktop_tab", "security_tab", "config_file", "about_tab"] },
 ];
 
 // One theme choice: the app's, or the phone's / the widget's, which can follow the app's.
@@ -2570,6 +3192,7 @@ function SettingsView({ toast, device: remote, full }) {
   const [themes, setThemes] = useState(null);
   const [chosen, setChosen] = useState(null);  // {name, phone, widget}
   const [config, setConfig] = useState(null);
+  const [navW, setNavW, commitNavW] = useSplitWidth(SPLIT_SETTINGS, 200, 160, 320);
   const loadMeta = () => api("/api/settings").then(setMeta).catch((e) => toast(e.message, "error"));
   useEffect(() => {
     api("/api/themes").then(setThemes).catch((e) => toast(e.message, "error"));
@@ -2593,8 +3216,8 @@ function SettingsView({ toast, device: remote, full }) {
     try { await api("/api/config", { method: "PUT", body: { text: config.text } }); toast(t("saved_restart")); }
     catch (e) { toast(e.message, "error"); }
   };
-  // Phone: look + schedule. Paired remote without full access: no secrets/devices/desktop.
-  const hidden = device ? SETTINGS_TABS.filter((k) => !["look", "schedule"].includes(k))
+  // Phone: look, notifications, schedule. Paired remote without full access: no secrets/devices/desktop.
+  const hidden = device ? SETTINGS_TABS.filter((k) => !["look", "schedule", "notifications", "about_tab"].includes(k))
     : remote ? ["secrets", "devices_tab", "desktop_tab"] : [];
   const tabs = SETTINGS_TABS.filter((k) => !hidden.includes(k));
   const allowed = new Set(tabs);
@@ -2602,7 +3225,8 @@ function SettingsView({ toast, device: remote, full }) {
   const forms = meta ? settingsForms(meta) : null;
   const form = (key) => (forms ? html`<${Form} fields=${forms[key]} meta=${meta} onSaved=${loadMeta} toast=${toast} />` : "…");
   const body = (() => {
-    if (tab === "assistant") return form("assistant");
+    if (tab === "assistant") return html`${form("assistant")}
+      <${PreferencesCard} toast=${toast} />`;
     if (tab === "voice_brain") return html`
       ${forms?.voice ? form("voice") : html`<p class="muted">${t("voice_off")}</p>`}
       <div class="label section">${t("brains")}</div>
@@ -2615,15 +3239,17 @@ function SettingsView({ toast, device: remote, full }) {
       ${meta ? html`<${EntityEditor} kind="projects" fields=${PROJECT_FIELDS(meta)} meta=${meta} onSaved=${loadMeta} toast=${toast} />` : null}`;
     if (tab === "memory_tab") return html`${form("memory")}<p class="muted">${t("memory_help")}</p>`;
     if (tab === "automation") return form("automation");
-    if (tab === "integrations_tab") return html`${form("integrations")}<p class="muted">${t("integrations_help")}</p>`;
+    if (tab === "integrations_tab") return html`${form("integrations")}
+      ${forms?.discord ? html`<div class="label section">Discord</div>${form("discord")}` : null}
+      <p class="muted">${t("integrations_help")}</p>`;
     if (tab === "schedule") return html`<${ScheduleList} toast=${toast} />`;
     if (tab === "secrets") return html`<${Secrets} toast=${toast} />`;
-    if (tab === "devices_tab") return html`
+    if (tab === "notifications") return html`
       <${Notifications} toast=${toast} />
-      ${form("notify")}
+      ${form("notify")}`;
+    if (tab === "devices_tab") return html`
       <${Devices} toast=${toast} />
-      <div class="label section">${t("remote_access")}</div>${form("remote")}
-      ${forms?.discord ? html`<div class="label section">Discord</div>${form("discord")}` : null}`;
+      <div class="label section">${t("remote_access")}</div>${form("remote")}`;
     if (tab === "look") return html`
       ${chosen && themes ? html`
         ${device ? null : html`<${ThemeChoice} label=${t("theme_app")} help=${t("theme_app_help")} value=${chosen.name}
@@ -2633,11 +3259,13 @@ function SettingsView({ toast, device: remote, full }) {
         ${device ? null : html`<${ThemeChoice} label=${t("theme_widget")} help=${t("theme_widget_help")} value=${chosen.widget}
           follows=${chosen.name} themes=${themes} onPick=${(name) => pick("widget", name)} />`}` : "…"}
       <p class="muted">${t("themes_help")} <code>${themes?.dir || "~/.config/dia/themes"}</code></p>
-      ${device ? html`<${Notifications} toast=${toast} /><p class="muted section">${t("device_note", { name: device })}</p>` : null}`;
+      ${device ? html`<p class="muted section">${t("device_note", { name: device })}</p>` : null}`;
     if (tab === "desktop_tab") return html`
       <${DesktopCard} toast=${toast} />
-      ${forms ? html`<div class="label section">${t("app_window")}</div>${form("app")}<p class="muted">${t("app_window_help")}</p>` : null}`;
+      ${forms ? html`<div class="label section">${t("app_window")}</div>${form("app")}<p class="muted">${t("app_window_help")}</p>
+        ${form("computer")}` : null}`;
     if (tab === "security_tab") return form("security");
+    if (tab === "about_tab") return html`<${AboutCard} />`;
     if (tab === "config_file") return config ? html`
       <p class="faint mono">${config.path}</p>
       ${meta?.settings_path ? html`<p class="muted">${t("overlay_note")} <code>${meta.settings_path}</code></p>` : null}
@@ -2652,7 +3280,7 @@ function SettingsView({ toast, device: remote, full }) {
         <h1>${t("settings")}</h1>
         <p class="muted">${t("settings_help")}</p>
       </div>
-      <div class="settings-layout">
+      <div class="settings-layout" style=${{ "--settings-nav-w": `${navW}px` }}>
         <nav class="settings-nav" aria-label=${t("settings")}>
           ${nav.map((g) => html`<div class="settings-group">
             <div class="nav-group">${t(g.group)}</div>
@@ -2660,6 +3288,7 @@ function SettingsView({ toast, device: remote, full }) {
               onClick=${() => setTab(k)}>${t(k)}</button>`)}
           </div>`)}
         </nav>
+        <${VSplitter} width=${navW} setWidth=${setNavW} commit=${commitNavW} min=${160} max=${320} def=${200} />
         <div class="settings-main">
           <div class="settings-panel-head">
             <h2>${t(tab)}</h2>
@@ -2829,6 +3458,7 @@ function MissionsView({ status, toast, open }) {
   const [selected, setSelected] = useState(null);
   const [form, setForm] = useState({ project: "", goal: "", calls: "", minutes: "", priority: "normal" });
   const [busy, setBusy] = useState(false);
+  const [listW, setListW, commitListW] = useSplitWidth(SPLIT_MISSIONS, 360, 260, 560);
   const load = () => api("/api/missions").then(setMissions).catch((e) => toast(e.message, "error"));
   useEffect(() => {
     load();
@@ -2850,7 +3480,7 @@ function MissionsView({ status, toast, open }) {
   };
   const mission = missions.find((m) => m.id === selected);
   return html`
-    <div class="split ${selected ? "has-selected" : ""}">
+    <div class="split ${selected ? "has-selected" : ""}" style=${{ "--list-w": `${listW}px` }}>
       <div class="list">
         <div class="composer">
           <textarea class="textarea" rows="3" placeholder=${t("mission_goal")} value=${form.goal} aria-label=${t("mission_goal")}
@@ -2881,6 +3511,7 @@ function MissionsView({ status, toast, open }) {
         })}
         ${missions.length ? null : html`<div class="empty">${t("no_missions")}</div>`}
       </div>
+      <${VSplitter} width=${listW} setWidth=${setListW} commit=${commitListW} min=${260} max=${560} def=${360} />
       ${mission ? html`<div class="detail">
         <button class="btn ghost back" onClick=${() => setSelected(null)}>← ${t("missions")}</button>
         <div class="row"><${Pill} status=${mission.status} /><span class="faint mono">${mission.id}</span></div>
@@ -2992,6 +3623,7 @@ function MemoryView({ toast }) {
   const [text, setText] = useState("");
   const [query, setQuery] = useState("");
   const [hits, setHits] = useState(null);
+  const [listW, setListW, commitListW] = useSplitWidth(SPLIT_MEMORY, 360, 260, 560);
   const load = () => api("/api/memory").then(setInfo).catch((e) => toast(e.message, "error"));
   useEffect(() => { load(); }, []);
   const openNote = async (path) => {
@@ -3018,7 +3650,7 @@ function MemoryView({ toast }) {
   const groups = ["profile", "project", "howto", "journal", "other"].map((k) => [k, info.notes.filter((n) => n.kind === k)]).filter(([, n]) => n.length);
   const prefix = info.folder ? `${info.folder}/` : "";
   return html`
-    <div class="split ${note ? "has-selected" : ""}">
+    <div class="split ${note ? "has-selected" : ""}" style=${{ "--list-w": `${listW}px` }}>
       <div class="list">
         <form class="list-head" onSubmit=${search}>
           <input class="input" style="flex:1" placeholder=${t("memory_search")} value=${query} onInput=${(e) => setQuery(e.target.value)} />
@@ -3041,6 +3673,7 @@ function MemoryView({ toast }) {
           ${notes.slice(0, kind === "journal" ? 14 : 200).map((n) => html`<button class="task-row ${note?.path === n.path ? "active" : ""}" onClick=${() => openNote(n.path)}>
             <span class="task-title">${n.title}</span><span class="faint">${ago(n.modified)}</span></button>`)}</div>`)}
       </div>
+      <${VSplitter} width=${listW} setWidth=${setListW} commit=${commitListW} min=${260} max=${560} def=${360} />
       ${note ? html`<div class="detail note-editor">
         <button class="btn ghost back" onClick=${() => setNote(null)}>← ${t("memory")}</button>
         <div class="row"><strong>${note.path}</strong><span class="spacer"></span>
@@ -3097,19 +3730,28 @@ function UsageView({ toast }) {
   const tiles = [[t("calls"), calls], [t("agent_time"), `${Math.round(minutes)} min`],
     [t("success"), calls ? `${Math.round((100 * ok) / calls)}%` : "–"], [t("limits_hit"), limited]];
   return html`
-    <div class="page">
-      <div class="row" style="margin-bottom:16px">
-        ${[7, 30, 90].map((d) => html`<button class="btn ${days === d ? "primary" : ""}" onClick=${() => setDays(d)}>${t("last_days", { days: d })}</button>`)}
+    <div class="page wide usage">
+      <div class="page-head">
+        <h1>${t("usage")}</h1>
+        <div class="row">
+          ${[7, 30, 90].map((d) => html`<button class="btn ${days === d ? "primary" : ""}" onClick=${() => setDays(d)}>${t("last_days", { days: d })}</button>`)}
+        </div>
       </div>
       <div class="tiles">${tiles.map(([k, v]) => html`<div class="card tile"><div class="label">${k}</div><div class="tile-value">${v}</div></div>`)}</div>
       ${calls ? html`
-        <div class="label section">${t("calls_per_agent")}</div>
-        <div class="card" style="margin-top:8px"><${Bars} rows=${data.agents} value=${(a) => a.calls} label=${(a) => a.agent}
-          title=${(a) => `${a.agent}: ${a.calls} · ${Math.round((100 * a.ok) / a.calls)}% ok · ${a.minutes} min · ${t("limits_hit")}: ${a.limited}`} /></div>
-        <div class="label section">${t("calls_per_day")}</div>
-        <div class="card" style="margin-top:8px"><${Columns} rows=${data.daily} days=${days} /></div>
+        <div class="usage-charts">
+          <div>
+            <div class="label section">${t("calls_per_agent")}</div>
+            <div class="card" style="margin-top:8px"><${Bars} rows=${data.agents} value=${(a) => a.calls} label=${(a) => a.agent}
+              title=${(a) => `${a.agent}: ${a.calls} · ${Math.round((100 * a.ok) / a.calls)}% ok · ${a.minutes} min · ${t("limits_hit")}: ${a.limited}`} /></div>
+          </div>
+          <div>
+            <div class="label section">${t("calls_per_day")}</div>
+            <div class="card" style="margin-top:8px"><${Columns} rows=${data.daily} days=${days} /></div>
+          </div>
+        </div>
         <div class="label section">${t("projects")}</div>
-        <div class="card" style="margin-top:8px"><table class="table">
+        <div class="card table-wrap" style="margin-top:8px"><table class="table">
           <tr><th>${t("project")}</th><th>${t("tasks")}</th><th>${t("col_done")}</th><th>${t("col_failed")}</th></tr>
           ${data.projects.map((p) => html`<tr><td>${p.project}</td><td>${p.tasks}</td><td>${p.done}</td><td>${p.failed}</td></tr>`)}
         </table></div>` : html`<p class="muted">${t("no_usage")}</p>`}
@@ -3118,7 +3760,7 @@ function UsageView({ toast }) {
           <span style="flex:1">${t("proposal_text", { project: s.project, agent: s.agent, current: s.current })}<br /><span class="faint">${s.reason}</span></span>
           <button class="btn primary" onClick=${() => apply(s)}>${t("apply")}</button></div>`)}` : null}
       ${data.agents_by_project?.length ? html`<div class="label section">${t("agent_skill")}</div>
-        <div class="card" style="margin-top:8px"><table class="table">
+        <div class="card table-wrap" style="margin-top:8px"><table class="table">
           <tr><th>${t("project")}</th><th>${t("agent")}</th><th>${t("tasks")}</th><th>${t("success")}</th><th>${t("tests")}</th><th>${t("review_ok")}</th><th>${t("quality")}</th><th>min</th></tr>
           ${data.agents_by_project.map((r) => html`<tr><td>${r.project}</td><td>${r.agent}</td><td>${r.tasks}</td>
             <td>${Math.round(r.success * 100)}%</td><td>${r.tests == null ? "–" : `${Math.round(r.tests * 100)}%`}</td>
@@ -3127,7 +3769,7 @@ function UsageView({ toast }) {
             <td>${r.minutes}</td></tr>`)}
         </table></div>` : null}
       ${data.scorecard?.some((w) => w.tasks) ? html`<div class="label section">${t("scorecard")}</div>
-        <div class="card" style="margin-top:8px;overflow-x:auto"><table class="table">
+        <div class="card table-wrap" style="margin-top:8px"><table class="table">
           <tr><th>${t("sc_week")}</th><th>${t("tasks")}</th><th>${t("success")}</th><th>${t("col_discarded")}</th><th>${t("sc_rolled_back")}</th>
             <th>${t("sc_rescue")}</th><th>${t("sc_rounds")}</th><th>${t("sc_minutes")}</th><th>${t("incidents")}</th><th>${t("sc_regressions")}</th></tr>
           ${data.scorecard.map((w) => html`<tr><td class="mono" style="white-space:nowrap">${w.week}</td><td>${w.tasks}</td><td>${pct(w.success)}</td><td>${w.discarded}</td>
@@ -3205,6 +3847,7 @@ function App() {
   const [authed, setAuthed] = useState(Boolean(token));
   const [view, setView] = useState(START_VIEW || (START_TASK ? "tasks" : "inbox"));
   const [collapsed, setCollapsed] = useState(store(SIDEBAR_KEY) === "collapsed");
+  const [sidebarW, setSidebarW, commitSidebarW] = useSplitWidth(SPLIT_SIDEBAR, 240, 180, 400);
   const [talking, setTalking] = useState(false);
   const [more, setMore] = useState(false);
   const [palette, setPalette] = useState(false);
@@ -3361,10 +4004,11 @@ function App() {
   const okAgents = status ? status.agents.filter((a) => a.ok).length : 0;
 
   return html`
-    <div class="shell ${collapsed ? "collapsed" : ""}">
+    <div class="shell ${collapsed ? "collapsed" : ""}" style=${collapsed ? null : { "--sidebar-w": `${sidebarW}px` }}>
       <aside class="sidebar">
         <div class="brand" data-drag><${DiaLogo} /><span class="brand-name">dia</span>
-          ${status?.version ? html`<span class="brand-version">${status.version}</span>` : null}</div>
+          ${status?.version ? html`<button type="button" class="brand-version" title=${t("about_tab")}
+            onClick=${(e) => { e.stopPropagation(); go("status"); setTimeout(() => document.getElementById("status-about")?.scrollIntoView({ behavior: "smooth" }), 50); }}>${status.version}</button>` : null}</div>
         <nav class="nav" aria-label="Dia">
           <div class="nav-group">${t("nav_work")}</div>
           ${work.map(navItem)}
@@ -3394,6 +4038,7 @@ function App() {
             ${IN_APP ? html` · <a href="#" onClick=${(e) => { e.preventDefault(); location.href = APP_HOME; }}>${t("change_server")}</a>` : null}</div>
         </div>
       </aside>
+      ${collapsed ? null : html`<${VSplitter} width=${sidebarW} setWidth=${setSidebarW} commit=${commitSidebarW} min=${180} max=${400} def=${240} />`}
       <main class="main">
         <div class="topbar" data-drag>
           <button class="icon-btn sidebar-toggle" onClick=${toggleSidebar} aria-expanded=${!collapsed}

@@ -27,33 +27,51 @@ def test_scanning_the_process_table_does_not_fail() -> None:
 
 def test_claude_code_transcript(tmp_path: Path) -> None:
     lines = [
-        {"type": "user", "message": {"role": "user", "content": "hej"}, "timestamp": "t1"},
-        {"type": "assistant", "message": {"role": "assistant", "content": [
+        {"type": "user", "timestamp": "2026-10-28T14:15:00Z",
+         "message": {"role": "user", "content": "hej"}},
+        {"type": "assistant", "timestamp": "2026-10-28T14:15:05Z",
+         "message": {"role": "assistant", "content": [
             {"type": "text", "text": "cześć"}, {"type": "tool_use", "name": "Bash"}]}},
+        {"type": "user", "timestamp": "2026-10-28T14:16:00Z",
+         "message": {"role": "user", "content": "dalej"}},
+        {"type": "assistant", "message": {"role": "assistant", "content": [
+            {"type": "text", "text": "ok"}]}},
         {"type": "user", "isSidechain": True, "message": {"role": "user", "content": "side"}},
         {"type": "user", "message": {"role": "user", "content": "<command-name>/x</command-name>"}},
     ]  # fmt: skip
     f = tmp_path / "s.jsonl"
     f.write_text("\n".join(json.dumps(x) for x in lines) + "\nnot json\n")
-    assert [(m["role"], m["text"]) for m in parse_transcript(f)] == [
-        ("user", "hej"), ("assistant", "cześć")]  # fmt: skip
+    found = parse_transcript(f)
+    assert [(m["role"], m["text"], m["at"]) for m in found] == [
+        ("user", "hej", "2026-10-28T14:15:00Z"),
+        ("assistant", "cześć", "2026-10-28T14:15:05Z"),
+        ("user", "dalej", "2026-10-28T14:16:00Z"),
+        ("assistant", "ok", "2026-10-28T14:16:00Z"),
+    ]
 
 
 def test_codex_transcript(tmp_path: Path) -> None:
-    def item(role, kind, text):
+    def item(role, kind, text, ts):
         content = [{"type": kind, "text": text}]
         payload = {"type": "message", "role": role, "content": content}
-        return {"type": "response_item", "payload": payload}
+        return {"type": "response_item", "timestamp": ts, "payload": payload}
 
     lines = [
         {"type": "session_meta", "payload": {"cwd": "/x"}},
-        item("user", "input_text", "<environment_context>cwd</environment_context>"),
-        item("user", "input_text", "sprawdź Dia"),
-        item("assistant", "output_text", "sprawdzam"),
+        item(
+            "user",
+            "input_text",
+            "<environment_context>cwd</environment_context>",
+            "2026-10-28T14:20:00Z",
+        ),
+        item("user", "input_text", "sprawdź Dia", "2026-10-28T14:20:01Z"),
+        item("assistant", "output_text", "sprawdzam", "2026-10-28T14:20:08Z"),
     ]
     f = tmp_path / "rollout-1.jsonl"
     f.write_text("\n".join(json.dumps(x) for x in lines))
-    assert [m["text"] for m in parse_transcript(f)] == ["sprawdź Dia", "sprawdzam"]
+    found = parse_transcript(f)
+    assert [m["text"] for m in found] == ["sprawdź Dia", "sprawdzam"]
+    assert [m["at"] for m in found] == ["2026-10-28T14:20:01Z", "2026-10-28T14:20:08Z"]
 
 
 def test_cursor_transcript(tmp_path: Path) -> None:
@@ -67,6 +85,53 @@ def test_cursor_transcript(tmp_path: Path) -> None:
     db.commit()
     db.close()
     assert [m["text"] for m in parse_transcript(f)] == ["hi", "yo"]
+
+
+def test_cursor_message_keeps_its_timestamp(tmp_path: Path) -> None:
+    f = tmp_path / "store.db"
+    db = sqlite3.connect(f)
+    db.execute("CREATE TABLE blobs (id TEXT, data BLOB)")
+    user = {"role": "user", "content": "hi", "createdAt": "2026-10-28T15:01:00Z"}
+    db.execute("INSERT INTO blobs VALUES ('x', ?)", (json.dumps(user).encode(),))
+    db.commit()
+    db.close()
+    found = parse_transcript(f)
+    assert found[0]["at"] == "2026-10-28T15:01:00Z"
+
+
+def test_cursor_assistant_inherits_the_user_timestamp(tmp_path: Path) -> None:
+    f = tmp_path / "store.db"
+    db = sqlite3.connect(f)
+    db.execute("CREATE TABLE blobs (id TEXT, data BLOB)")
+    user = {
+        "role": "user",
+        "content": "<timestamp>Friday, Oct 30, 2026, 10:23 AM (UTC+1)</timestamp>\n"
+        "<user_query>\ntestuj\n</user_query>",
+    }
+    reply = {"role": "assistant", "content": [{"type": "text", "text": "ok"}]}
+    db.execute("INSERT INTO blobs VALUES ('u', ?)", (json.dumps(user).encode(),))
+    db.execute("INSERT INTO blobs VALUES ('a', ?)", (json.dumps(reply).encode(),))
+    db.commit()
+    db.close()
+    found = parse_transcript(f)
+    assert [(m["role"], m["text"]) for m in found] == [("user", "testuj"), ("assistant", "ok")]
+    assert found[0]["at"] == "Friday, Oct 30, 2026, 10:23 AM (UTC+1)"
+    assert found[1]["at"] == found[0]["at"]
+
+
+def test_agent_commands_cover_each_cli() -> None:
+    from dia.sessions import RESUME_HINT, agent_commands
+
+    for kind in RESUME_HINT:
+        rows = agent_commands(kind, "pl")
+        cmds = {c["cmd"] for c in rows}
+        assert {"/help", "/model", "/status", "/release"} <= cmds
+        assert any(c["help"] for c in rows)
+        assert next(c for c in rows if c["cmd"] == "/help")["local"] is True
+        assert next(c for c in rows if c["cmd"] == "/compact")["local"] is False
+    assert "/permissions" in {c["cmd"] for c in agent_commands("claude-code")}
+    assert "/mode" in {c["cmd"] for c in agent_commands("cursor")}
+    assert "/approvals" in {c["cmd"] for c in agent_commands("codex")}
 
 
 def test_session_ids_and_files_are_found_again(tmp_path: Path, monkeypatch) -> None:
@@ -102,6 +167,14 @@ def test_captured_sessions_are_kept_and_released(tmp_path: Path) -> None:
     assert [c.id for c in store.all()] == ["a2", "b"]
     store.remove("a2")
     assert [c.id for c in store.all()] == ["b"]
+    store.update("b", model="gpt-5", web=True, mode="read-only")
+    item = store.get("b")
+    assert item.model == "gpt-5" and item.web and item.mode == "read-only"
+    (tmp_path / "c.json").write_text(
+        json.dumps([{"id": "x", "kind": "cursor", "cwd": "/z", "unknown": True}])
+    )
+    loaded = CapturedStore(tmp_path / "c.json").get("x")
+    assert loaded.cwd == "/z" and not hasattr(loaded, "unknown")
 
 
 def test_only_what_you_typed_is_shown() -> None:
@@ -111,7 +184,9 @@ def test_only_what_you_typed_is_shown() -> None:
         "<timestamp>Wednesday, Oct 28, 2026, 3:15 PM (UTC+1)</timestamp>\n"
         "<user_query>\nznowu chyba openlogi wisi?\n</user_query>"
     )
-    assert _message("user", cursor)["text"] == "znowu chyba openlogi wisi?"
+    shown = _message("user", cursor)
+    assert shown["text"] == "znowu chyba openlogi wisi?"
+    assert shown["at"] == "Wednesday, Oct 28, 2026, 3:15 PM (UTC+1)"
     added = "<timestamp>now</timestamp>\n<system_reminder>be nice</system_reminder>\nhello"
     assert _message("user", added)["text"] == "hello"
     # Cursor's first turn is only auto context (git status, rules, skills…) — hide it,

@@ -75,6 +75,11 @@ def test_widget_ships_its_icons() -> None:
     # Lit, Dia's icon is drawn in the theme's accent, like the app draws it.
     assert "root.lit ? root.litIcon" in qml and 'stroke="url(#dia)"' in qml
     assert "audio-input-microphone-muted" not in qml  # Dia's icon, not a microphone
+    # Quiet / emergency-stop: local mask SVGs, centred — theme ToolButton icons
+    # were blank or off-centre at the foot of the popup.
+    for name in ("icon-speaker.svg", "icon-muted.svg", "icon-stop.svg"):
+        assert (images / name).is_file() and f"../images/{name}" in qml
+    assert "anchors.centerIn: parent" in qml
     # The badge counts decisions only: changes to merge (a commit) and plans.
     assert '(t.status === "done" && t.commit_sha) || t.status === "planned"' in qml
     assert '"io.github.solar9.dia"' in qml

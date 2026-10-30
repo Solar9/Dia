@@ -14,7 +14,7 @@ forges, toolchains and chat and voice interfaces are plugins chosen in
 a config file. It works with subscription-logged CLIs, so no API keys are
 required.
 
-> Status: **0.1.1** (UI 2.0 + release hygiene): see [CHANGELOG.md](CHANGELOG.md) for what it does and
+> Status: **0.1.2** (timestamps, CLI commands, About, layout): see [CHANGELOG.md](CHANGELOG.md) for what it does and
 > [docs/ROADMAP.md](docs/ROADMAP.md) for what is next. Architecture:
 > [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 

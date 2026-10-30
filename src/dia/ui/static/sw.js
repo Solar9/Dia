@@ -1,6 +1,6 @@
 // Dia's service worker: makes the UI installable and opens it without a
 // network (the app shell only). The API and live updates are never cached.
-const CACHE = "dia-shell-v4";
+const CACHE = "dia-shell-v17";
 const SHELL = [
   "/", "/static/app.js", "/static/style.css", "/static/themes/dark.css",
   "/static/themes/light.css", "/static/themes/midnight.css",

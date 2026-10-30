@@ -65,6 +65,20 @@ def test_stop_also_stops_linked_ollama(manager):
     assert (("stop", "ollama.service"), {"system": True}) in manager
 
 
+def test_start_does_not_block_on_session_target(manager, tmp_path):
+    (service.unit_path().parent / runtime.TARGET).write_text("[Unit]\nDescription=test\n")
+    manager.clear()
+    runtime.action("dia", "start")
+    assert (("--no-block", "start", runtime.TARGET), {}) in manager
+
+
+def test_restart_does_not_block_on_session_target(manager, tmp_path):
+    (service.unit_path().parent / runtime.TARGET).write_text("[Unit]\nDescription=test\n")
+    manager.clear()
+    runtime.action("dia", "restart")
+    assert (("--no-block", "restart", runtime.TARGET), {}) in manager
+
+
 def test_failed_authorization_does_not_claim_policy_saved(manager, monkeypatch):
     def fail(*args, **kwargs):
         raise RuntimeError("Access denied")

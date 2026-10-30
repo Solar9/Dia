@@ -141,7 +141,10 @@ def action(component: str, verb: str, config: Path | None = None) -> None:
             if unit_state("ollama.service", system=system)["load"] != "not-found":
                 ctl("stop", "ollama.service", system=system)
     else:
-        ctl(verb, TARGET)
+        # Target Wants the local-brain warmup oneshot (TimeoutStartSec=300). Waiting
+        # for it blocks the desktop/tray past ctl()'s 90s limit and surfaces a false
+        # failure while Dia itself is already up — queue the job and return.
+        ctl("--no-block", verb, TARGET)
 
 
 def enqueue(component: str, verb: str, config: Path | None = None) -> None:

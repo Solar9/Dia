@@ -11,7 +11,9 @@ and asks before anything irreversible.
   and it **remembers why**.
 - **0.1.1** (2026-10-28): UI 2.0 and release hygiene; see [PLAN-0.1.1.md](PLAN-0.1.1.md)
   and [CHANGELOG.md](../CHANGELOG.md).
-- **Next**: not planned yet; remaining items in PLAN-0.1.1 (DIA-01 smoke, nice leftovers).
+- **0.1.2** (2026-10-30): chat timestamps, CLI slash commands, About Dia,
+  Status/Settings layout; see [CHANGELOG.md](../CHANGELOG.md).
+- **Next**: remaining items in PLAN-0.1.1 (DIA-01 smoke, nice leftovers).
 
 ## Milestones
 

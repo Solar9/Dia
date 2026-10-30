@@ -2257,7 +2257,18 @@ def cmd_version(args: argparse.Namespace) -> int:
         config: Config | None = load_config(args.config)
     except ConfigError:
         config = None
+    from dia.about import snapshot
+
     print(banner(version_lines(config)))
+    info = snapshot(config)
+    print(f"\n{info['author']}  {info['website']}\n{info['github']}\n{info['email']}")
+    extras = [
+        f"{row['name']:<16} {row['version']}" + (f"  {row['detail']}" if row.get("detail") else "")
+        for row in info["components"]
+        if row["name"] not in ("Dia", "Python")
+    ]
+    if extras:
+        print("\n" + "\n".join(extras))
     return 0
 
 

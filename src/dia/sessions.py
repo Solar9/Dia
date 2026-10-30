@@ -27,6 +27,123 @@ MAX_MESSAGES = 40
 MAX_TEXT = 4000
 TAIL_BYTES = 2_000_000
 _MODEL_FLAGS = ("--model", "-m")
+_TS_TAG = re.compile(r"<timestamp>\s*(.*?)\s*</timestamp>", re.DOTALL | re.IGNORECASE)
+
+# Slash commands the agents' own CLIs accept. Dia handles a few locally
+# (help, status, model, release); the rest is sent as the prompt, the same
+# way you would type them in a terminal.
+_CMD = tuple[str, str, str, str]  # cmd, args, en, pl
+_SHARED: tuple[_CMD, ...] = (
+    (
+        "/help",
+        "",
+        "Commands this agent accepts, like in its CLI",
+        "Komendy tego agenta, jak w jego CLI",
+    ),
+    (
+        "/status",
+        "",
+        "This session: folder, model, resume command",
+        "Ta sesja: folder, model, polecenie wznowienia",
+    ),
+    (
+        "/model",
+        "[name]",
+        "Use this model for the next replies",
+        "Użyj tego modelu w kolejnych odpowiedziach",
+    ),
+    ("/release", "", "Give the conversation back to a terminal", "Oddaj rozmowę do terminala"),
+)
+_BY_KIND: dict[str, tuple[_CMD, ...]] = {
+    "claude-code": (
+        ("/compact", "", "Compact the conversation", "Skompresuj rozmowę"),
+        ("/cost", "", "Usage and cost of this session", "Zużycie i koszt tej sesji"),
+        ("/usage", "", "Usage of this session", "Zużycie tej sesji"),
+        (
+            "/permissions",
+            "[mode]",
+            "plan | default | acceptEdits | bypassPermissions",
+            "plan | default | acceptEdits | bypassPermissions",
+        ),
+        ("/plan", "", "Switch to plan mode", "Włącz tryb planu"),
+        ("/review", "", "Review the current changes", "Przejrzyj bieżące zmiany"),
+        ("/context", "", "What is in the context window", "Co jest w oknie kontekstu"),
+        ("/memory", "", "Memory / CLAUDE.md", "Pamięć / CLAUDE.md"),
+        ("/config", "", "Claude Code configuration", "Konfiguracja Claude Code"),
+        ("/init", "", "Create CLAUDE.md for this folder", "Utwórz CLAUDE.md dla tego folderu"),
+        ("/doctor", "", "Check the Claude Code install", "Sprawdź instalację Claude Code"),
+        ("/mcp", "", "MCP servers", "Serwery MCP"),
+        ("/hooks", "", "Hooks", "Haki"),
+        ("/agents", "", "Subagents", "Subagenci"),
+        ("/skills", "", "Skills", "Umiejętności"),
+        ("/tasks", "", "Background tasks", "Zadania w tle"),
+        ("/export", "", "Export the conversation", "Eksportuj rozmowę"),
+        ("/add-dir", "<path>", "Add a working directory", "Dodaj katalog roboczy"),
+        ("/sandbox", "", "Sandbox settings", "Ustawienia piaskownicy"),
+        ("/resume", "[id]", "Resume a conversation", "Wznów rozmowę"),
+        ("/rewind", "", "Rewind the last turn", "Cofnij ostatnią turę"),
+        ("/stats", "", "Session stats", "Statystyki sesji"),
+        ("/plugin", "", "Plugins", "Wtyczki"),
+        ("/copy", "", "Copy the last reply", "Kopiuj ostatnią odpowiedź"),
+    ),
+    "codex": (
+        ("/compact", "", "Compact the conversation", "Skompresuj rozmowę"),
+        ("/approvals", "[mode]", "Approval policy", "Polityka zatwierdzeń"),
+        ("/review", "", "Review the current changes", "Przejrzyj bieżące zmiany"),
+        ("/diff", "", "Show uncommitted changes", "Pokaż niezacommitowane zmiany"),
+        ("/undo", "", "Undo the last change", "Cofnij ostatnią zmianę"),
+        ("/init", "", "Create AGENTS.md for this folder", "Utwórz AGENTS.md dla tego folderu"),
+        ("/memory", "", "Memory", "Pamięć"),
+        ("/mcp", "", "MCP servers", "Serwery MCP"),
+        (
+            "/clear",
+            "",
+            "Clear the conversation (keeps the session)",
+            "Wyczyść rozmowę (sesja zostaje)",
+        ),
+        ("/resume", "[id]", "Resume a conversation", "Wznów rozmowę"),
+    ),
+    "cursor": (
+        ("/compact", "", "Compact the conversation", "Skompresuj rozmowę"),
+        ("/mode", "[mode]", "ask | plan | edit", "ask | plan | edit"),
+        ("/commands", "", "List Cursor Agent commands", "Lista komend Cursor Agent"),
+        ("/about", "", "About this Cursor Agent", "O tym Cursor Agencie"),
+        ("/resume", "[id]", "Resume a conversation", "Wznów rozmowę"),
+        ("/mcp", "", "MCP servers", "Serwery MCP"),
+    ),
+}
+
+
+def agent_commands(kind: str, language: str = "en") -> list[dict[str, str | bool]]:
+    """Slash commands of one agent CLI, plus the ones Dia handles itself."""
+    lang = 3 if language == "pl" else 2
+    seen: set[str] = set()
+    out: list[dict[str, str | bool]] = []
+    local_cmds = {
+        "/help",
+        "/status",
+        "/model",
+        "/release",
+        "/plan",
+        "/permissions",
+        "/mode",
+        "/approvals",
+        "/about",
+        "/commands",
+    }
+    for row in (*_SHARED, *_BY_KIND.get(kind, ())):
+        if row[0] in seen:
+            continue
+        seen.add(row[0])
+        out.append(
+            {
+                "cmd": row[0],
+                "args": row[1],
+                "help": row[lang],
+                "local": row[0] in local_cmds,
+            }
+        )
+    return out
 
 
 @dataclass
@@ -285,11 +402,39 @@ def _typed(text: str) -> str:
     return _CODEX_ADDED.sub("", _ADDED.sub("", text)).strip()
 
 
+def _stamp(obj: dict, text: str = "") -> str:
+    for key in ("timestamp", "createdAt", "created_at", "time"):
+        value = obj.get(key)
+        if value:
+            return str(value)
+    if match := _TS_TAG.search(text or ""):
+        return match.group(1).strip()
+    return ""
+
+
 def _message(role: object, text: str, at: object = "") -> dict[str, str] | None:
+    stamp = str(at or "") or _stamp({}, text)
     text = (_typed(text) if role == "user" else text).strip()
     if role not in ("user", "assistant") or not text or text.startswith(_NOISE):
         return None
-    return {"role": str(role), "text": text[:MAX_TEXT], "at": str(at or "")}
+    return {"role": str(role), "text": text[:MAX_TEXT], "at": stamp}
+
+
+def _fill_stamps(messages: list[dict[str, str]]) -> list[dict[str, str]]:
+    """Cursor (and some other CLIs) stamp only the human turn; copy that time onto the reply."""
+    last = ""
+    for message in messages:
+        if message.get("at"):
+            last = message["at"]
+        elif last:
+            message["at"] = last
+    nxt = ""
+    for message in reversed(messages):
+        if message.get("at"):
+            nxt = message["at"]
+        elif nxt:
+            message["at"] = nxt
+    return messages
 
 
 def _cursor_messages(path: Path) -> list[dict[str, str]]:
@@ -308,9 +453,10 @@ def _cursor_messages(path: Path) -> list[dict[str, str]]:
             obj = json.loads(data)
         except (ValueError, TypeError):
             continue  # not a message (binary structure blobs)
-        if isinstance(obj, dict) and (
-            m := _message(obj.get("role"), _text(obj.get("content"), ("text",)))
-        ):
+        if not isinstance(obj, dict):
+            continue
+        text = _text(obj.get("content"), ("text",))
+        if m := _message(obj.get("role"), text, _stamp(obj, text)):
             out.append(m)
     return out
 
@@ -318,7 +464,7 @@ def _cursor_messages(path: Path) -> list[dict[str, str]]:
 def parse_transcript(path: Path, limit: int = MAX_MESSAGES) -> list[dict[str, str]]:
     """The last ``limit`` user and assistant messages of a CLI session's file."""
     if path.name == "store.db":
-        return _cursor_messages(path)[-limit:]
+        return _fill_stamps(_cursor_messages(path))[-limit:]
     try:
         size = path.stat().st_size
         with path.open("rb") as f:
@@ -339,14 +485,16 @@ def parse_transcript(path: Path, limit: int = MAX_MESSAGES) -> list[dict[str, st
         if obj.get("type") in ("user", "assistant") and isinstance(obj.get("message"), dict):
             msg = obj["message"]  # Claude Code
             role, text = msg.get("role"), _text(msg.get("content"), ("text",))
+            at = _stamp(obj, text) or _stamp(msg, text)
         else:  # Codex: {"type": "response_item", "payload": {"type": "message", ...}}
             msg = obj.get("payload") if isinstance(obj.get("payload"), dict) else obj
             if msg.get("type") != "message":
                 continue
             role, text = msg.get("role"), _text(msg.get("content"), ("input_text", "output_text"))
-        if m := _message(role, text, obj.get("timestamp")):
+            at = _stamp(obj, text) or _stamp(msg if isinstance(msg, dict) else {}, text)
+        if m := _message(role, text, at):
             out.append(m)
-    return out[-limit:]
+    return _fill_stamps(out)[-limit:]
 
 
 # ------------------------------------------------- taking a session over ---
@@ -402,6 +550,8 @@ class Captured:
     model: str | None = None
     taken_at: str = ""
     started_in_app: bool = False  # a new session started in the app, not taken from a terminal
+    mode: str = "edit"  # "edit" or "read-only", same as the agent's CLI
+    web: bool = False  # allow web search / fetch, when the agent has it
 
     @property
     def resume(self) -> str:
@@ -416,7 +566,9 @@ class CapturedStore:
 
     def all(self) -> list[Captured]:
         try:
-            return [Captured(**row) for row in json.loads(self.path.read_text())]
+            rows = json.loads(self.path.read_text())
+            fields = Captured.__dataclass_fields__
+            return [Captured(**{k: v for k, v in row.items() if k in fields}) for row in rows]
         except (OSError, ValueError, TypeError):
             return []
 
@@ -439,6 +591,19 @@ class CapturedStore:
             if c.id == old:
                 c.id = new
         self.save(rows)
+
+    def update(self, session_id: str, **fields: object) -> Captured | None:
+        rows = self.all()
+        found: Captured | None = None
+        for item in rows:
+            if item.id == session_id:
+                for key, value in fields.items():
+                    if hasattr(item, key):
+                        setattr(item, key, value)
+                found = item
+        if found is not None:
+            self.save(rows)
+        return found
 
 
 def _alive(pid: int) -> bool:

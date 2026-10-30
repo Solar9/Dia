@@ -12,24 +12,38 @@
   Fix CI / Address comments / Run plan.
 - **Chat**: talk to Dia in your own words, as on Discord or by voice, in
   several conversations (sessions, each with its own history: docs/GOALS.md); plans
-  wait for your yes.
+  wait for your yes. Every message shows its date and time (Chat, Talk, CLI
+  sessions).
 - **Status**: agents, projects (launch, test now, measure now, a command in
   a throwaway lab, impact, debt...), brain chain, memory, channels;
   **Skills** (weather, crypto, briefing... with their arguments) and
   **Tools**: Dia's commands with their output (doctor and `--fix`, sandbox
   check, usage limits, issues now, red-team test, or any of `bench`, `lab`,
   `why`, `impact`... typed in), so what has no button still works here.
-  Research starts from the Inbox/Tasks composer, not here.
+  Research starts from the Inbox/Tasks composer, not here. **About** (O Dia)
+  lists the author, solar9.me, GitHub, the license, and versions of Dia,
+  Python, Qt, agent CLIs and other installed components. Jump chips pin the
+  sections. The same page lives under Settings → About Dia.
+- **Usage**: tiles, per-agent and per-day charts side by side when there is
+  room, and scrollable tables on a narrow window.
 - **Settings**: a side menu in four groups (You and Dia, Work, Connect,
-  This computer). Appearance is only themes; startup, services, shortcuts,
-  the tray and the KDE widget live under Desktop & services; sandbox and
-  host lists under Security. Everything else in the config has a place:
-  assistant, voice and brains, agents, projects, memory, automation,
+  This computer). Notifications (push, quiet hours, budget) sit with You
+  and Dia; Discord with Integrations; the local web UI and port with
+  Desktop; remote URL and hosts with Devices; computer alerts, tidy, lab
+  and Godot analysis under Desktop. Appearance is only themes; startup,
+  services, shortcuts, the tray and the KDE widget live under Desktop &
+  services; sandbox and host lists under Security. Everything else in the
+  config has a place: assistant (including chat engines), voice and brains,
+  agents (routing, review, missions…), projects, memory, automation,
   schedule, integrations, devices and remote access, secrets, and the
-  config file itself (validated before it's saved).
+  config file itself (validated before it's saved), and About Dia (author,
+  website, GitHub, license, component versions). Forms are one column;
+  labels stack above fields on a phone.
 - **Task detail**: a decision bar that stays in view (tests, review, +/−,
-  Merge / PR-MR / Discard...), and tabs: Summary, Changes (the diff, with the
-  PR/MR's review comments under the lines they are about), Tests, Reviews.
+  Merge / PR-MR / Discard...), and tabs: Summary, Changes (a per-file diff with
+  line numbers and collapsible sections; the decision bar expands downward to a
+  short, scrollable file list; click a file to jump in the diff; PR/MR review
+  comments stay under the lines they are about), Tests, Reviews.
 - **Shortcuts**: Ctrl+K searches (views, tasks by text, id or branch,
   actions); Ctrl+B folds the sidebar down to its icons (remembered).
 - **Voice**: the button in the sidebar works like the `dia voice toggle`
@@ -158,6 +172,9 @@ stop running services. Existing Ollama user/system services and models are kept;
 system service changes may require authorization through the desktop's polkit
 agent. Errors are reported, and a failed operation does not save the new policy.
 The status includes actual unit states so partial changes remain visible.
+Start/restart of the session target uses `systemctl --no-block`, so a slow model
+warmup (often well over a minute) cannot trip the 90s control timeout and show a
+false failure dialog while Dia is already running.
 
 The native `dia app --background` login path creates only the existing tray icon.
 If the tray is disabled/unavailable it starts services without opening a window.
@@ -199,10 +216,16 @@ Found by scanning the process table, so Linux only; owner-only: paired phones
 do not get it. `GET /api/cli-sessions` and `/api/cli-sessions/{pid}/transcript`.
 
 **New session** (button in the tab): pick an agent (Claude Code, Codex or Cursor
-Agent), its model and a project; Dia starts the agent headless in the project's
-folder with your first message (edits allowed, as in a terminal) and keeps the
-conversation in the app like a taken-over one: answer it here, **Release** shows
-the command to go on in a terminal. `POST /api/cli-captured`.
+Agent), its model, a project, edit or read-only, and whether it may use the web;
+Dia starts the agent headless in the project's folder with your first message
+and keeps the conversation in the app like a taken-over one: answer it here,
+**Release** shows the command to go on in a terminal. `POST /api/cli-captured`.
+
+Taken-over sessions accept the same slash commands as that agent's own CLI
+(`/help`, `/compact`, `/model`, `/permissions`, `/mode`…). Type `/` to pick
+one. Dia handles help, status, model, mode/plan/permissions/approvals and
+release itself; the rest is sent as you would type it in a terminal.
+`GET /api/cli-commands`, `PATCH /api/cli-captured/{id}`.
 
 **Take over** (button in the tab): ends the CLI process in its terminal (SIGTERM; its
 conversation stays in the CLI's own file) and keeps the conversation in the app,

@@ -5,6 +5,25 @@ before 1.0 a minor version may change the configuration.
 
 ## [Unreleased]
 
+## [0.1.2] — 2026-10-30
+
+### Added
+- Date and time on messages in Chat, Talk and CLI sessions.
+- Slash commands in taken-over CLI sessions, matching each agent's own CLI.
+- About Dia (Status and Settings): author, solar9.me, GitHub, license, and
+  versions of Dia, Python, Qt and installed CLIs. `dia version` lists the same.
+
+### Changed
+- Status, Usage and Settings reflow with the window. Status stacks in one
+  column; Settings is a single readable column.
+
+### Fixed
+- Starting `dia-session.target` no longer waits for local-brain warmup.
+- Task Changes tab, resizable panes, and Plasma widget mute/stop icons.
+- CLI agent replies inherit the user turn's time when the transcript (Cursor)
+  only stamps the human side.
+- The Qt window picks up CSS/JS after a reload (cache-bust of the app shell).
+
 ## [0.1.1] — 2026-10-28
 
 ### Added
