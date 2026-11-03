@@ -1,9 +1,9 @@
 import subprocess
 from pathlib import Path
 
-from dia.config import parse_config
-from dia.orchestrator import Orchestrator
-from dia.simulation import describe
+from dia.core.config import parse_config
+from dia.core.orchestrator import Orchestrator
+from dia.quality.simulation import describe
 
 
 def make(tmp_path: Path, repo: Path) -> Orchestrator:

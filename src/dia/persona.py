@@ -12,11 +12,11 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from dia.preferences import Preferences, preferences_text
+from dia.knowledge.preferences import Preferences, preferences_text
 
 if TYPE_CHECKING:
-    from dia.config import Config
-    from dia.orchestrator import Orchestrator
+    from dia.core.config import Config
+    from dia.core.orchestrator import Orchestrator
 
 PRESETS = {
     "friendly": "Warm, helpful and a little playful. Short, natural sentences.",
@@ -29,7 +29,11 @@ PRESETS = {
     "mentor": "Patient and encouraging; explains the why, not only the what.",
 }
 
-LANGUAGES = {"pl": "Polish", "en": "English"}
+# Name of the language in the model prompt; also what the UI offers (ui/static/js/lang/).
+LANGUAGES = {
+    "pl": "Polish", "en": "English", "de": "German", "fr": "French",
+    "es": "Spanish", "it": "Italian", "pt": "Portuguese",
+}  # fmt: skip
 
 
 def persona(config: Config) -> dict[str, str]:

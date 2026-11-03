@@ -3,8 +3,8 @@ from pathlib import Path
 import pytest
 
 from dia import plainchat
-from dia.config import parse_config
-from dia.orchestrator import Orchestrator
+from dia.core.config import parse_config
+from dia.core.orchestrator import Orchestrator
 
 # A "Claude Code" that echoes what it got: the system prompt, the model, the prompt.
 ECHO = 'printf "model=%s | %s" "$DIA_MODEL" "$0"'

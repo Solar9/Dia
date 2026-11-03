@@ -3,9 +3,9 @@ from pathlib import Path
 from dia.agents import AgentRequest, Mode
 from dia.agents.claude_code import ClaudeCodeAgent
 from dia.agents.codex import CodexAgent
-from dia.config import parse_config
-from dia.orchestrator import Orchestrator
-from dia.research import research
+from dia.core.config import parse_config
+from dia.core.orchestrator import Orchestrator
+from dia.knowledge.research import research
 
 REPORT = "# Co-op w roguelike\\n## Summary\\nNajczęściej host-authoritative.\\n## Sources\\n1. https://example.com"
 

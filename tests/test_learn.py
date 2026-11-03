@@ -2,9 +2,9 @@ from pathlib import Path
 
 import pytest
 
-from dia.config import parse_config
-from dia.learn import parse_facts
-from dia.orchestrator import Orchestrator, TaskActionError
+from dia.core.config import parse_config
+from dia.core.orchestrator import Orchestrator, TaskActionError
+from dia.knowledge.learn import parse_facts
 
 
 def test_parse_facts() -> None:

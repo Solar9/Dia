@@ -1,6 +1,6 @@
 // Dia's service worker: makes the UI installable and opens it without a
 // network (the app shell only). The API and live updates are never cached.
-const CACHE = "dia-shell-v17";
+const CACHE = "dia-shell-v32";
 const SHELL = [
   "/", "/static/app.js", "/static/style.css", "/static/themes/dark.css",
   "/static/themes/light.css", "/static/themes/midnight.css",
@@ -8,6 +8,41 @@ const SHELL = [
   "/static/vendor/htm.module.js", "/static/vendor/prism.bundle.js",
   "/static/icons/icon-192.png",
   "/static/icons/dia.svg",
+  // the app's ES modules (kept in step with static/js by tests/test_ui_package.py)
+  "/static/js/api.js",
+  "/static/js/html.js",
+  "/static/js/i18n.js",
+  "/static/js/lang/de.js",
+  "/static/js/lang/es.js",
+  "/static/js/lang/fr.js",
+  "/static/js/lang/index.js",
+  "/static/js/lang/it.js",
+  "/static/js/lang/pt.js",
+  "/static/js/ui/charts.js",
+  "/static/js/ui/code.js",
+  "/static/js/ui/dialog.js",
+  "/static/js/ui/diff.js",
+  "/static/js/ui/icons.js",
+  "/static/js/ui/login.js",
+  "/static/js/ui/logo.js",
+  "/static/js/ui/palette.js",
+  "/static/js/ui/resource.js",
+  "/static/js/ui/richtext.js",
+  "/static/js/ui/splitter.js",
+  "/static/js/ui/window.js",
+  "/static/js/util.js",
+  "/static/js/views/chat.js",
+  "/static/js/views/cli.js",
+  "/static/js/views/inbox.js",
+  "/static/js/views/memory.js",
+  "/static/js/views/missions.js",
+  "/static/js/views/settings.js",
+  "/static/js/views/settings_devices.js",
+  "/static/js/views/settings_forms.js",
+  "/static/js/views/status.js",
+  "/static/js/views/status_summary.js",
+  "/static/js/views/tasks.js",
+  "/static/js/views/usage.js",
 ];
 
 self.addEventListener("install", (event) => {

@@ -5,9 +5,9 @@ import pytest
 
 from dia.assistant import Assistant
 from dia.brains import BrainContext, parse_intent
-from dia.config import parse_config
-from dia.orchestrator import Orchestrator
-from dia.schedule import Cron, CronError, Scheduler, Schedules
+from dia.core.config import parse_config
+from dia.core.orchestrator import Orchestrator
+from dia.work.schedule import Cron, CronError, Scheduler, Schedules
 
 
 def at(text: str) -> datetime:

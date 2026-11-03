@@ -8,8 +8,8 @@ from types import ModuleType, SimpleNamespace
 import pytest
 
 from dia.channels.voice import VoiceChannel, send_command, speakable
-from dia.config import parse_config
-from dia.orchestrator import Orchestrator
+from dia.core.config import parse_config
+from dia.core.orchestrator import Orchestrator
 from dia.voice.audio import Recorder
 from dia.voice.stt import FasterWhisperSTT
 from dia.voice.tts import CommandTTS, PiperTTS
@@ -73,7 +73,13 @@ async def wait_for(predicate, timeout: float = 10) -> None:
 
 def recording_started(voice):
     # The fake recorder writes its file right away; real ones do within milliseconds.
-    return lambda: voice.recorder.path is not None and voice.recorder.path.exists()
+    # The shell creates the file before it writes the bytes: wait for the bytes, or a stop
+    # that comes first finds an empty file ("no audio written") on a slow runner.
+    return lambda: (
+        voice.recorder.path is not None
+        and voice.recorder.path.exists()
+        and voice.recorder.path.stat().st_size > 0
+    )
 
 
 def lines(path: Path) -> list[str]:
@@ -116,7 +122,7 @@ async def test_spoken_request_runs_a_task_and_reports_back(tmp_path: Path, repo:
     await voice.command("stop")
     await wait_for(lambda: len(lines(spoken)) == 2)
     first, second = lines(spoken)
-    assert first == "Sprawdzam."
+    assert first == "pytanie o kod, demo, worker Sprawdzam."  # what it understood, then its words
     assert second.startswith("Zadanie w demo zakończone.") and "answer: Co tu jest?" in second
 
 

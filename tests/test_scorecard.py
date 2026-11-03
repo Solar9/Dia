@@ -1,8 +1,8 @@
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
-from dia.scorecard import format_table, scorecard
-from dia.store import TaskRecord, TaskStore
+from dia.core.store import TaskRecord, TaskStore
+from dia.quality.scorecard import format_table, scorecard
 
 
 def task(n: int, status: str, days_ago: int = 0, **details) -> TaskRecord:

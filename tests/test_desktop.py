@@ -1,7 +1,7 @@
 import sys
 from pathlib import Path
 
-from dia import desktop
+from dia.desktop import desktop
 
 
 def test_shortcuts_with_the_icon(tmp_path, monkeypatch) -> None:

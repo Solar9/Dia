@@ -1,8 +1,8 @@
 from pathlib import Path
 
 from dia.audit import acting_as
-from dia.config import parse_config
-from dia.orchestrator import Orchestrator
+from dia.core.config import parse_config
+from dia.core.orchestrator import Orchestrator
 
 
 async def test_actions_are_logged_with_their_actor(tmp_path: Path, repo: Path) -> None:
@@ -35,7 +35,7 @@ async def test_emergency_stop_ends_agents_and_blocks_new_work(tmp_path: Path, re
 
     import pytest
 
-    from dia.orchestrator import TaskActionError
+    from dia.core.orchestrator import TaskActionError
 
     config = parse_config(
         {

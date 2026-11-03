@@ -385,7 +385,7 @@ class BriefingSkill(Skill):
                         skill.options.get("symbols") or skill.options.get("coins")
                     ):
                         continue
-                    if section == "calendar" and not skill.urls():
+                    if section == "calendar" and not getattr(skill, "urls", list)():
                         continue
                     if section == "mail" and not skill.options.get("host"):
                         continue
@@ -404,7 +404,7 @@ class SystemSkill(Skill):
     args = {"top": "true to list what uses the most CPU/memory"}
 
     async def run(self, args: dict[str, Any]) -> str:
-        from dia import system
+        from dia.desktop import system
 
         snap = await system.snapshot()
         temp = f", {snap.cpu_temp:.0f}°C" if snap.cpu_temp is not None else ""
@@ -456,7 +456,7 @@ class ScreenSkill(Skill):
     args = {"question": "what the user wants to know about the screen"}
 
     async def run(self, args: dict[str, Any]) -> str:
-        from dia.screen import look
+        from dia.desktop.screen import look
 
         if not self.dia.screen_enabled:
             return self.t(
@@ -479,7 +479,7 @@ class BalanceSkill(Skill):
     args = {"project": "which game", "advise": "true for an agent's proposed changes"}
 
     async def run(self, args: dict[str, Any]) -> str:
-        from dia.balance import balance_report
+        from dia.release.balance import balance_report
 
         project = str(args.get("project") or "")
         if not project and len(self.config.projects) == 1:
@@ -501,7 +501,7 @@ class AnalyzeSkill(Skill):
     args = {"project": "which project", "advise": "true for an agent's advice"}
 
     async def run(self, args: dict[str, Any]) -> str:
-        from dia.godot_analysis import analyze_project
+        from dia.release.godot_analysis import analyze_project
 
         project = str(args.get("project") or "")
         if not project and len(self.config.projects) == 1:
@@ -527,8 +527,8 @@ class ClipboardSkill(Skill):
     }
 
     async def run(self, args: dict[str, Any]) -> str:
-        from dia import clipboard
         from dia.agents import AgentRequest, Mode
+        from dia.desktop import clipboard
 
         action = str(args.get("action") or "read").lower()
         reader, writer = self.options.get("read_command"), self.options.get("write_command")
@@ -580,8 +580,8 @@ class TidySkill(Skill):
     args = {"folder": "which allowed folder (default: Downloads)", "undo": "true to undo"}
 
     async def run(self, args: dict[str, Any]) -> str:
+        from dia.desktop.tidy import Tidy, files_pl, summary
         from dia.skills import NeedsConfirmation
-        from dia.tidy import Tidy, files_pl, summary
 
         tidy = Tidy(self.dia)
         if str(args.get("undo", "")).lower() in ("true", "1", "yes"):
@@ -616,7 +616,7 @@ class CameraSkill(Skill):
     args = {"question": "what the user wants to know about what the camera sees"}
 
     async def run(self, args: dict[str, Any]) -> str:
-        from dia.camera import look
+        from dia.desktop.camera import look
 
         if not self.dia.camera_enabled:
             return self.t(
@@ -635,7 +635,7 @@ class ServicesSkill(Skill):
     description = "failed systemd services and Docker/Podman containers that are down"
 
     async def run(self, args: dict[str, Any]) -> str:
-        from dia import computer
+        from dia.desktop import computer
 
         units, boxes = await asyncio.gather(computer.failed_units(), computer.containers())
         if not units and not boxes:
@@ -652,7 +652,7 @@ class UpdatesSkill(Skill):
     description = "pending system updates (pacman, AUR, flatpak...); reports only"
 
     async def run(self, args: dict[str, Any]) -> str:
-        from dia import computer
+        from dia.desktop import computer
 
         found = [u for u in await computer.updates() if u.packages]
         if not found:

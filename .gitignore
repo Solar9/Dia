@@ -10,3 +10,7 @@ dist/
 # local config may contain tokens and private paths
 /dia.toml
 .directory
+
+# coverage
+.coverage
+coverage.xml

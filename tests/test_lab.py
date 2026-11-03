@@ -4,9 +4,9 @@ from pathlib import Path
 
 import pytest
 
-from dia.config import parse_config
-from dia.lab import Lab
-from dia.orchestrator import Orchestrator
+from dia.core.config import parse_config
+from dia.core.orchestrator import Orchestrator
+from dia.quality.lab import Lab
 
 # A stand-in for podman/docker: records its arguments, then runs the command
 # in the mounted directory the way the container would.

@@ -4,9 +4,9 @@ from pathlib import Path
 
 import pytest
 
-from dia.config import parse_config
-from dia.missions import Missions, parse_mission
-from dia.orchestrator import Orchestrator
+from dia.core.config import parse_config
+from dia.core.orchestrator import Orchestrator
+from dia.work.missions import Missions, parse_mission
 
 PLAN = {
     "steps": [
@@ -145,3 +145,51 @@ async def test_continue_reruns_failed_steps_and_reintegrates(tmp_path: Path, rep
     assert mission.status == "done", mission.error
     steps = {s["id"]: s["status"] for s in mission.details["mission"]["steps"]}
     assert set(steps.values()) == {"done"}
+
+
+async def test_integration_merges_only_steps_that_have_a_branch(
+    tmp_path: Path, repo: Path, monkeypatch
+):
+    # typing Missions showed that a step without a branch (failed, skipped) was merged as None
+    from types import SimpleNamespace
+    from unittest.mock import AsyncMock
+
+    from dia.work import missions as module
+    from dia.work.missions import MissionError, Missions, MissionStep
+
+    orch = Orchestrator(
+        parse_config(
+            {
+                "dia": {"data_dir": str(tmp_path / "data"), "default_agent": "a"},
+                "agents": {"a": {"type": "command", "argv": ["true"]}},
+                "projects": {"demo": {"path": str(repo)}},
+            },
+            tmp_path / "dia.toml",
+        ),
+        use_memory=False,
+    )
+    missions = Missions(orch)
+    merged: list = []
+
+    async def merge_into(workspace, branches, message):
+        merged.append(list(branches))
+        raise MissionError("stop here")
+
+    monkeypatch.setattr(missions, "_drop", AsyncMock())
+    monkeypatch.setattr(missions, "_log", AsyncMock())
+    monkeypatch.setattr(missions, "_merge_into", merge_into)
+    monkeypatch.setattr(
+        module.Workspace,
+        "create",
+        AsyncMock(return_value=SimpleNamespace(branch="dia/m", path=tmp_path, remove=AsyncMock())),
+    )
+    steps = [
+        MissionStep("a", "A", "a", "p", status="done", branch="dia/a"),
+        MissionStep("b", "B", "a", "p", status="skipped", branch=None),
+        MissionStep("c", "C", "a", "p", status="done", branch="main"),  # changed nothing: its base
+        MissionStep("d", "D", "a", "p", status="done", branch="dia/a"),  # the same branch twice
+    ]
+    mission = SimpleNamespace(id="m1", project="demo", details={"base": "main"}, branch=None)
+    await missions._integrate(mission, steps, orch.config.project("demo"))
+    assert merged == [["dia/a"]]
+    assert mission.status == "failed" and mission.error == "stop here"

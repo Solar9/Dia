@@ -1,8 +1,8 @@
 import subprocess
 from pathlib import Path
 
-from dia.config import parse_config
-from dia.orchestrator import Orchestrator
+from dia.core.config import parse_config
+from dia.core.orchestrator import Orchestrator
 
 
 def make(tmp_path: Path, repo: Path, agents: dict, retry: dict, test_command: str | None = None):
@@ -81,7 +81,7 @@ async def test_failed_tests_go_back_to_the_author(tmp_path, repo) -> None:
 
 
 async def test_a_project_overrides_the_policy(tmp_path, repo) -> None:
-    from dia.retry import RetryPolicy
+    from dia.core.retry import RetryPolicy
 
     orch = make(tmp_path, repo, {"a": ["true"]}, {"agent_errors": 1, "test_fixes": 1})
     project = orch.config.project("demo")

@@ -2,10 +2,10 @@ from pathlib import Path
 
 from dia.assistant import Assistant
 from dia.brains.rules import RulesBrain
-from dia.config import parse_config
-from dia.orchestrator import Orchestrator
+from dia.core.config import parse_config
+from dia.core.orchestrator import Orchestrator
+from dia.knowledge.preferences import Preferences, learn_preferences, parse_preferences
 from dia.persona import persona_prompt
-from dia.preferences import Preferences, learn_preferences, parse_preferences
 
 
 def make(tmp_path: Path, repo: Path | None = None, **assistant) -> Orchestrator:

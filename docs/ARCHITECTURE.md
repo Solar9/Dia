@@ -32,6 +32,8 @@
 
 Every interface calls the same core API (`Orchestrator`), so a feature added
 to the core is available from the terminal, Discord and voice at once.
+Where each piece lives, and the import rules between packages, are under
+[Module map](#module-map) below.
 
 ## Extension points
 
@@ -129,7 +131,7 @@ task's `author`, who receives review and CI findings.
 
 Subscription CLIs stop when the plan's limit is used up. `CliAgent` flags a
 failed result whose error or short answer matches a limit message
-(`dia.limits.LIMIT_PATTERNS`) and parses the reset time when the message has
+(`dia.core.limits.LIMIT_PATTERNS`) and parses the reset time when the message has
 one (Claude's `|<epoch>`, "in 3 hours", "at 5:00 PM"). `Orchestrator.call_agent`,
 used for every agent call (steps, reviews, fixes), then marks the agent in
 `<data_dir>/limits.json` (shared by all Dia processes), emits a `limit`
@@ -199,7 +201,7 @@ stripped so the UI shows only what you typed.
 The same UI is an installable PWA (manifest, service worker caching only the
 app shell) with a phone layout. With `[ui] remote = true`, requests for the
 `[ui] hosts` names (e.g. through `tailscale serve`) are accepted with the
-token of a paired device (`dia.devices`, hashes in `devices.json`), never
+token of a paired device (`dia.core.devices`, hashes in `devices.json`), never
 the owner token; devices are refused the configuration, the microphone and
 device management. See docs/MOBILE.md.
 
@@ -216,17 +218,17 @@ when it notices the change.
 
 ## Schedule, push, issues
 
-`dia.schedule.Scheduler` runs in `dia serve`: every minute it runs the jobs
+`dia.work.schedule.Scheduler` runs in `dia serve`: every minute it runs the jobs
 whose cron matches (from `[[schedule]]` and `schedules.json`) and emits a
-`schedule` event with the answer. `dia.push.Push` listens to events and
+`schedule` event with the answer. `dia.desktop.push.Push` listens to events and
 task saves and sends Web Push messages (VAPID key in `vapid.pem`) to the
-subscribed devices. `dia.issues.IssueWatcher` imports labelled issues as
+subscribed devices. `dia.work.issues.IssueWatcher` imports labelled issues as
 planned tasks through `Orchestrator.import_issue`; they run only on
 approval.
 
 ## Missions and control
 
-`dia.missions.Missions` keeps a mission as a task with `mode = "mission"`
+`dia.work.missions.Missions` keeps a mission as a task with `mode = "mission"`
 and its step graph in `details.mission`; `Orchestrator.run_plan` hands such
 tasks to it. Each step is an ordinary `run_task` with `start_from` (the
 branch to build on) and `details.mission/step`; several dependencies are
@@ -234,7 +236,7 @@ merged into a helper branch first. The integrated branch makes the mission
 reviewable, mergeable and publishable through the usual calls. See
 docs/MISSIONS.md.
 
-`dia.processes` registers every agent and test process (own process group);
+`dia.core.processes` registers every agent and test process (own process group);
 `Orchestrator.stop_all` ends them and sets `halted` (in `state.json`), which
 `_ensure_running`, the queue, missions, the scheduler and the watchers
 respect. `dia.audit.ACTOR` (a context variable set by each channel) names
@@ -326,3 +328,90 @@ See [ROADMAP.md](ROADMAP.md) for the whole plan. Done so far:
    comments from the PR/MR back into tasks (done), a project watcher that
    tests new commits and offers a fix (done). Next: Discord voice channel,
    more toolchains.
+
+## Public surface snapshots
+
+`tests/test_surface.py` pins the CLI (commands and options), the HTTP routes
+and the `dia.*` entry points against `tests/snapshots/`. A refactor must leave
+them unchanged; after an intentional change regenerate with
+`DIA_UPDATE_SNAPSHOTS=1 pytest tests/test_surface.py`.
+
+## Command line
+
+`dia.cli` is a package: `__init__` holds `main()` and `build_parser()`, which
+registers the commands in the fixed `ORDER` (the order of `dia --help`); each
+module (`tasks`, `memory`, `quality`, `agents`, `work`, `release`, `desktop`,
+`serve`, `voice`, `setup`) defines its handlers and a `COMMANDS` map of
+parser builders. Shared helpers live in `_common`. Handlers import lazily.
+
+## HTTP API modules
+
+`dia.channels.api` is a package. `ApiChannel` (in `__init__`) owns the server,
+the guard middleware, the WebSocket and the static pages; the endpoints live
+in mixins, one module each: `tasks`, `cli_sessions`, `chat`, `settings`,
+`projects`, `memory`, `work`, `system`. Every module has `routes(ch)`; the
+shared constants and helpers are in `_util`. `tests/test_surface.py` pins the
+route list and checks that no route is shadowed by another.
+
+## Orchestrator and dia.core
+
+`Orchestrator` is the one façade every channel calls. It owns the shared state
+(config, store, listeners, slots) and the task pipeline (`run_task`, `_run`,
+`_execute`, `_attempt`); the rest is done by collaborators in `dia.core`, each
+created by the Orchestrator and holding it as `self.dia`: `agent_calls`
+(usage limits, fallbacks), `review`, `forge_flow` (publish, CI, comments),
+`learning`, `runstate` (emergency stop, quiet/screen/camera), `merging`,
+`inbound` (issues, commit checks), `testing`, `planning`. Public methods stay
+on the Orchestrator as one-line delegates, so a feature added to a collaborator
+is available to every interface.
+
+## Persistence
+
+Small state files (`limits.json`, `devices.json`, `schedules.json`, ...) are
+read and written only through `dia.jsonfile` (`read_json`, `write_json`: temp
+file + `os.replace`, permission bits kept or set). The SQLite store applies
+numbered migrations in `dia.store.MIGRATIONS` and records the version in
+`PRAGMA user_version`; to change the schema, append a migration, never edit one.
+
+## Module map
+
+```
+dia/core/       orchestrator (façade) + its collaborators, store, config, workspace, plans,
+                limits, sandbox, guard, plugins, routing, processes, devices, paths, jsonfile
+dia/quality/    quality rules, debt, impact, contradictions, scorecard, agent_stats (how well
+                agents do), benchmarks (a project's numbers), experiments, lab, redteam,
+                simulation, scenario, shadow, ci
+dia/knowledge/  decisions, learn, profile, preferences, conversations, research, council,
+                suggestions, attention
+dia/work/       goals, missions, schedule, swarm, work profiles, issues, watch
+dia/desktop/    appwindow, desktop files, screen, camera, clipboard, tidy, system, service,
+                runtime (login policy), push, computer, health
+dia/release/    release, update, godot_analysis, balance
+dia/            about, banner, assistant, plainchat, persona, security, secrets, setup,
+                audit, sessions
+plugin packages agents, brains, channels, forges, memory, skills, toolchains, voice, ui, cli
+```
+
+Layer rule, checked in CI by `lint-imports`: `dia.core` imports nothing from
+`dia.channels`, `dia.cli`, `dia.desktop` or `dia.ui` (type-checking imports aside).
+Old flat paths such as `dia.limits` are gone; there are no shims, as these
+modules were never part of the plugin API.
+
+## Web UI modules
+
+`ui/static/app.js` only holds the `App` component and the router. Everything else
+is a native ES module under `ui/static/js/`: `api` (token, `api()`), `i18n`
+(strings, `t()`), `util`, `html` (htm bound to Preact), `ui/*` (shared components:
+diff, code, rich text, splitter, charts, icons, palette, login, window controls) and
+`views/*` (one per tab; settings is split in three). There is no build step: the
+import map in `index.html` maps `preact`, `preact/hooks` and `htm` to `static/vendor`.
+A new module must also be added to the service worker's `SHELL` list;
+`tests/test_ui_package.py` fails if it is not.
+
+## Types
+
+`mypy` runs in CI. `dia.core.*` is checked strictly (explicit generics, no untyped
+defs, no implicit re-exports: `orchestrator.__all__` lists what it re-exports); the
+rest is lenient, and modules with open findings are listed under
+`[[tool.mypy.overrides]] ignore_errors` in `pyproject.toml`: take one off the list
+when you touch it. The API's JSON shapes are `TaskJson` / `DeviceJson`.

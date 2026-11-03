@@ -135,6 +135,16 @@ Dia's window and the browser; the phone and the KDE widget use it too, or each
 its own ("Same as the app" / "Its own"). A paired phone picks only its own. Open
 pages switch at once; the widget within a few seconds.
 
+**System** (for the app and the phone): follows the system's light/dark setting (`dark` or
+`light`) and changes with it. The KDE widget cannot (Plasma draws it), so "Same as the app"
+gives it `dark` while the app follows the system. The browser's and the PWA's bars take the
+theme's `--bg` (`<meta name="theme-color">`).
+
+**System** (for the app and the phone): follows the system's light/dark setting (`dark` or
+`light`) and changes with it. The KDE widget cannot (Plasma draws it), so "Same as the app"
+gives it `dark` while the app follows the system. The browser's and the PWA's bars take the
+theme's `--bg` (`<meta name="theme-color">`).
+
 It appears under **Settings → Your themes**. Built-in: `dark`, `light`,
 `midnight`. Every theme must define the same variables as `dark.css`.
 

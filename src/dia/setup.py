@@ -116,7 +116,8 @@ def find_ollama_model() -> str | None:
     out = subprocess.run(["ollama", "list"], capture_output=True, text=True, timeout=10)
     names = [line.split()[0] for line in out.stdout.splitlines()[1:] if line.strip()]
     small = [n for n in names if any(s in n for s in ("3b", "1.5b", "mini", "small", "4b"))]
-    return (small or names or [None])[0]
+    chosen = small or names
+    return chosen[0] if chosen else None
 
 
 def _toml_string(value: str) -> str:
@@ -291,8 +292,9 @@ def interview(prompt: Prompter, pl: bool) -> Answers:
 
 def run(assume: bool = False, target: Path | None = None) -> int:
     """The whole wizard: questions, config, shortcuts, service, check."""
-    from dia import __version__, desktop
+    from dia import __version__
     from dia.banner import banner
+    from dia.desktop import desktop
 
     pl = system_language() == "pl"
 
@@ -313,7 +315,7 @@ def run(assume: bool = False, target: Path | None = None) -> int:
             print(f"  {line}")
     linux = sys.platform.startswith("linux")
     if linux and shutil.which("systemctl") and prompt.yes(t("service"), default=False):
-        from dia import service
+        from dia.desktop import service
 
         for line in service.install(target):
             print(f"  {line}")

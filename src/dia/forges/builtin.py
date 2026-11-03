@@ -8,8 +8,8 @@ import urllib.parse
 from pathlib import Path
 
 from dia.agents.base import find_executable
+from dia.core.workspace import run
 from dia.forges import CIStatus, Forge, Issue, Publication, ReviewComment, find_url
-from dia.workspace import run
 
 
 class GitForge(Forge):

@@ -6,13 +6,17 @@ the same as the app. The colours are the theme's CSS variables."""
 
 from __future__ import annotations
 
-import json
 import os
 import re
 from pathlib import Path
 
+from dia.core.jsonfile import read_json, write_json
+
 STATIC_THEMES = Path(__file__).resolve().parent / "static" / "themes"
 DEFAULT = "dark"
+# Not a file: the app and the phone may follow the system's light/dark setting. The page
+# decides (prefers-color-scheme); where only the server knows the name, it counts as dark.
+SYSTEM = "system"
 NAME = re.compile(r"[\w-]{1,64}")
 VARIABLE = re.compile(r"^\s*--([\w-]+)\s*:\s*([^;]+);", re.MULTILINE)
 HEX = re.compile(r"#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})")
@@ -36,23 +40,36 @@ def path_of(name: str) -> Path | None:
 
 
 SURFACES = ("phone", "widget")  # may have their own theme; None: the app's
+FOLLOW_SYSTEM = ("name", "phone")  # the KDE widget is drawn by Plasma, not by a web page
+
+
+def valid(key: str, value: object) -> bool:
+    """Whether ``value`` is a theme that ``key`` ("name", "phone", "widget") can have."""
+    if not isinstance(value, str):
+        return False
+    return (value == SYSTEM and key in FOLLOW_SYSTEM) or path_of(value) is not None
+
+
+def concrete(name: str, dark: bool = True) -> str:
+    """The theme file behind ``name``: "system" is dark or light, the rest is itself."""
+    return ("dark" if dark else "light") if name == SYSTEM else name
 
 
 def settings(data_dir: Path) -> dict[str, str | None]:
     """{"name": the app's theme, "phone": ..., "widget": ...}, unknown themes dropped."""
-    try:
-        raw = json.loads((data_dir / "ui-theme.json").read_text())
-    except (OSError, ValueError):
-        raw = {}
+    raw = read_json(data_dir / "ui-theme.json", {})
     raw = raw if isinstance(raw, dict) else {}
-    valid = lambda v: v if isinstance(v, str) and path_of(v) else None  # noqa: E731
-    return {"name": valid(raw.get("name")) or DEFAULT, **{k: valid(raw.get(k)) for k in SURFACES}}
+    pick = lambda k, v: v if valid(k, v) else None  # noqa: E731
+    return {
+        "name": pick("name", raw.get("name")) or DEFAULT,
+        **{k: pick(k, raw.get(k)) for k in SURFACES},
+    }
 
 
 def current(data_dir: Path, surface: str | None = None) -> str:
     """The theme of the app, or of the phone / the widget (their own, else the app's)."""
     chosen = settings(data_dir)
-    return (chosen.get(surface) if surface in SURFACES else None) or chosen["name"]
+    return (chosen.get(surface) if surface in SURFACES else None) or chosen["name"] or DEFAULT
 
 
 def update(data_dir: Path, changes: dict) -> dict[str, str | None]:
@@ -63,17 +80,18 @@ def update(data_dir: Path, changes: dict) -> dict[str, str | None]:
             raise ValueError(f"unknown theme setting {key!r}")
         if value is None and key in SURFACES:
             chosen[key] = None
-        elif isinstance(value, str) and path_of(value):
+        elif valid(key, value):
             chosen[key] = value
+        elif value == SYSTEM:
+            raise ValueError("the KDE widget cannot follow the system's light/dark setting")
         else:
             raise ValueError(f"no theme {value!r}")
-    data_dir.mkdir(parents=True, exist_ok=True)
-    (data_dir / "ui-theme.json").write_text(json.dumps(chosen) + "\n")
+    write_json(data_dir / "ui-theme.json", chosen, indent=None, newline=True)
     return chosen
 
 
-def variables(name: str) -> dict[str, str]:
-    path = path_of(name)
+def variables(name: str, dark: bool = True) -> dict[str, str]:
+    path = path_of(concrete(name, dark))
     return dict(VARIABLE.findall(path.read_text())) if path else {}
 
 
@@ -93,6 +111,8 @@ def qml_color(value: str) -> str | None:
     return None
 
 
-def colors(name: str) -> dict[str, str]:
+def colors(name: str, dark: bool = True) -> dict[str, str]:
     """The theme's colour variables, for the KDE widget (fonts, sizes... left out)."""
-    return {key: color for key, value in variables(name).items() if (color := qml_color(value))}
+    return {
+        key: color for key, value in variables(name, dark).items() if (color := qml_color(value))
+    }

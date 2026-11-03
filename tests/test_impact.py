@@ -1,7 +1,7 @@
 import subprocess
 from pathlib import Path
 
-from dia.impact import analyze, describe, find_targets, graph
+from dia.quality.impact import analyze, describe, find_targets, graph
 
 
 def write(root: Path, files: dict[str, str]) -> None:

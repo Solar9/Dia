@@ -3,11 +3,11 @@ import subprocess
 import sys
 from pathlib import Path
 
-from dia import computer
 from dia.assistant import Assistant
 from dia.brains.rules import RulesBrain
-from dia.config import parse_config
-from dia.orchestrator import Orchestrator
+from dia.core.config import parse_config
+from dia.core.orchestrator import Orchestrator
+from dia.desktop import computer
 
 
 async def test_ending_a_process_needs_a_yes(tmp_path: Path) -> None:

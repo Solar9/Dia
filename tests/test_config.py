@@ -4,7 +4,7 @@ import pytest
 
 from dia.agents.claude_code import ClaudeCodeAgent
 from dia.agents.command import CommandAgent
-from dia.config import ConfigError, parse_config
+from dia.core.config import ConfigError, parse_config
 
 
 def test_agents_are_resolved_through_plugins(tmp_path: Path) -> None:
@@ -41,7 +41,7 @@ def test_project_requires_path() -> None:
 
 
 def test_shadowed_config_is_reported(tmp_path: Path, monkeypatch) -> None:
-    from dia.config import load_config
+    from dia.core.config import load_config
 
     (tmp_path / "dia.toml").write_text("[dia]\n")
     user = tmp_path / "xdg" / "dia" / "config.toml"

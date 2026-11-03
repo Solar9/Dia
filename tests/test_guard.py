@@ -2,9 +2,9 @@ from pathlib import Path
 
 import pytest
 
-from dia import sandbox
-from dia.config import parse_config
-from dia.orchestrator import Orchestrator
+from dia.core import sandbox
+from dia.core.config import parse_config
+from dia.core.orchestrator import Orchestrator
 
 pytestmark = pytest.mark.skipif(not sandbox.bwrap_works(), reason="bubblewrap not usable")
 

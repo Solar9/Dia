@@ -1,8 +1,8 @@
 from pathlib import Path
 
-from dia.config import parse_config
-from dia.orchestrator import Orchestrator
-from dia.store import TaskRecord
+from dia.core.config import parse_config
+from dia.core.orchestrator import Orchestrator
+from dia.core.store import TaskRecord
 
 
 def make(tmp_path: Path, repo: Path, routing: dict) -> Orchestrator:

@@ -4,9 +4,9 @@ from pathlib import Path
 
 import pytest
 
-from dia import goals
-from dia.config import parse_config
-from dia.orchestrator import Orchestrator
+from dia.core.config import parse_config
+from dia.core.orchestrator import Orchestrator
+from dia.work import goals
 
 MILESTONES = {"milestones": [
     {"title": "Saving works", "done_when": "a save loads back"},

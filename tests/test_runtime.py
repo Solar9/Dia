@@ -1,6 +1,8 @@
 import pytest
 
-from dia import desktop, runtime, service
+from dia.desktop import desktop, runtime, service
+
+LANGUAGES = {"en", "pl", "de", "fr", "es", "it", "pt"}  # the service words follow the UI languages
 
 
 @pytest.fixture
@@ -118,3 +120,80 @@ def test_backend_action_runs_in_separate_unit_and_reports_result(manager, monkey
     assert runtime.operation()["state"] == "queued"
     runtime.report_operation("dia", "restart", "failed", "Access denied")
     assert runtime.status()["operation"]["error"] == "Access denied"
+
+
+def test_state_words_exist_in_both_languages_and_are_shared():
+    # DIA-48: one vocabulary for tray, widget and web UI.
+    assert set(runtime.STATE_LABELS) == {
+        "active", "inactive", "failed", "activating", "deactivating", "missing", "unknown",
+    }  # fmt: skip
+    for words in runtime.STATE_LABELS.values():
+        assert set(words) == LANGUAGES and all(words.values())
+    assert runtime.state_label("loaded", "active", "pl") == "Działa"
+    assert runtime.state_label("loaded", "active", "en") == "Running"
+    assert runtime.state_label("not-found", "inactive", "en") == "Not installed"
+    assert runtime.state_label("loaded", "weird", "pl") == "Nieznany"
+
+
+def test_unit_state_carries_the_label(monkeypatch):
+    monkeypatch.setattr(
+        runtime,
+        "ctl",
+        lambda *a, **k: "LoadState=loaded\nActiveState=failed\nUnitFileState=enabled",
+    )
+    unit = runtime.unit_state("dia.service")
+    assert unit["state"] == "failed"
+    assert unit["label"]["en"] == "Error" and unit["label"]["pl"] == "Błąd"
+
+
+def test_surfaces_do_not_keep_their_own_state_words():
+    from pathlib import Path
+
+    ui = Path(runtime.__file__).parents[1] / "ui"
+    qml = (ui / "plasmoid/contents/ui/main.qml").read_text()
+    web = (ui / "static/js/views/settings_devices.js").read_text()
+    assert "Zatrzymana" not in qml and "Zatrzymana" not in web
+    assert "unit.label" in qml and "state[c].label" in web
+
+
+@pytest.mark.parametrize(
+    ("load", "active", "verbs"),
+    [
+        ("loaded", "active", ["stop", "restart"]),
+        ("loaded", "inactive", ["start"]),
+        ("loaded", "failed", ["start", "restart"]),
+        ("loaded", "activating", ["stop"]),
+        ("loaded", "deactivating", []),
+        ("not-found", "inactive", []),
+    ],
+)
+def test_only_meaningful_verbs_are_offered(load, active, verbs):
+    # DIA-49
+    assert runtime.allowed_verbs(load, active) == verbs
+
+
+def test_status_carries_verbs_results_and_labelled_operation(manager, monkeypatch):
+    monkeypatch.setattr(runtime.shutil, "which", lambda _: "/usr/bin/systemctl")
+    runtime.report_operation("dia", "restart", "failed", "boom")
+    status = runtime.status()
+    assert set(status["words"]["verbs"]) == {"start", "stop", "restart"}
+    assert status["operation"]["label"]["en"] == "Failed"
+    assert status["operation"]["label"]["pl"] == "Nie udało się"
+    assert status["dia"]["actions"] == runtime.allowed_verbs(
+        status["dia"]["load"], status["dia"]["active"]
+    )
+    for words in (*runtime.VERB_LABELS.values(), *runtime.RESULT_LABELS.values()):
+        assert set(words) == LANGUAGES
+
+
+def test_surfaces_use_the_allowed_verbs():
+    from pathlib import Path
+
+    ui = Path(runtime.__file__).parents[1] / "ui"
+    assert "actions?.includes" in (ui / "static/js/views/settings_devices.js").read_text()
+    assert "canService" in (ui / "plasmoid/contents/ui/StatusHeader.qml").read_text()
+
+
+def test_state_words_fall_back_to_english_for_other_languages():
+    assert runtime.state_label("loaded", "active", "de") == "Läuft"
+    assert runtime.state_label("loaded", "failed", "cs") == "Error"  # not "Unknown"

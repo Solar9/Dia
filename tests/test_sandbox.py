@@ -3,10 +3,10 @@ from pathlib import Path
 
 import pytest
 
-from dia import sandbox
 from dia.agents import Mode
-from dia.config import parse_config
-from dia.orchestrator import Orchestrator
+from dia.core import sandbox
+from dia.core.config import parse_config
+from dia.core.orchestrator import Orchestrator
 
 needs_bwrap = pytest.mark.skipif(not sandbox.bwrap_works(), reason="bubblewrap not usable")
 
@@ -117,3 +117,56 @@ def test_the_command_line(tmp_path, monkeypatch) -> None:
     hidden = argv.index(str(tmp_path / "data"))
     assert argv[hidden - 1] == "--tmpfs"
     assert os.environ.get("HOME") == str(tmp_path / "home")
+
+
+def test_project_venv_is_found_in_the_repository(tmp_path: Path) -> None:
+    # DIA-23: the project's own Python environment is what makes `pytest` work in a sandbox.
+    from dia.core.config import ProjectConfig
+
+    project = ProjectConfig(name="p", path=tmp_path)
+    assert sandbox.project_venv(project) is None and sandbox.project_venv(None) is None
+    (tmp_path / "venv" / "bin").mkdir(parents=True)
+    (tmp_path / "venv" / "bin" / "python").write_text("")
+    assert sandbox.project_venv(project) == tmp_path / "venv"
+    (tmp_path / ".venv" / "bin").mkdir(parents=True)
+    (tmp_path / ".venv" / "bin" / "python").write_text("")
+    assert sandbox.project_venv(project) == tmp_path / ".venv"  # .venv wins
+
+
+def test_the_venv_is_read_only_and_first_on_path_and_the_worktree_src_wins(
+    tmp_path: Path, monkeypatch
+) -> None:
+    monkeypatch.setenv("PATH", "/usr/bin:/bin")
+    monkeypatch.delenv("PYTHONPATH", raising=False)
+    venv, work = tmp_path / "repo" / ".venv", tmp_path / "work"
+    (venv / "bin").mkdir(parents=True)
+    (work / "src").mkdir(parents=True)
+    (work / "pyproject.toml").write_text("")
+    argv = sandbox.Sandbox(venv=venv).wrap(["pytest"], work)
+    assert ["--ro-bind", str(venv), str(venv)] == argv[
+        argv.index(str(venv)) - 1 : argv.index(str(venv)) + 2
+    ]
+    setenv = {argv[i + 1]: argv[i + 2] for i, a in enumerate(argv) if a == "--setenv"}
+    assert setenv["VIRTUAL_ENV"] == str(venv)
+    assert setenv["PATH"] == f"{venv}/bin:/usr/bin:/bin"
+    assert setenv["PYTHONPATH"] == str(work / "src")  # an editable install must not shadow it
+    # No venv, nothing changes; no pyproject, no PYTHONPATH.
+    assert "--setenv" not in sandbox.Sandbox().wrap(["true"], work)
+    (work / "pyproject.toml").unlink()
+    assert "PYTHONPATH" not in sandbox.Sandbox(venv=venv).wrap(["true"], work)
+
+
+@needs_bwrap
+async def test_a_project_tool_from_its_venv_runs_in_the_sandbox(tmp_path, repo, home) -> None:
+    venv = repo / ".venv" / "bin"
+    venv.mkdir(parents=True)
+    (venv / "python").symlink_to("/usr/bin/env")  # only its presence marks a venv
+    tool = venv / "mytool"
+    tool.write_text("#!/bin/sh\necho tool-ran\n")
+    tool.chmod(0o755)
+    script = "mytool; echo VENV=$VIRTUAL_ENV; echo planted > " + str(repo / ".venv/x") + " 2>&1"
+    orchestrator = make(tmp_path, repo, script)
+    task = (await orchestrator.run_task("demo", "use the venv")).task
+    assert "tool-ran" in task.summary
+    assert f"VENV={repo / '.venv'}" in task.summary
+    assert not (repo / ".venv" / "x").exists()  # read-only: the agent cannot change it

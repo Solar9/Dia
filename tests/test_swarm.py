@@ -2,9 +2,9 @@ from pathlib import Path
 
 import pytest
 
-from dia import swarm
-from dia.config import parse_config
-from dia.orchestrator import Orchestrator, TaskActionError
+from dia.core.config import parse_config
+from dia.core.orchestrator import Orchestrator, TaskActionError
+from dia.work import swarm
 
 # One fake agent plays every part, by what it is asked:
 # - a role (hypotheses): two agents agree the cause is in physics.gd, one blames input.gd;

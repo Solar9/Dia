@@ -11,23 +11,38 @@ import re
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
 from datetime import datetime
+from typing import TYPE_CHECKING, ClassVar
 
 from dia.agents import Mode
-from dia.brains import Brain, BrainContext, Intent, guard_irreversible
+from dia.brains import (
+    Brain,
+    BrainContext,
+    Intent,
+    guard_agent,
+    guard_clarifying,
+    guard_irreversible,
+)
 from dia.brains.rules import strip_address
-from dia.orchestrator import Orchestrator, TaskActionError, TaskReport
+from dia.core.orchestrator import Orchestrator, TaskActionError, TaskReport
+from dia.core.store import TaskRecord
 from dia.persona import persona_prompt
 from dia.skills import NeedsConfirmation, Skill, enabled_skills
-from dia.store import TaskRecord
+
+if TYPE_CHECKING:
+    from dia.core.config import Config
 
 log = logging.getLogger("dia.assistant")
 
 # Answers to "run this plan?", in the user's own words.
-_YES = re.compile(r"^(tak|uruchom( go| plan)?|zaczynaj|start|dawaj|ok|okej|yes|go|run it|do it)$")
-_NO = re.compile(r"^(nie|anuluj|stop|nie teraz|no|cancel|not now)$")
+_YES = re.compile(
+    r"^(tak|uruchom( go| plan)?|zaczynaj|start|dawaj|ok|okej|yes|go|run it|do it"
+    r"|ja|jawohl|oui|sí|si|sì|sim)$"  # the other interface languages
+)
+_NO = re.compile(r"^(nie|anuluj|stop|nie teraz|no|cancel|not now|nein|non|não|nao)$")
 
 PLAN_PHRASES = {
     "pl": {
+        "which_project": "Którego projektu to dotyczy? ({names})",
         "ask": "Plan dla {project}: {steps}. Uruchomić? Powiedz tak albo nie.",
         "cancelled": "Dobrze, nie uruchamiam planu.",
         "action_cancelled": "Dobrze, nie robię tego.",
@@ -60,6 +75,7 @@ PLAN_PHRASES = {
         "schedule_bad": "Nie umiem ustawić takiego harmonogramu: {error}",
     },
     "en": {
+        "which_project": "Which project is this about? ({names})",
         "ask": "Plan for {project}: {steps}. Run it? Say yes or no.",
         "cancelled": "OK, the plan won't run.",
         "action_cancelled": "OK, I won't do that.",
@@ -94,8 +110,31 @@ PLAN_PHRASES = {
 }
 
 
+# What Dia understood, shown before an agent starts (DIA-12): the action in words. Actions
+# that start no work (status, quiet, skills...) say nothing: see INTENT_SILENT.
+INTENT_LABELS = {
+    "pl": {
+        "run": "zmiana kodu", "ask": "pytanie o kod", "plan": "plan", "mission": "misja",
+        "scenario": "sprawdzenie scenariusza", "research": "research", "build": "build",
+        "council": "rada agentów", "experiment": "eksperyment", "debug": "szukanie błędu",
+        "goal": "cel", "check_notes": "sprawdzenie notatek", "launch": "uruchomienie",
+    },
+    "en": {
+        "run": "code change", "ask": "question about code", "plan": "plan", "mission": "mission",
+        "scenario": "scenario check", "research": "research", "build": "build",
+        "council": "agent council", "experiment": "experiment", "debug": "bug hunt",
+        "goal": "goal", "check_notes": "notes check", "launch": "launch",
+    },
+}  # fmt: skip
+INTENT_AGENT = ("run", "ask")  # the actions where one agent does the work: name it too
+
+
 def _normalise(text: str) -> str:
     return re.sub(r"[^\w\s]", "", strip_address(text.lower())).strip()
+
+
+class MissingProject(Exception):
+    """An action that works on a project was given none (a model may answer ``null``)."""
 
 
 @dataclass
@@ -122,7 +161,7 @@ class Assistant:
         self.surface = "desktop"  # the channel's default; see BrainContext.surface
         # An action waiting for "yes": (what it is, what to do).
         self.pending_action: tuple[str, Callable[[], Awaitable[str]]] | None = None
-        self._config = None
+        self._config: Config | None = None
         self._turns = 0  # for [assistant] learn_every
         self._refresh()
 
@@ -172,9 +211,53 @@ class Assistant:
             options.get("learn_preferences")
             and self._turns % int(options.get("learn_every", 10)) == 0
         ):
-            from dia.preferences import learn_preferences
+            from dia.knowledge.preferences import learn_preferences
 
             self.dia.spawn(learn_preferences(self.dia, list(history)))
+
+    def _agent_for(self, intent: Intent) -> str | None:
+        """The agent that would take this intent: the named one, else what run_task picks."""
+        config = self.dia.config
+        if intent.agent:
+            return intent.agent
+        project = config.projects.get(intent.project or "")
+        if project is None:
+            return config.default_agent
+        from dia.core.routing import route
+
+        routed, _ = route(config, self.dia.store, project, intent.prompt or "")
+        return routed or project.default_agent or config.default_agent
+
+    def understood(self, intent: Intent, spoken: bool = False) -> str:
+        """ "code change · nova · claude": what Dia understood, for before it starts (DIA-12).
+        Empty for requests that start no work. ``spoken`` reads better aloud."""
+        language = self._language or self.dia.config.language
+        label = INTENT_LABELS.get(language, INTENT_LABELS["en"]).get(intent.action)
+        if not label:
+            return ""
+        parts = [label, intent.project or "", self._agent_for(intent) or ""
+                 if intent.action in INTENT_AGENT else ""]  # fmt: skip
+        return (", " if spoken else " · ").join(p for p in parts if p)
+
+    def announce(self, intent: Intent, spoken: bool = False) -> str:
+        """What to tell the user as the work starts: what was understood, then the brain's words."""
+        return "\n".join(p for p in (self.understood(intent, spoken), intent.reply) if p)
+
+    def _vet(self, intent: Intent, text: str) -> Intent:
+        """Checks on what a brain made of the message that no brain should skip (DIA-13, 14)."""
+        intent = guard_clarifying(intent)  # a question to the user is a chat, not a task
+        if intent.agent:
+            config = self.dia.config
+            routed = None
+            if (project := config.projects.get(intent.project or "")) is not None:
+                from dia.core.routing import route
+
+                routed = route(config, self.dia.store, project, intent.prompt or "")[0]
+            kinds = {
+                name: str(options.get("type", name)) for name, options in config.agents.items()
+            }
+            intent = guard_agent(intent, text, kinds, routed)
+        return intent
 
     async def interpret(
         self, text: str, conversation: str = "default", surface: str | None = None
@@ -205,6 +288,7 @@ class Assistant:
                 intent.text, intent.conversation = text, conversation
                 lang = self._language or self.dia.config.language or "en"
                 intent = guard_irreversible(intent, text, lang)
+                intent = self._vet(intent, text)
                 self._log_intent(intent)
                 return intent
         detail = "; ".join(problems) or "no brain configured"
@@ -242,205 +326,353 @@ class Assistant:
         chats.add_message(intent.conversation, "dia", response.text, task=task, plan=plan)
         return response
 
+    # What each action of an Intent does (see Assistant._execute).
+    ACTIONS: ClassVar[dict[str, str]] = {
+        "run": "_do_run",
+        "ask": "_do_run",
+        "plan": "_do_plan",
+        "mission": "_do_plan",
+        "cancel": "_do_cancel",
+        "launch": "_do_launch",
+        "skill": "_do_skill",
+        "council": "_do_council",
+        "build": "_do_build",
+        "howto": "_do_howto",
+        "prefer": "_do_prefer",
+        "camera_access": "_do_camera_access",
+        "research": "_do_research",
+        "work": "_do_work",
+        "goal": "_do_goal",
+        "debug": "_do_debug",
+        "impact": "_do_impact",
+        "check_notes": "_do_check_notes",
+        "why": "_do_why",
+        "experiment": "_do_experiment",
+        "scenario": "_do_scenario",
+        "screen_access": "_do_screen_access",
+        "process": "_do_process",
+        "service": "_do_service",
+        "quiet": "_do_quiet",
+        "stop": "_do_stop",
+        "resume": "_do_resume",
+        "schedule": "_do_schedule",
+        "status": "_do_status",
+        "tasks": "_do_tasks",
+        "confirm": "_do_confirm",
+    }
+
     async def _execute(
         self,
         intent: Intent,
         on_start: Callable[[TaskRecord], Awaitable[None]] | None = None,
     ) -> Response:
+        handler = self.ACTIONS.get(intent.action)
+        if handler is None:
+            return Response(intent, intent.reply)
+        try:
+            return await getattr(self, handler)(intent, on_start)
+        except MissingProject:  # ask, don't let the core fail on "unknown project 'None'"
+            names = ", ".join(self.dia.config.projects) or "-"
+            return Response(intent, self.phrases["which_project"].format(names=names))
+
+    @staticmethod
+    def _project(intent: Intent) -> str:
+        if not intent.project:
+            raise MissingProject
+        return intent.project
+
+    async def _do_run(
+        self, intent: Intent, on_start: Callable[[TaskRecord], Awaitable[None]] | None
+    ) -> Response:
+        mode = Mode.EDIT if intent.action == "run" else Mode.READ_ONLY
+        report = await self.dia.run_task(
+            self._project(intent),
+            intent.prompt or intent.text,
+            intent.agent,
+            mode,
+            on_start=on_start,
+        )
+        return Response(intent, report.task.summary or report.task.error or "", report)
+
+    async def _do_plan(
+        self, intent: Intent, on_start: Callable[[TaskRecord], Awaitable[None]] | None
+    ) -> Response:
         chats = self.dia.conversations  # the plan waiting is this conversation's own
-        if intent.action in ("run", "ask"):
-            mode = Mode.EDIT if intent.action == "run" else Mode.READ_ONLY
-            report = await self.dia.run_task(
-                intent.project, intent.prompt, intent.agent, mode, on_start=on_start
-            )
-            return Response(intent, report.task.summary or report.task.error or "", report)
-        if intent.action in ("plan", "mission"):
-            if intent.action == "mission":
-                from dia.missions import Missions
+        if intent.action == "mission":
+            from dia.work.missions import Missions
 
-                plan = await Missions(self.dia).create(intent.project, intent.prompt)
+            plan = await Missions(self.dia).create(
+                self._project(intent), intent.prompt or intent.text
+            )
+        else:
+            plan = await self.dia.create_plan(self._project(intent), intent.prompt or intent.text)
+        chats.set_pending_plan(intent.conversation, plan.id)  # this conversation's
+        steps = ", ".join(
+            f"{i}. {s.get('title') or s['agent']} ({s['agent']})"
+            for i, s in enumerate(plan.details["plan"], 1)
+        )
+        from dia.quality.simulation import describe
+
+        ask = self.phrases["ask"].format(project=plan.project, steps=steps)
+        spoken = getattr(self, "_surface_now", self.surface) == "voice"
+        if not spoken and (understood := self.understood(intent)):
+            ask = f"{understood}\n{ask}"  # the approval says what it is approving (read out: it
+            # would only repeat "Plan for …")
+        plan = self.dia.store.get(plan.id) or plan
+        if not spoken and (sim := describe(plan.details.get("simulation"))):
+            ask = f"{ask}\n{sim}"  # too long to read out; the app shows it
+        return Response(intent, ask)
+
+    async def _do_cancel(
+        self, intent: Intent, on_start: Callable[[TaskRecord], Awaitable[None]] | None
+    ) -> Response:
+        chats = self.dia.conversations  # the plan waiting is this conversation's own
+        phrase = "action_cancelled" if self.pending_action else "cancelled"
+        if plan_id := chats.pending_plan(intent.conversation):
+            chats.set_pending_plan(intent.conversation, None)
+            self.pending_action = None
+            try:
+                await self.dia.discard_task(plan_id)  # a rejected plan: a decision
+            except TaskActionError:
+                pass
+        self.pending_action = None
+        return Response(intent, self.phrases[phrase])
+
+    async def _do_launch(
+        self, intent: Intent, on_start: Callable[[TaskRecord], Awaitable[None]] | None
+    ) -> Response:
+        try:
+            message = await self.dia.launch(self._project(intent))
+        except TaskActionError as exc:
+            message = str(exc)
+        return Response(intent, intent.reply or message)
+
+    async def _do_skill(
+        self, intent: Intent, on_start: Callable[[TaskRecord], Awaitable[None]] | None
+    ) -> Response:
+        return Response(intent, await self.run_skill(intent.skill or "", intent.args))
+
+    async def _do_council(
+        self, intent: Intent, on_start: Callable[[TaskRecord], Awaitable[None]] | None
+    ) -> Response:
+        from dia.knowledge.council import convene
+
+        task = await convene(self.dia, intent.prompt or intent.text, intent.project)
+        return Response(intent, task.summary or task.error or task.status)
+
+    async def _do_build(
+        self, intent: Intent, on_start: Callable[[TaskRecord], Awaitable[None]] | None
+    ) -> Response:
+        from dia.release.release import Releases
+
+        preset = intent.args.get("preset")
+        task = await Releases(self.dia).build(
+            self._project(intent),
+            [preset] if preset else None,
+            version=intent.args.get("version"),
+            write_changelog=True,
+        )
+        return Response(intent, task.summary or task.error or task.status)
+
+    async def _do_howto(
+        self, intent: Intent, on_start: Callable[[TaskRecord], Awaitable[None]] | None
+    ) -> Response:
+        return Response(intent, await self._propose_howto())
+
+    async def _do_prefer(
+        self, intent: Intent, on_start: Callable[[TaskRecord], Awaitable[None]] | None
+    ) -> Response:
+        from dia.persona import add_preference
+
+        text = add_preference(self.dia, str(intent.args.get("text") or intent.text))
+        return Response(intent, self.phrases["prefer_saved"].format(text=text))
+
+    async def _do_camera_access(
+        self, intent: Intent, on_start: Callable[[TaskRecord], Awaitable[None]] | None
+    ) -> Response:
+        on = bool(intent.args.get("on", True))
+        self.dia.set_camera(on)
+        return Response(intent, self.phrases["camera_on" if on else "camera_off"])
+
+    async def _do_research(
+        self, intent: Intent, on_start: Callable[[TaskRecord], Awaitable[None]] | None
+    ) -> Response:
+        from dia.knowledge.research import research
+
+        task = await research(
+            self.dia, intent.prompt or intent.text, intent.project, on_start=on_start
+        )
+        return Response(intent, task.summary or task.error or task.status, TaskReport(task))
+
+    async def _do_work(
+        self, intent: Intent, on_start: Callable[[TaskRecord], Awaitable[None]] | None
+    ) -> Response:
+        from dia.work import work
+
+        args = intent.args
+        try:
+            if args.get("action") == "stop":
+                text = await work.stop(self.dia, args.get("profile"), args.get("note", ""))
             else:
-                plan = await self.dia.create_plan(intent.project, intent.prompt)
-            chats.set_pending_plan(intent.conversation, plan.id)  # this conversation's
-            steps = ", ".join(
-                f"{i}. {s.get('title') or s['agent']} ({s['agent']})"
-                for i, s in enumerate(plan.details["plan"], 1)
-            )
-            from dia.simulation import describe
+                text = await work.start(self.dia, args.get("profile") or intent.project or "")
+        except ValueError as exc:
+            text = str(exc)
+        return Response(intent, text)
 
-            ask = self.phrases["ask"].format(project=plan.project, steps=steps)
-            plan = self.dia.store.get(plan.id) or plan
-            spoken = getattr(self, "_surface_now", self.surface) == "voice"
-            if not spoken and (sim := describe(plan.details.get("simulation"))):
-                ask = f"{ask}\n{sim}"  # too long to read out; the app shows it
-            return Response(intent, ask)
-        if intent.action == "confirm" and self.pending_action:
+    async def _do_goal(
+        self, intent: Intent, on_start: Callable[[TaskRecord], Awaitable[None]] | None
+    ) -> Response:
+        from dia.work import goals
+
+        raw = str(intent.args.get("weeks") or "")
+        weeks = int(raw) if raw.isdigit() else None
+        goal = await goals.create(
+            self.dia, self._project(intent), intent.prompt or intent.text, weeks
+        )
+        return Response(intent, goals.describe(goal))
+
+    async def _do_debug(
+        self, intent: Intent, on_start: Callable[[TaskRecord], Awaitable[None]] | None
+    ) -> Response:
+        from dia.work.swarm import debug
+
+        bug = intent.prompt or intent.text
+        task = await debug(self.dia, self._project(intent), bug, None, on_start)
+        return Response(intent, task.summary or task.error or task.status, TaskReport(task))
+
+    async def _do_impact(
+        self, intent: Intent, on_start: Callable[[TaskRecord], Awaitable[None]] | None
+    ) -> Response:
+        from dia.quality.impact import impact
+
+        target = str(intent.args.get("target") or intent.prompt or "").strip()
+        _, text = await impact(self.dia, self._project(intent), target)
+        return Response(intent, text)
+
+    async def _do_check_notes(
+        self, intent: Intent, on_start: Callable[[TaskRecord], Awaitable[None]] | None
+    ) -> Response:
+        from dia.quality.contradictions import check
+
+        task = await check(self.dia, self._project(intent), on_start=on_start)
+        return Response(intent, task.summary or task.error or task.status, TaskReport(task))
+
+    async def _do_why(
+        self, intent: Intent, on_start: Callable[[TaskRecord], Awaitable[None]] | None
+    ) -> Response:
+        from dia.knowledge.decisions import describe, why
+
+        found = await why(self.dia, intent.prompt or intent.text, intent.project)
+        return Response(intent, describe(found))
+
+    async def _do_experiment(
+        self, intent: Intent, on_start: Callable[[TaskRecord], Awaitable[None]] | None
+    ) -> Response:
+        from dia.quality.experiments import run_experiment
+
+        def names(key: str) -> list[str] | None:
+            value = intent.args.get(key)
+            return [str(v) for v in value] if isinstance(value, list) and value else None
+
+        agents = [a for a in names("agents") or [] if a in self.dia.config.agents] or None
+        task = await run_experiment(
+            self.dia,
+            self._project(intent),
+            intent.prompt or intent.text,
+            agents,
+            names("approaches"),
+            on_start,
+        )
+        return Response(intent, task.summary or task.error or task.status, TaskReport(task))
+
+    async def _do_scenario(
+        self, intent: Intent, on_start: Callable[[TaskRecord], Awaitable[None]] | None
+    ) -> Response:
+        from dia.quality.scenario import check_scenario
+
+        report = await check_scenario(
+            self.dia, self._project(intent), intent.prompt or intent.text, on_start=on_start
+        )
+        return Response(intent, report.task.summary or report.task.error or "", report)
+
+    async def _do_screen_access(
+        self, intent: Intent, on_start: Callable[[TaskRecord], Awaitable[None]] | None
+    ) -> Response:
+        on = bool(intent.args.get("on", True))
+        self.dia.set_screen(on)
+        return Response(intent, self.phrases["screen_on" if on else "screen_off"])
+
+    async def _do_process(
+        self, intent: Intent, on_start: Callable[[TaskRecord], Awaitable[None]] | None
+    ) -> Response:
+        return Response(intent, self._propose_end(intent))
+
+    async def _do_service(
+        self, intent: Intent, on_start: Callable[[TaskRecord], Awaitable[None]] | None
+    ) -> Response:
+        unit = str(intent.args.get("unit", "")).strip()
+        return Response(
+            intent,
+            self._propose(
+                self.phrases["confirm_restart"].format(unit=unit),
+                lambda: self._restart(unit),
+            ),
+        )
+
+    async def _do_quiet(
+        self, intent: Intent, on_start: Callable[[TaskRecord], Awaitable[None]] | None
+    ) -> Response:
+        on = bool(intent.args.get("on", True))
+        self.dia.set_quiet(on)
+        return Response(intent, self.phrases["quiet_on" if on else "quiet_off"])
+
+    async def _do_stop(
+        self, intent: Intent, on_start: Callable[[TaskRecord], Awaitable[None]] | None
+    ) -> Response:
+        stopped = await self.dia.stop_all("asked")
+        return Response(intent, self.phrases["stopped"].format(count=len(stopped)))
+
+    async def _do_resume(
+        self, intent: Intent, on_start: Callable[[TaskRecord], Awaitable[None]] | None
+    ) -> Response:
+        await self.dia.resume()
+        return Response(intent, self.phrases["resumed"])
+
+    async def _do_schedule(
+        self, intent: Intent, on_start: Callable[[TaskRecord], Awaitable[None]] | None
+    ) -> Response:
+        return Response(intent, self.add_schedule(intent.cron or "", intent.prompt or ""))
+
+    async def _do_status(
+        self, intent: Intent, on_start: Callable[[TaskRecord], Awaitable[None]] | None
+    ) -> Response:
+        return Response(intent, await self.status_text())
+
+    async def _do_tasks(
+        self, intent: Intent, on_start: Callable[[TaskRecord], Awaitable[None]] | None
+    ) -> Response:
+        return Response(intent, self.tasks_text())
+
+    async def _do_confirm(
+        self, intent: Intent, on_start: Callable[[TaskRecord], Awaitable[None]] | None
+    ) -> Response:
+        chats = self.dia.conversations  # the plan waiting is this conversation's own
+        if self.pending_action:
             (_, action), self.pending_action = self.pending_action, None
             try:
                 return Response(intent, await action())
             except Exception as exc:
                 return Response(intent, str(exc))
-        if intent.action == "confirm":
-            plan_id = chats.pending_plan(intent.conversation)
-            chats.set_pending_plan(intent.conversation, None)
-            report = await self.dia.run_plan(plan_id, on_start=on_start)
-            return Response(intent, report.task.summary or report.task.error or "", report)
-        if intent.action == "cancel":
-            phrase = "action_cancelled" if self.pending_action else "cancelled"
-            if plan_id := chats.pending_plan(intent.conversation):
-                chats.set_pending_plan(intent.conversation, None)
-                self.pending_action = None
-                try:
-                    await self.dia.discard_task(plan_id)  # a rejected plan: a decision
-                except TaskActionError:
-                    pass
-            self.pending_action = None
-            return Response(intent, self.phrases[phrase])
-        if intent.action == "launch":
-            try:
-                message = await self.dia.launch(intent.project)
-            except TaskActionError as exc:
-                message = str(exc)
-            return Response(intent, intent.reply or message)
-        if intent.action == "skill":
-            return Response(intent, await self.run_skill(intent.skill or "", intent.args))
-        if intent.action == "council":
-            from dia.council import convene
-
-            task = await convene(self.dia, intent.prompt or intent.text, intent.project)
-            return Response(intent, task.summary or task.error or task.status)
-        if intent.action == "build":
-            from dia.release import Releases
-
-            preset = intent.args.get("preset")
-            task = await Releases(self.dia).build(
-                intent.project,
-                [preset] if preset else None,
-                version=intent.args.get("version"),
-                write_changelog=True,
-            )
-            return Response(intent, task.summary or task.error or task.status)
-        if intent.action == "howto":
-            return Response(intent, await self._propose_howto())
-        if intent.action == "prefer":
-            from dia.persona import add_preference
-
-            text = add_preference(self.dia, str(intent.args.get("text") or intent.text))
-            return Response(intent, self.phrases["prefer_saved"].format(text=text))
-        if intent.action == "camera_access":
-            on = bool(intent.args.get("on", True))
-            self.dia.set_camera(on)
-            return Response(intent, self.phrases["camera_on" if on else "camera_off"])
-        if intent.action == "research":
-            from dia.research import research
-
-            task = await research(
-                self.dia, intent.prompt or intent.text, intent.project, on_start=on_start
-            )
-            return Response(intent, task.summary or task.error or task.status, TaskReport(task))
-        if intent.action == "work":
-            from dia import work
-
-            args = intent.args
-            try:
-                if args.get("action") == "stop":
-                    text = await work.stop(self.dia, args.get("profile"), args.get("note", ""))
-                else:
-                    text = await work.start(self.dia, args.get("profile") or intent.project or "")
-            except ValueError as exc:
-                text = str(exc)
-            return Response(intent, text)
-        if intent.action == "goal":
-            from dia import goals
-
-            weeks = intent.args.get("weeks")
-            weeks = int(weeks) if str(weeks or "").isdigit() else None
-            goal = await goals.create(self.dia, intent.project, intent.prompt or intent.text, weeks)
-            return Response(intent, goals.describe(goal))
-        if intent.action == "debug":
-            from dia.swarm import debug
-
-            bug = intent.prompt or intent.text
-            task = await debug(self.dia, intent.project, bug, None, on_start)
-            return Response(intent, task.summary or task.error or task.status, TaskReport(task))
-        if intent.action == "impact":
-            from dia.impact import impact
-
-            target = str(intent.args.get("target") or intent.prompt or "").strip()
-            _, text = await impact(self.dia, intent.project, target)
-            return Response(intent, text)
-        if intent.action == "check_notes":
-            from dia.contradictions import check
-
-            task = await check(self.dia, intent.project, on_start=on_start)
-            return Response(intent, task.summary or task.error or task.status, TaskReport(task))
-        if intent.action == "why":
-            from dia.decisions import describe, why
-
-            found = await why(self.dia, intent.prompt or intent.text, intent.project)
-            return Response(intent, describe(found))
-        if intent.action == "experiment":
-            from dia.experiments import run_experiment
-
-            def names(key: str) -> list[str] | None:
-                value = intent.args.get(key)
-                return [str(v) for v in value] if isinstance(value, list) and value else None
-
-            agents = [a for a in names("agents") or [] if a in self.dia.config.agents] or None
-            task = await run_experiment(
-                self.dia,
-                intent.project,
-                intent.prompt or intent.text,
-                agents,
-                names("approaches"),
-                on_start,
-            )
-            return Response(intent, task.summary or task.error or task.status, TaskReport(task))
-        if intent.action == "scenario":
-            from dia.scenario import check_scenario
-
-            report = await check_scenario(
-                self.dia, intent.project, intent.prompt or intent.text, on_start=on_start
-            )
-            return Response(intent, report.task.summary or report.task.error or "", report)
-        if intent.action == "screen_access":
-            on = bool(intent.args.get("on", True))
-            self.dia.set_screen(on)
-            return Response(intent, self.phrases["screen_on" if on else "screen_off"])
-        if intent.action == "process":
-            return Response(intent, self._propose_end(intent))
-        if intent.action == "service":
-            unit = str(intent.args.get("unit", "")).strip()
-            return Response(
-                intent,
-                self._propose(
-                    self.phrases["confirm_restart"].format(unit=unit),
-                    lambda: self._restart(unit),
-                ),
-            )
-        if intent.action == "quiet":
-            on = bool(intent.args.get("on", True))
-            self.dia.set_quiet(on)
-            return Response(intent, self.phrases["quiet_on" if on else "quiet_off"])
-        if intent.action == "stop":
-            stopped = await self.dia.stop_all("asked")
-            return Response(intent, self.phrases["stopped"].format(count=len(stopped)))
-        if intent.action == "resume":
-            await self.dia.resume()
-            return Response(intent, self.phrases["resumed"])
-        if intent.action == "schedule":
-            return Response(intent, self.add_schedule(intent.cron or "", intent.prompt or ""))
-        if intent.action == "status":
-            return Response(intent, await self.status_text())
-        if intent.action == "tasks":
-            return Response(intent, self.tasks_text())
-        return Response(intent, intent.reply)
+        plan_id = chats.pending_plan(intent.conversation)
+        chats.set_pending_plan(intent.conversation, None)
+        report = await self.dia.run_plan(plan_id, on_start=on_start)
+        return Response(intent, report.task.summary or report.task.error or "", report)
 
     async def handle(self, text: str, conversation: str = "default") -> Response:
         return await self.execute(await self.interpret(text, conversation))
 
     def add_schedule(self, cron: str, text: str) -> str:
-        from dia.schedule import Cron, Schedules
+        from dia.work.schedule import Cron, Schedules
 
         try:
             job = Schedules(self.dia).add({"cron": cron, "action": "say", "text": text})
@@ -456,7 +688,7 @@ class Assistant:
         return question
 
     def _propose_end(self, intent: Intent) -> str:
-        from dia.system import find_processes
+        from dia.desktop.system import find_processes
 
         name = str(intent.args.get("name", "")).strip()
         force = str(intent.args.get("force", "")).lower() in ("true", "1", "yes")
@@ -468,7 +700,7 @@ class Assistant:
             return self.phrases["too_many"].format(count=len(found), what=what)
 
         async def end() -> str:
-            from dia.computer import end_process
+            from dia.desktop.computer import end_process
 
             for pid, _, command in found:
                 end_process(pid, force)
@@ -502,7 +734,7 @@ class Assistant:
         )
 
     async def _restart(self, unit: str) -> str:
-        from dia.computer import restart_user_unit
+        from dia.desktop.computer import restart_user_unit
 
         await restart_user_unit(unit)
         self.dia.audit("service.restart", unit)

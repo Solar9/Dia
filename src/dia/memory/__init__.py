@@ -11,9 +11,9 @@ from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, ClassVar
 
 if TYPE_CHECKING:
-    from dia.config import ProjectConfig
+    from dia.core.config import ProjectConfig
+    from dia.core.orchestrator import TaskReport
     from dia.memory.search import Hit
-    from dia.orchestrator import TaskReport
 
 
 class Memory(ABC):

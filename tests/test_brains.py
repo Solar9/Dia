@@ -10,8 +10,8 @@ from dia.agents.claude_code import ClaudeCodeAgent
 from dia.agents.codex import CodexAgent
 from dia.assistant import Assistant
 from dia.brains import BrainContext, parse_intent
-from dia.config import ConfigError, parse_config
-from dia.orchestrator import Orchestrator
+from dia.core.config import ConfigError, parse_config
+from dia.core.orchestrator import Orchestrator
 
 CTX = BrainContext(projects={"nova": "/p/nova", "starfall": "/p/uv"}, agents=["claude", "codex"])
 

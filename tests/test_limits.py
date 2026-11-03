@@ -1,9 +1,9 @@
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
-from dia.config import parse_config
-from dia.limits import Limits, is_limit, retry_at
-from dia.orchestrator import Orchestrator
+from dia.core.config import parse_config
+from dia.core.limits import Limits, is_limit, retry_at
+from dia.core.orchestrator import Orchestrator
 
 NOW = datetime(2026, 10, 24, 12, 0, tzinfo=UTC)
 

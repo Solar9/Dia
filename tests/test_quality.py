@@ -3,9 +3,9 @@ from pathlib import Path
 
 import pytest
 
-from dia.config import parse_config
-from dia.orchestrator import Orchestrator, TaskActionError
-from dia.quality import blockers, parse_assumptions, parse_violations, static_violations
+from dia.core.config import parse_config
+from dia.core.orchestrator import Orchestrator, TaskActionError
+from dia.quality.quality import blockers, parse_assumptions, parse_violations, static_violations
 
 
 def layered(repo: Path) -> None:

@@ -1,6 +1,6 @@
 import asyncio
 
-from dia.workspace import Workspace
+from dia.core.workspace import Workspace
 
 
 async def test_concurrent_worktrees_of_one_repository_do_not_collide(tmp_path, repo) -> None:

@@ -5,11 +5,11 @@ import pytest
 
 pytest.importorskip("pywebpush")
 
-from dia import push as push_module  # noqa: E402
-from dia.config import parse_config  # noqa: E402
-from dia.orchestrator import Event, Orchestrator  # noqa: E402
-from dia.push import Push  # noqa: E402
-from dia.store import TaskRecord  # noqa: E402
+from dia.core.config import parse_config  # noqa: E402
+from dia.core.orchestrator import Event, Orchestrator  # noqa: E402
+from dia.core.store import TaskRecord  # noqa: E402
+from dia.desktop import push as push_module
+from dia.desktop.push import Push  # noqa: E402
 
 SUB = {"endpoint": "https://push.example/abc", "keys": {"p256dh": "k", "auth": "a"}}
 

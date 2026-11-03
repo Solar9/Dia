@@ -32,8 +32,8 @@ from dia.memory.search import Hit, query_stems, search
 from dia.memory.semantic import OpenAIEmbedder, SemanticIndex, fuse
 
 if TYPE_CHECKING:
-    from dia.config import ProjectConfig
-    from dia.orchestrator import TaskReport
+    from dia.core.config import ProjectConfig
+    from dia.core.orchestrator import TaskReport
 
 log = logging.getLogger("dia.memory")
 

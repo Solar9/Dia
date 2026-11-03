@@ -1,9 +1,9 @@
 import json
 from pathlib import Path
 
-from dia.balance import analyze, balance_report, describe, read_events
-from dia.config import parse_config
-from dia.orchestrator import Orchestrator
+from dia.core.config import parse_config
+from dia.core.orchestrator import Orchestrator
+from dia.release.balance import analyze, balance_report, describe, read_events
 
 
 def session(folder: Path, name: str, events: list[dict]) -> None:

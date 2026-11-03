@@ -3,9 +3,9 @@ from pathlib import Path
 import pytest
 
 from dia.agents import Mode
-from dia.config import ConfigError, parse_config
+from dia.core.config import ConfigError, parse_config
+from dia.core.orchestrator import Orchestrator
 from dia.memory.markdown import MarkdownMemory
-from dia.orchestrator import Orchestrator
 
 
 def setup(tmp_path: Path, repo: Path, memory: dict | None, argv: list[str]) -> Orchestrator:

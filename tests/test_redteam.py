@@ -6,10 +6,11 @@ from pathlib import Path
 
 import pytest
 
-from dia import redteam, sandbox
 from dia.brains import ACTIONS, BrainContext, parse_intent
-from dia.config import parse_config
-from dia.orchestrator import Orchestrator
+from dia.core import sandbox
+from dia.core.config import parse_config
+from dia.core.orchestrator import Orchestrator
+from dia.quality import redteam
 
 needs_bwrap = pytest.mark.skipif(not sandbox.bwrap_works(), reason="bubblewrap not usable")
 

@@ -9,16 +9,12 @@ import pytest
 pytest.importorskip("discord")
 
 from dia.agents import Mode  # noqa: E402
-from dia.channels.discord_bot import (  # noqa: E402
-    DiaBot,
-    DiscordChannel,
-    TaskButton,
-    _authorize,
-    task_embed,
-    task_view,
-)
-from dia.config import ConfigError, parse_config  # noqa: E402
-from dia.orchestrator import Orchestrator  # noqa: E402
+from dia.channels.discord import DiscordChannel  # noqa: E402
+from dia.channels.discord.bot import DiaBot  # noqa: E402
+from dia.channels.discord.embeds import task_embed  # noqa: E402
+from dia.channels.discord.views import TaskButton, _authorize, task_view  # noqa: E402
+from dia.core.config import ConfigError, parse_config  # noqa: E402
+from dia.core.orchestrator import Orchestrator  # noqa: E402
 
 ME = 1234
 
@@ -192,7 +188,7 @@ async def test_ci_news_is_sent_as_dm_with_fix_button(tmp_path: Path, repo: Path)
         project="demo",
         details={"ci": {"state": "failed", "url": "https://ci/1", "failed": [{"name": "tests"}]}},
     )
-    from dia.orchestrator import Event
+    from dia.core.orchestrator import Event
 
     await bot.on_dia_event(Event("ci", task, "failed"))
     kwargs = user.send.await_args.kwargs
@@ -208,7 +204,7 @@ async def test_plan_button_runs_the_stored_plan(tmp_path: Path, repo: Path) -> N
     }
     bot = DiaBot(orch.config.channel("discord", orch))
     plan = await orch.create_plan("demo", "goal", pipeline="two")
-    from dia.channels.discord_bot import plan_embed
+    from dia.channels.discord.embeds import plan_embed
 
     assert "**1. Step 1** · fake" in plan_embed(plan).description
 
@@ -226,7 +222,7 @@ async def test_plan_button_runs_the_stored_plan(tmp_path: Path, repo: Path) -> N
 
 
 async def test_long_plan_steps_come_with_the_full_plan_file(tmp_path: Path, repo: Path) -> None:
-    from dia.channels.discord_bot import plan_message
+    from dia.channels.discord.views import plan_message
 
     orch = make(tmp_path, repo, ["true"])
     orch.config.pipelines["long"] = {"steps": [{"agent": "fake", "prompt": "x" * 400}]}
@@ -252,7 +248,7 @@ async def test_review_comments_are_sent_with_address_button(tmp_path: Path, repo
             ],
         },
     )
-    from dia.orchestrator import Event
+    from dia.core.orchestrator import Event
 
     await bot.on_dia_event(Event("review", task, "1 new comment(s) from ana"))
     kwargs = user.send.await_args.kwargs

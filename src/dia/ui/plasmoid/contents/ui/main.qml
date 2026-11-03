@@ -25,25 +25,40 @@ PlasmoidItem {
     property bool halted: false
     property var tasks: []
     property int activeCount: 0
+    property int waitingCount: 0     // both counts come from the API (dia.core.taskstate)
+    property double nowMs: Date.now()
     property string reply: ""
+    property int authFailures: 0   // consecutive 401/403 answers: the token is wrong, not just stale
     property bool asking: false
     property bool confirmStop: false
     property var serviceState: ({})
     property bool serviceBusy: false
+    property string serviceResult: ""
+    property bool serviceFailed: false
     property string pendingComponent: "dia"
     property string pendingVerb: "stop"
 
+    // The words come from dia.desktop.runtime.STATE_LABELS (the same ones as the tray and the web UI).
     function serviceStatus(component) {
         const unit = serviceState[component];
         if (!unit) return tr("Checking…", "Sprawdzam…");
-        const labels = { active: tr("Running", "Działa"), inactive: tr("Stopped", "Zatrzymana"),
-            failed: tr("Error", "Błąd"), activating: tr("Starting…", "Uruchamia się…"),
-            deactivating: tr("Stopping…", "Zatrzymuje się…") };
-        return unit.load === "not-found" ? tr("Not installed", "Nie zainstalowano") : (labels[unit.active] || unit.active);
+        const label = unit.label || {};
+        return label[root.lang] || label.en || unit.active;
+    }
+
+    // Only the verbs that make sense in the unit's state (dia.desktop.runtime.allowed_verbs).
+    function canService(component, verb) {
+        const unit = serviceState[component];
+        return !serviceBusy && !!unit && (unit.actions || []).indexOf(verb) !== -1;
+    }
+
+    function verbLabel(verb) {
+        const words = (serviceState.words || {}).verbs || {};
+        return (words[verb] || {})[root.lang] || verb;
     }
 
     function controlService(component, verb) {
-        if (serviceBusy) return;
+        if (!canService(component, verb)) return;
         pendingComponent = component;
         pendingVerb = verb;
         if (verb === "start") executeService();
@@ -70,32 +85,32 @@ PlasmoidItem {
         },
         PlasmaCore.Action {
             text: root.tr("Start Dia", "Uruchom Dia")
-            enabled: !root.serviceBusy
+            enabled: root.canService("dia", "start")
             onTriggered: root.controlService("dia", "start")
         },
         PlasmaCore.Action {
             text: root.tr("Stop Dia", "Zatrzymaj Dia")
-            enabled: !root.serviceBusy
+            enabled: root.canService("dia", "stop")
             onTriggered: root.controlService("dia", "stop")
         },
         PlasmaCore.Action {
             text: root.tr("Restart Dia", "Uruchom Dia ponownie")
-            enabled: !root.serviceBusy
+            enabled: root.canService("dia", "restart")
             onTriggered: root.controlService("dia", "restart")
         },
         PlasmaCore.Action {
             text: root.tr("Start Ollama", "Uruchom Ollamę")
-            enabled: !root.serviceBusy
+            enabled: root.canService("ollama", "start")
             onTriggered: root.controlService("ollama", "start")
         },
         PlasmaCore.Action {
             text: root.tr("Stop Ollama", "Zatrzymaj Ollamę")
-            enabled: !root.serviceBusy
+            enabled: root.canService("ollama", "stop")
             onTriggered: root.controlService("ollama", "stop")
         },
         PlasmaCore.Action {
             text: root.tr("Restart Ollama", "Uruchom Ollamę ponownie")
-            enabled: !root.serviceBusy
+            enabled: root.canService("ollama", "restart")
             onTriggered: root.controlService("ollama", "restart")
         },
         PlasmaCore.Action {
@@ -109,9 +124,18 @@ PlasmoidItem {
     readonly property bool lit: voice !== "idle"   // listening, thinking or speaking
     // What needs your decision: changes to merge or discard, plans to approve. A finished
     // read-only task (an answer, no changes) needs none.
-    readonly property var waiting: tasks.filter((t) => (t.status === "done" && t.commit_sha) || t.status === "planned")
+    readonly property var waiting: tasks.filter((t) => !!t.decision)
 
     function tr(en, pl) { return root.lang === "pl" ? pl : en; }
+
+    // "4m", "1h 05m": how long a task has been running (created_at → now).
+    function elapsed(iso) {
+        const seconds = Math.max(0, Math.floor((nowMs - new Date(iso).getTime()) / 1000));
+        if (seconds < 60) return seconds + "s";
+        if (seconds < 3600) return Math.floor(seconds / 60) + "m";
+        const minutes = Math.floor(seconds / 60) % 60;
+        return Math.floor(seconds / 3600) + "h " + (minutes < 10 ? "0" : "") + minutes + "m";
+    }
 
     function taskStatus(task) {
         return task.status === "done" && !task.commit_sha ? root.tr("finished", "zakończone") : statusText(task.status);
@@ -175,7 +199,7 @@ PlasmoidItem {
         : voice === "listening" ? tr("Listening…", "Słucham…")
         : voice === "processing" ? tr("Thinking…", "Myślę…")
         : speaking ? tr("Speaking…", "Mówię…")
-        : waiting.length > 0 ? tr("%1 waiting for you", "Czeka na Ciebie: %1").arg(waiting.length)
+        : waitingCount > 0 ? tr("%1 waiting for you", "Czeka na Ciebie: %1").arg(waitingCount)
         : activeCount > 0 ? tr("%1 running", "W toku: %1").arg(activeCount)
         : tr("Ready", "Gotowa")
 
@@ -191,10 +215,19 @@ PlasmoidItem {
                 if (!isStatus) root.serviceBusy = false;
                 try {
                     const result = JSON.parse(out);
+                    const who = root.pendingComponent === "dia" ? "Dia" : "Ollama";
                     if (result.error) {
                         root.reply = result.error;
-                        if (!isStatus) root.expanded = true;
+                        if (!isStatus) {
+                            root.serviceFailed = true;
+                            root.expanded = true;
+                            root.serviceResult = who + ": " + root.verbLabel(root.pendingVerb) + " · "
+                                + root.tr("Failed", "Nie udało się") + ": " + result.error;
+                        }
                     } else {
+                        if (!isStatus) root.serviceFailed = false;
+                        if (!isStatus) root.serviceResult = who + ": " + root.verbLabel(root.pendingVerb) + " · "
+                            + root.tr("Done", "Gotowe");
                         root.serviceState = result;
                         root.lang = result.language || root.lang;
                         if (!isStatus) root.refresh();
@@ -230,12 +263,18 @@ PlasmoidItem {
             if (xhr.readyState !== XMLHttpRequest.DONE) return;
             if (path === "api/status") {
                 root.online = xhr.status === 200;
-                if (!root.online) { root.voice = "idle"; root.tasks = []; root.activeCount = 0; }
+                if (!root.online) { root.voice = "idle"; root.tasks = []; root.activeCount = 0; root.waitingCount = 0; }
             }
             if (xhr.status >= 200 && xhr.status < 300) {
+                root.authFailures = 0;
                 if (onResult) onResult(xhr.responseText ? JSON.parse(xhr.responseText) : null);
             } else if (xhr.status === 401 || xhr.status === 403) {
                 root.token = "";  // a new token (Dia reinstalled): ask `dia ui` again
+                root.authFailures += 1;
+                // The second refusal in a row: a fresh token did not help, so say what to do
+                if (root.authFailures >= 2) root.reply = root.tr(
+                    "Dia refused the widget's token. Run `dia ui` once, or pair the widget again (Settings → Devices).",
+                    "Dia odrzuciła token widgetu. Uruchom raz `dia ui` albo sparuj widget ponownie (Ustawienia → Urządzenia).");
             } else if (onError) {
                 onError(xhr.status ? xhr.responseText || ("HTTP " + xhr.status) : root.tr("Dia is not running", "Dia nie działa"));
             }
@@ -250,7 +289,9 @@ PlasmoidItem {
         if (!root.token) { dia("ui"); return; }
         request("GET", "api/status", null, (status) => {
             root.voice = status.voice || "idle";
-            root.activeCount = (status.active || []).length;
+            root.activeCount = (status.counts || {}).running || 0;
+            root.waitingCount = (status.counts || {}).waiting_for_you || 0;
+            root.nowMs = Date.now();
             root.lang = status.language || "en";
             root.version = status.version || "";
             root.quiet = !!status.quiet;
@@ -267,8 +308,9 @@ PlasmoidItem {
 
     function talk() { if (root.online) post("api/voice/toggle"); }
 
+    // True when the request went out: an empty or blank prompt is never sent.
     function send(text) {
-        if (!text.trim() || root.asking) return;
+        if (!text.trim() || root.asking) return false;
         root.asking = true;
         root.reply = "";
         request("POST", "api/chat", { text: text }, (answer) => {
@@ -276,11 +318,13 @@ PlasmoidItem {
             root.reply = answer.reply || root.tr("Done.", "Zrobione.");
             root.refresh();
         }, (error) => { root.asking = false; root.reply = error; });
+        return true;
     }
 
     Timer {
-        // Quicker while the voice is busy, so the icon follows listening/speaking.
-        interval: root.voice === "idle" ? 4000 : 700
+        // Open: quicker while the voice is busy, so the icon follows listening/speaking.
+        // Closed: only a slow look, so the badge on the panel icon stays true.
+        interval: !root.expanded ? 30000 : root.voice === "idle" ? 4000 : 700
         running: true
         repeat: true
         triggeredOnStart: true
@@ -293,16 +337,16 @@ PlasmoidItem {
         onTriggered: root.confirmStop = false
     }
 
-    Timer {
-        interval: 4000
-        running: true
+    Timer {  // the services' state is only drawn in the popup (and the tooltip while Dia is down)
+        interval: root.expanded ? 4000 : 30000
+        running: root.expanded || !root.online
         repeat: true
         triggeredOnStart: true
         onTriggered: root.dia("runtime status")
     }
 
     // Use the property, not the injected signal parameter (Plasma/Qt deprecation).
-    onExpandedChanged: if (root.expanded) root.refresh()
+    onExpandedChanged: if (root.expanded) { root.refresh(); root.dia("runtime status"); }
 
     compactRepresentation: MouseArea {
         id: compact
@@ -343,7 +387,7 @@ PlasmoidItem {
         }
 
         Rectangle {  // how many things wait for your decision
-            visible: root.waiting.length > 0
+            visible: root.waitingCount > 0
             anchors.right: parent.right
             anchors.bottom: parent.bottom
             width: Math.max(height, badge.implicitWidth + 4)
@@ -353,7 +397,7 @@ PlasmoidItem {
             PlasmaComponents.Label {
                 id: badge
                 anchors.centerIn: parent
-                text: root.waiting.length
+                text: root.waitingCount
                 color: root.c.onAccent
                 font.pixelSize: parent.height * 0.75
                 font.bold: true
@@ -380,7 +424,7 @@ PlasmoidItem {
             standardButtons: QQC2.Dialog.Yes | QQC2.Dialog.No
             onAccepted: root.executeService()
             contentItem: PlasmaComponents.Label {
-                text: root.pendingComponent + ": " + root.pendingVerb + "\n"
+                text: (root.pendingComponent === "dia" ? "Dia" : "Ollama") + ": " + root.verbLabel(root.pendingVerb) + "\n"
                     + root.tr("Active tasks may be interrupted. Continue?", "Aktywne zadania mogą zostać przerwane. Kontynuować?")
                 wrapMode: Text.Wrap
             }
@@ -391,292 +435,11 @@ PlasmoidItem {
             anchors.margins: 14
             spacing: 12
 
-            // ---- header: Dia, the connection, the app
-            RowLayout {
-                spacing: 8
-                Image {
-                    source: root.lit ? root.litIcon : "../images/dia-idle.svg"
-                    sourceSize: Qt.size(48, 48)
-                    Layout.preferredWidth: 24
-                    Layout.preferredHeight: 24
-                }
-                QQC2.Label { text: "dia"; color: root.c.text; font.pixelSize: 20; font.weight: Font.ExtraBold }
-                QQC2.Label { text: root.version; color: root.c.faint; font.family: "monospace"; font.pixelSize: 11 }
-                Item { Layout.fillWidth: true }
-                Rectangle {
-                    radius: 5
-                    color: root.online ? Qt.rgba(0.48, 0.85, 0.65, 0.12) : root.c.card
-                    implicitWidth: connLabel.implicitWidth + 24
-                    implicitHeight: 24
-                    Rectangle {
-                        width: 6; height: 6; radius: 3
-                        anchors.left: parent.left; anchors.leftMargin: 8
-                        anchors.verticalCenter: parent.verticalCenter
-                        color: root.online ? root.c.ok : root.c.faint
-                    }
-                    QQC2.Label {
-                        id: connLabel
-                        anchors.left: parent.left; anchors.leftMargin: 18
-                        anchors.verticalCenter: parent.verticalCenter
-                        text: root.online ? (root.activeCount > 0 ? root.tr("%1 running", "w toku: %1").arg(root.activeCount)
-                            : root.tr("Connected", "Połączono")) : root.tr("Not running", "Nie działa")
-                        color: root.online ? root.c.ok : root.c.muted
-                        font.pixelSize: 11
-                    }
-                }
-                QQC2.ToolButton {
-                    icon.name: "window-new"
-                    icon.color: root.c.muted
-                    text: root.tr("Open Dia", "Otwórz Dia")
-                    display: QQC2.AbstractButton.IconOnly
-                    onClicked: root.openApp("", "")
-                    QQC2.ToolTip.visible: hovered
-                    QQC2.ToolTip.text: text
-                    background: Rectangle { radius: 8; color: parent.hovered ? root.c.hover : "transparent" }
-                }
-            }
+            StatusHeader { panel: root }
 
-            // ---- services: Dia and Ollama
-            Rectangle {
-                Layout.fillWidth: true
-                implicitHeight: services.implicitHeight + 16
-                radius: 10
-                color: root.c.card
-                border.color: root.c.border
-                ColumnLayout {
-                    id: services
-                    anchors.fill: parent
-                    anchors.margins: 8
-                    anchors.leftMargin: 12
-                    spacing: 2
-                    Repeater {
-                        model: ["dia", "ollama"]
-                        delegate: RowLayout {
-                            required property string modelData
-                            readonly property string unit: (root.serviceState[modelData] || {}).active || ""
-                            spacing: 6
-                            Rectangle {
-                                Layout.preferredWidth: 7; Layout.preferredHeight: 7; radius: 4
-                                color: unit === "active" ? root.c.ok : unit === "failed" ? root.c.danger
-                                    : unit === "activating" || unit === "deactivating" ? root.c.warn : root.c.faint
-                            }
-                            QQC2.Label { text: modelData === "dia" ? "Dia" : "Ollama"; color: root.c.text }
-                            QQC2.Label {
-                                Layout.fillWidth: true
-                                text: root.serviceStatus(modelData)
-                                color: root.c.muted
-                                font.pixelSize: 12
-                                elide: Text.ElideRight
-                            }
-                            Repeater {
-                                model: [
-                                    { verb: "start", icon: "media-playback-start", label: root.tr("Start", "Uruchom") },
-                                    { verb: "stop", icon: "media-playback-stop", label: root.tr("Stop", "Zatrzymaj") },
-                                    { verb: "restart", icon: "view-refresh", label: root.tr("Restart", "Uruchom ponownie") }
-                                ]
-                                delegate: QQC2.ToolButton {
-                                    required property var modelData
-                                    icon.name: modelData.icon
-                                    icon.color: root.c.muted
-                                    icon.width: 16; icon.height: 16
-                                    text: modelData.label
-                                    display: QQC2.AbstractButton.IconOnly
-                                    enabled: !root.serviceBusy
-                                    implicitWidth: 30; implicitHeight: 30
-                                    onClicked: root.controlService(parent.modelData, modelData.verb)
-                                    QQC2.ToolTip.visible: hovered
-                                    QQC2.ToolTip.text: text
-                                    background: Rectangle { radius: 6; color: parent.hovered ? root.c.hover : "transparent" }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+            Controls { panel: root }
 
-            // ---- emergency stop in force
-            Rectangle {
-                Layout.fillWidth: true
-                visible: root.halted
-                implicitHeight: 44
-                radius: 10
-                color: Qt.rgba(0.94, 0.53, 0.54, 0.10)
-                border.color: Qt.rgba(0.94, 0.53, 0.54, 0.35)
-                RowLayout {
-                    anchors.fill: parent
-                    anchors.leftMargin: 12
-                    anchors.rightMargin: 6
-                    QQC2.Label {
-                        Layout.fillWidth: true
-                        text: root.tr("Emergency stop: no agent runs.", "Zatrzymanie awaryjne: żaden agent nie działa.")
-                        color: root.c.danger
-                        wrapMode: Text.Wrap
-                    }
-                    QQC2.Button {
-                        text: root.tr("Resume", "Wznów")
-                        onClicked: root.post("api/resume")
-                        contentItem: QQC2.Label { text: parent.text; color: root.c.onAccent; font.weight: Font.DemiBold; horizontalAlignment: Text.AlignHCenter }
-                        background: Rectangle { radius: 8; color: root.c.accent; implicitHeight: 32 }
-                    }
-                }
-            }
-
-            // ---- talk to Dia (the computer's microphone, as `dia voice toggle`)
-            Rectangle {
-                id: talkCard
-                Layout.fillWidth: true
-                implicitHeight: 60
-                radius: 12
-                color: talkArea.containsMouse ? root.c.hover : root.c.card
-                border.color: root.c.borderStrong
-                opacity: root.online ? 1 : 0.5
-                RowLayout {
-                    anchors.fill: parent
-                    anchors.leftMargin: 12
-                    anchors.rightMargin: 12
-                    spacing: 12
-                    Rectangle {
-                        id: orb
-                        Layout.preferredWidth: 36; Layout.preferredHeight: 36; radius: 18
-                        color: root.voice === "listening" ? root.c.danger : root.voice === "processing" ? root.c.warn
-                            : root.speaking ? root.c.accent : root.c.active
-                        Kirigami.Icon {
-                            anchors.centerIn: parent
-                            width: 18; height: 18
-                            source: "audio-input-microphone"
-                            isMask: true
-                            color: root.lit ? root.c.onAccent : root.c.accentInk
-                        }
-                        SequentialAnimation on opacity {
-                            running: root.voice === "listening" || root.voice === "processing"
-                            loops: Animation.Infinite
-                            NumberAnimation { to: 0.5; duration: 600 }
-                            NumberAnimation { to: 1; duration: 600 }
-                            onRunningChanged: if (!running) orb.opacity = 1
-                        }
-                    }
-                    ColumnLayout {
-                        spacing: 0
-                        Layout.fillWidth: true
-                        QQC2.Label { Layout.fillWidth: true; text: root.tr("Talk to Dia", "Porozmawiaj z Dią"); color: root.c.text; font.weight: Font.Medium }
-                        QQC2.Label {
-                            Layout.fillWidth: true
-                            elide: Text.ElideRight
-                            text: root.voice === "listening" ? root.tr("Listening… click to stop", "Słucham… kliknij, by skończyć")
-                                : root.voice === "processing" ? root.tr("Thinking…", "Myślę…")
-                                : root.speaking ? root.tr("Speaking… click to interrupt", "Mówię… kliknij, by przerwać")
-                                : root.tr("Middle-click the icon works too", "Działa też środkowy klik w ikonę")
-                            color: root.c.muted
-                            font.pixelSize: 11
-                        }
-                    }
-                }
-                MouseArea {
-                    id: talkArea
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    enabled: root.online
-                    cursorShape: Qt.PointingHandCursor
-                    onClicked: root.talk()
-                }
-                Accessible.role: Accessible.Button
-                Accessible.name: root.tr("Talk to Dia", "Porozmawiaj z Dią")
-            }
-
-            // ---- write to Dia
-            Rectangle {
-                Layout.fillWidth: true
-                implicitHeight: 44
-                radius: 10
-                color: root.c.card
-                border.color: ask.activeFocus ? root.c.accent : Qt.rgba(0.71, 0.64, 1, 0.35)
-                RowLayout {
-                    anchors.fill: parent
-                    anchors.leftMargin: 12
-                    anchors.rightMargin: 6
-                    QQC2.TextField {
-                        id: ask
-                        Layout.fillWidth: true
-                        placeholderText: root.tr("Ask or tell Dia…", "Zapytaj lub zleć coś Dii…")
-                        placeholderTextColor: root.c.faint
-                        color: root.c.text
-                        enabled: root.online && !root.asking
-                        background: Item {}
-                        onAccepted: { root.send(text); text = ""; }
-                    }
-                    QQC2.ToolButton {
-                        icon.name: "go-up"
-                        icon.color: root.c.onAccent
-                        text: root.tr("Send", "Wyślij")
-                        display: QQC2.AbstractButton.IconOnly
-                        enabled: root.online && !root.asking && ask.text.trim() !== ""
-                        implicitWidth: 32; implicitHeight: 32
-                        onClicked: { root.send(ask.text); ask.text = ""; }
-                        background: Rectangle { radius: 8; color: root.c.accent; opacity: parent.enabled ? 1 : 0.4 }
-                    }
-                }
-            }
-
-            QQC2.Label {
-                Layout.fillWidth: true
-                visible: root.asking || root.reply !== ""
-                text: root.asking ? root.tr("Thinking…", "Myślę…") : root.reply
-                textFormat: Text.MarkdownText
-                wrapMode: Text.Wrap
-                maximumLineCount: 8
-                elide: Text.ElideRight
-                color: root.asking ? root.c.muted : root.c.text
-            }
-
-            // ---- what waits for you, what runs now
-            QQC2.ScrollView {
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-                clip: true
-                contentWidth: availableWidth
-                ColumnLayout {
-                    width: parent.width
-                    spacing: 8
-
-                    QQC2.Label {
-                        visible: root.waiting.length > 0
-                        text: root.tr("WAITING FOR YOU · %1", "CZEKA NA CIEBIE · %1").arg(root.waiting.length)
-                        color: root.c.faint
-                        font.pixelSize: 11
-                        font.weight: Font.DemiBold
-                        font.letterSpacing: 1.4
-                    }
-                    Repeater {
-                        model: root.waiting.slice(0, 4)
-                        delegate: waitingCard
-                    }
-
-                    QQC2.Label {
-                        visible: root.running.length > 0
-                        Layout.topMargin: 6
-                        text: root.tr("WORKING NOW", "TERAZ PRACUJE")
-                        color: root.c.faint
-                        font.pixelSize: 11
-                        font.weight: Font.DemiBold
-                        font.letterSpacing: 1.4
-                    }
-                    Repeater {
-                        model: root.running.slice(0, 4)
-                        delegate: taskRow
-                    }
-
-                    QQC2.Label {
-                        Layout.fillWidth: true
-                        Layout.topMargin: 16
-                        visible: root.waiting.length === 0 && root.running.length === 0
-                        horizontalAlignment: Text.AlignHCenter
-                        wrapMode: Text.Wrap
-                        color: root.c.muted
-                        text: root.online ? root.tr("Nothing waits for you. Dia handles the rest.", "Nic nie czeka na Twoją decyzję. Resztą Dia zajmuje się sama.")
-                            : root.tr("Start Dia: dia app, or dia service install", "Uruchom Dia: dia app albo dia service install")
-                    }
-                }
-            }
+            TaskList { panel: root }
 
             // ---- the app's views and quick switches
             Rectangle { Layout.fillWidth: true; implicitHeight: 1; color: root.c.border }
@@ -783,114 +546,4 @@ PlasmoidItem {
         }
     }
 
-    // A decision waiting for you, as a card in the app's Inbox.
-    Component {
-        id: waitingCard
-        Rectangle {
-            id: card
-            required property var modelData
-            readonly property bool plan: modelData.status === "planned"
-            Layout.fillWidth: true
-            implicitHeight: cardColumn.implicitHeight + 24
-            radius: 12
-            color: root.c.card
-            border.color: root.c.border
-            ColumnLayout {
-                id: cardColumn
-                anchors.fill: parent
-                anchors.margins: 12
-                spacing: 8
-                RowLayout {
-                    spacing: 6
-                    Rectangle { Layout.preferredWidth: 6; Layout.preferredHeight: 6; radius: 3; color: card.plan ? root.c.info : root.c.ok }
-                    QQC2.Label {
-                        Layout.fillWidth: true
-                        text: card.modelData.project + "  ·  " + card.modelData.agent
-                        color: root.c.muted
-                        font.pixelSize: 11
-                        elide: Text.ElideRight
-                    }
-                    QQC2.Label {
-                        visible: !!card.modelData.diffstat
-                        text: card.modelData.diffstat ? "<font color='" + root.c.ok + "'>+" + card.modelData.diffstat.added
-                            + "</font> <font color='" + root.c.danger + "'>−" + card.modelData.diffstat.removed + "</font>" : ""
-                        textFormat: Text.StyledText
-                        font.family: "monospace"
-                        font.pixelSize: 11
-                    }
-                    QQC2.Label {
-                        text: card.plan ? root.tr("Plan to approve", "Plan do akceptacji") : root.tr("Ready to merge", "Gotowe do scalenia")
-                        color: card.plan ? root.c.info : root.c.ok
-                        font.pixelSize: 11
-                    }
-                }
-                QQC2.Label {
-                    Layout.fillWidth: true
-                    text: card.modelData.prompt.split("\n")[0]
-                    color: root.c.text
-                    font.weight: Font.Medium
-                    wrapMode: Text.Wrap
-                    maximumLineCount: 2
-                    elide: Text.ElideRight
-                }
-                RowLayout {
-                    spacing: 8
-                    QQC2.Button {
-                        text: card.plan ? root.tr("Run plan", "Uruchom plan") : root.tr("Review changes", "Sprawdź zmiany")
-                        onClicked: card.plan ? root.post("api/tasks/" + card.modelData.id + "/run-plan")
-                            : root.openApp("tasks", card.modelData.id)
-                        contentItem: QQC2.Label { text: parent.text; color: root.c.onAccent; font.weight: Font.DemiBold; horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter }
-                        background: Rectangle { radius: 8; color: root.c.accent; implicitHeight: 32; implicitWidth: 110 }
-                    }
-                    QQC2.Button {
-                        visible: card.plan
-                        text: root.tr("Open", "Otwórz")
-                        onClicked: root.openApp("tasks", card.modelData.id)
-                        contentItem: QQC2.Label { text: parent.text; color: root.c.text; horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter }
-                        background: Rectangle { radius: 8; color: parent.hovered ? root.c.hover : "transparent"; border.color: root.c.borderStrong; implicitHeight: 32; implicitWidth: 80 }
-                    }
-                }
-            }
-        }
-    }
-
-    // A task that runs now: a click opens it in the app.
-    Component {
-        id: taskRow
-        MouseArea {
-            id: row
-            required property var modelData
-            Layout.fillWidth: true
-            implicitHeight: rowColumn.implicitHeight + 12
-            cursorShape: Qt.PointingHandCursor
-            hoverEnabled: true
-            onClicked: root.openApp("tasks", modelData.id)
-            Rectangle { anchors.fill: parent; radius: 8; color: row.containsMouse ? root.c.hover : "transparent" }
-            RowLayout {
-                anchors.fill: parent
-                anchors.leftMargin: 6
-                anchors.rightMargin: 6
-                spacing: 10
-                Rectangle { Layout.preferredWidth: 7; Layout.preferredHeight: 7; radius: 4; color: root.statusColor[row.modelData.status] || root.c.faint }
-                ColumnLayout {
-                    id: rowColumn
-                    Layout.fillWidth: true
-                    spacing: 0
-                    QQC2.Label {
-                        Layout.fillWidth: true
-                        text: row.modelData.prompt.split("\n")[0]
-                        color: root.c.text
-                        elide: Text.ElideRight
-                    }
-                    QQC2.Label {
-                        Layout.fillWidth: true
-                        text: root.taskStatus(row.modelData) + "  ·  " + row.modelData.project + "  ·  " + row.modelData.agent
-                        color: root.c.muted
-                        font.pixelSize: 11
-                        elide: Text.ElideRight
-                    }
-                }
-            }
-        }
-    }
 }

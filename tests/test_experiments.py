@@ -3,9 +3,9 @@ from pathlib import Path
 
 import pytest
 
-from dia.config import parse_config
-from dia.experiments import plan_variants, recommend, run_experiment, variant_prompt
-from dia.orchestrator import Orchestrator
+from dia.core.config import parse_config
+from dia.core.orchestrator import Orchestrator
+from dia.quality.experiments import plan_variants, recommend, run_experiment, variant_prompt
 
 
 def make(tmp_path: Path, repo: Path, **experiments) -> Orchestrator:

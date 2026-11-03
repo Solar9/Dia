@@ -11,7 +11,7 @@ from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, ClassVar
 
 if TYPE_CHECKING:
-    from dia.orchestrator import Orchestrator
+    from dia.core.orchestrator import Orchestrator
 
 
 class Channel(ABC):

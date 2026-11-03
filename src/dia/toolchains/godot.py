@@ -16,8 +16,8 @@ import time
 from pathlib import Path
 
 from dia.agents.base import find_executable
+from dia.core.workspace import run
 from dia.toolchains import Toolchain
-from dia.workspace import run
 
 ERROR_PATTERNS = [
     "SCRIPT ERROR",

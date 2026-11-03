@@ -1,9 +1,9 @@
 from pathlib import Path
 
 from dia.brains import BrainContext, parse_intent
-from dia.config import parse_config
-from dia.orchestrator import Orchestrator
-from dia.scenario import check_scenario
+from dia.core.config import parse_config
+from dia.core.orchestrator import Orchestrator
+from dia.quality.scenario import check_scenario
 
 
 def make(tmp_path: Path, repo: Path, works: bool) -> Orchestrator:

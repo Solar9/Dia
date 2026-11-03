@@ -36,7 +36,7 @@ def installed() -> bool | None:
 
 def install() -> str:
     tool = _kpackagetool()
-    from dia.desktop import install_icons
+    from dia.desktop.desktop import install_icons
 
     install_icons()  # the widget's own icon in the panel's list and buttons
     with tempfile.TemporaryDirectory() as tmp:

@@ -11,7 +11,7 @@ from __future__ import annotations
 import os
 import re
 
-from dia.service import env_path
+from dia.core.paths import env_path
 
 _NAME = re.compile(r"^[A-Z][A-Z0-9_]{0,63}$")
 

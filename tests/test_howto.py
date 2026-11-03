@@ -5,9 +5,9 @@ import pytest
 
 from dia.assistant import Assistant
 from dia.brains.rules import RulesBrain
-from dia.config import parse_config
-from dia.learn import parse_howto
-from dia.orchestrator import Orchestrator, TaskActionError
+from dia.core.config import parse_config
+from dia.core.orchestrator import Orchestrator, TaskActionError
+from dia.knowledge.learn import parse_howto
 
 HOWTO = {
     "title": "Adding an enemy type",

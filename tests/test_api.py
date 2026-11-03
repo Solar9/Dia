@@ -11,8 +11,8 @@ aiohttp = pytest.importorskip("aiohttp")
 from aiohttp.test_utils import TestClient, TestServer  # noqa: E402
 
 from dia.channels.api import ApiChannel  # noqa: E402
-from dia.config import parse_config  # noqa: E402
-from dia.orchestrator import Orchestrator  # noqa: E402
+from dia.core.config import parse_config  # noqa: E402
+from dia.core.orchestrator import Orchestrator  # noqa: E402
 from dia.voice import SpeechToText, TextToSpeech  # noqa: E402
 from dia.voice.talk import Talk, audio_type  # noqa: E402
 
@@ -448,7 +448,7 @@ async def test_skills_tools_and_desktop_from_the_app(client, monkeypatch) -> Non
 
 
 async def test_runtime_controls_require_confirmation_and_validate_policy(client, monkeypatch):
-    from dia import runtime
+    from dia.desktop import runtime
 
     calls = []
     monkeypatch.setattr(runtime, "enqueue", lambda *args: calls.append(args))
@@ -709,3 +709,34 @@ async def test_new_cli_session_with_a_chosen_agent_and_model(client, tmp_path: P
     # an agent whose conversation can't go on, an unknown project, nothing to say
     for bad in ({**body, "agent": "fake"}, {**body, "project": "nope"}, {**body, "text": " "}):
         assert (await client.post("/api/cli-captured", json=bad, headers=h)).status == 400
+
+
+async def test_status_counts_and_task_decision_come_from_one_rule(client):
+    # DIA-51: web, tray and widget read `counts` / `decision`, none of them counts alone.
+    store = client.api.dia.store
+    from dia.core.store import TaskRecord
+
+    def add(task_id, status, **kw):
+        store.save(TaskRecord(id=task_id, project="demo", agent="fake", mode="edit",
+                              prompt=task_id, status=status, **kw))  # fmt: skip
+
+    add("r1", "running")
+    add("q1", "queued")
+    add("w1", "waiting")
+    add("m1", "done", commit_sha="abc")
+    add("a1", "done")  # an answer, nothing to decide
+    add("p1", "planned")
+    add("c1", "published", details={"ci": {"state": "failed"}})
+    add("n1", "published", details={"comments_pending": [1]})
+    add("ok", "published", details={"ci": {"state": "passed"}})
+    status = await (await client.get("/api/status", headers=client.auth)).json()
+    assert status["counts"] == {"running": 3, "waiting_for_you": 4}
+    assert sorted(status["active"]) == ["q1", "r1", "w1"]
+    tasks = {
+        t["id"]: t["decision"]
+        for t in await (await client.get("/api/tasks", headers=client.auth)).json()
+    }
+    assert tasks == {
+        "r1": None, "q1": None, "w1": None, "m1": "merge", "a1": None,
+        "p1": "plan", "c1": "ci", "n1": "comments", "ok": None,
+    }  # fmt: skip

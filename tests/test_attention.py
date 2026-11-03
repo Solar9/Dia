@@ -1,10 +1,10 @@
 from datetime import datetime, time
 from pathlib import Path
 
-from dia.attention import Attention, in_window, parse_window
-from dia.config import parse_config
-from dia.orchestrator import Orchestrator
-from dia.schedule import Scheduler
+from dia.core.config import parse_config
+from dia.core.orchestrator import Orchestrator
+from dia.knowledge.attention import Attention, in_window, parse_window
+from dia.work.schedule import Scheduler
 
 
 def make(tmp_path: Path, **notifications) -> Orchestrator:

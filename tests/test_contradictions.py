@@ -2,9 +2,9 @@ import json
 import subprocess
 from pathlib import Path
 
-from dia.config import parse_config
-from dia.contradictions import check, parse, proposal
-from dia.orchestrator import Orchestrator
+from dia.core.config import parse_config
+from dia.core.orchestrator import Orchestrator
+from dia.quality.contradictions import check, parse, proposal
 
 ANSWER = {
     "contradictions": [

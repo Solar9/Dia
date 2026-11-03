@@ -17,11 +17,11 @@ from abc import ABC, abstractmethod
 from collections.abc import Awaitable, Callable
 from typing import TYPE_CHECKING, Any, ClassVar
 
-from dia import plugins
+from dia.core import plugins
 
 if TYPE_CHECKING:
-    from dia.config import Config
-    from dia.orchestrator import Orchestrator
+    from dia.core.config import Config
+    from dia.core.orchestrator import Orchestrator
 
 USER_AGENT = "Dia/0.1 (personal assistant; https://github.com/Solar9/Dia)"
 

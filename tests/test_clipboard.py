@@ -2,8 +2,8 @@ from pathlib import Path
 
 from dia.assistant import Assistant
 from dia.brains.rules import RulesBrain
-from dia.config import parse_config
-from dia.orchestrator import Orchestrator
+from dia.core.config import parse_config
+from dia.core.orchestrator import Orchestrator
 
 
 def make(tmp_path: Path) -> Orchestrator:

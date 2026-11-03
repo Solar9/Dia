@@ -12,8 +12,12 @@ and asks before anything irreversible.
 - **0.1.1** (2026-10-28): UI 2.0 and release hygiene; see [PLAN-0.1.1.md](PLAN-0.1.1.md)
   and [CHANGELOG.md](../CHANGELOG.md).
 - **0.1.2** (2026-10-30): chat timestamps, CLI slash commands, About Dia,
-  Status/Settings layout; see [CHANGELOG.md](../CHANGELOG.md).
-- **Next**: remaining items in PLAN-0.1.1 (DIA-01 smoke, nice leftovers).
+  Status/Settings layout; see [PLAN-0.1.2.md](PLAN-0.1.2.md) and [CHANGELOG.md](../CHANGELOG.md).
+- **0.1.3** (manual checks done 2026-11-04, waiting for the tag): stabilisation after the refactor: manual UI and widget
+  checks, the UI audit (DIA-48–63), coverage, tests and types; see
+  [PLAN-0.1.3.md](PLAN-0.1.3.md).
+- **Next (0.2.0)**: containment and security (Landlock, red-team fixtures,
+  network guard, signed checksums).
 
 ## Milestones
 

@@ -21,7 +21,7 @@ from pathlib import Path
 from shutil import which
 from typing import Any, ClassVar
 
-from dia import processes
+from dia.core import processes
 
 log = logging.getLogger("dia.agents")
 
@@ -98,7 +98,7 @@ class AgentResult:
 
 def mark_limit(result: AgentResult, *extra: str) -> AgentResult:
     """Flag a failed result whose messages say the usage limit is used up."""
-    from dia.limits import is_limit, retry_at
+    from dia.core.limits import is_limit, retry_at
 
     summary = result.summary if len(result.summary) < 600 else ""  # not a long answer
     text = "\n".join(t[-2000:] for t in (result.error or "", summary, *extra) if t)
@@ -246,6 +246,7 @@ class CliAgent(Agent):
         try:
             out, err = await asyncio.wait_for(proc.communicate(), timeout)
         except TimeoutError:
+            processes.kill_group(proc.pid)
             proc.kill()
             await proc.wait()
             return AgentResult(

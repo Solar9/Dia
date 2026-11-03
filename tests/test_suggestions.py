@@ -2,10 +2,10 @@ from pathlib import Path
 
 import pytest
 
-from dia.config import parse_config
-from dia.orchestrator import Orchestrator
-from dia.store import TaskRecord
-from dia.suggestions import Suggestions, find
+from dia.core.config import parse_config
+from dia.core.orchestrator import Orchestrator
+from dia.core.store import TaskRecord
+from dia.knowledge.suggestions import Suggestions, find
 
 
 def make(tmp_path: Path, repo: Path, **suggestions) -> Orchestrator:
@@ -82,7 +82,7 @@ def test_a_suggestion_counts_for_the_local_day_it_was_made(monkeypatch) -> None:
     import time
     from datetime import date
 
-    from dia.suggestions import _local_day
+    from dia.knowledge.suggestions import _local_day
 
     monkeypatch.setenv("TZ", "Europe/Warsaw")
     time.tzset()

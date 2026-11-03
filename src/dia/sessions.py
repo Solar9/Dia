@@ -17,7 +17,8 @@ import sqlite3
 from dataclasses import dataclass
 from pathlib import Path
 
-from dia import processes
+from dia.core import processes
+from dia.core.jsonfile import read_json, write_json
 
 # executable name -> agent kind (the plugin name used in [agents.*] type = ...)
 _KINDS = {"claude": "claude-code", "codex": "codex", "cursor-agent": "cursor", "agent": "cursor"}
@@ -487,11 +488,12 @@ def parse_transcript(path: Path, limit: int = MAX_MESSAGES) -> list[dict[str, st
             role, text = msg.get("role"), _text(msg.get("content"), ("text",))
             at = _stamp(obj, text) or _stamp(msg, text)
         else:  # Codex: {"type": "response_item", "payload": {"type": "message", ...}}
-            msg = obj.get("payload") if isinstance(obj.get("payload"), dict) else obj
+            payload = obj.get("payload")
+            msg = payload if isinstance(payload, dict) else obj
             if msg.get("type") != "message":
                 continue
             role, text = msg.get("role"), _text(msg.get("content"), ("input_text", "output_text"))
-            at = _stamp(obj, text) or _stamp(msg if isinstance(msg, dict) else {}, text)
+            at = _stamp(obj, text) or _stamp(msg, text)
         if m := _message(role, text, at):
             out.append(m)
     return _fill_stamps(out)[-limit:]
@@ -565,19 +567,18 @@ class CapturedStore:
         self.path = path
 
     def all(self) -> list[Captured]:
+        rows = read_json(self.path, [])
+        fields = Captured.__dataclass_fields__
         try:
-            rows = json.loads(self.path.read_text())
-            fields = Captured.__dataclass_fields__
             return [Captured(**{k: v for k, v in row.items() if k in fields}) for row in rows]
-        except (OSError, ValueError, TypeError):
+        except TypeError:
             return []
 
     def get(self, session_id: str) -> Captured | None:
         return next((c for c in self.all() if c.id == session_id), None)
 
     def save(self, rows: list[Captured]) -> None:
-        self.path.parent.mkdir(parents=True, exist_ok=True)
-        self.path.write_text(json.dumps([c.__dict__ for c in rows], indent=1))
+        write_json(self.path, [c.__dict__ for c in rows], indent=1)
 
     def add(self, item: Captured) -> None:
         self.save([c for c in self.all() if c.id != item.id] + [item])

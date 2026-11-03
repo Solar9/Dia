@@ -28,13 +28,33 @@ jobs:
           sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0 || true
       - run: ruff check .
       - run: ruff format --check .
+      # Layer rules (pyproject.toml [tool.importlinter]): the core imports no interface.
+      - run: lint-imports
       # JUnit XML names each case for triage when something is flaky (DIA-08).
-      - run: pytest -q --junitxml=pytest-results.xml
+      # Coverage is a report only, no gate (DIA-37); the terminal summary lists the
+      # files that are not fully covered.
+      - run: >
+          pytest -q --junitxml=pytest-results.xml
+          --cov=dia --cov-report=term-missing:skip-covered --cov-report=xml
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: pytest-${{ matrix.python }}
-          path: pytest-results.xml
+          path: |
+            pytest-results.xml
+            coverage.xml
+
+  typecheck:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: pip install -e '.[dev]'
+      # Strict for dia.core, lenient elsewhere (pyproject.toml [tool.mypy]).
+      - run: mypy
 
   qt:
     runs-on: ubuntu-latest
@@ -53,7 +73,7 @@ jobs:
           QT_QPA_PLATFORM: offscreen
           QTWEBENGINE_CHROMIUM_FLAGS: --no-sandbox
         # Named clearly in JUnit: real Qt + tray, timing-sensitive on CI runners.
-        run: pytest -q --junitxml=pytest-qt.xml tests/test_appwindow.py
+        run: pytest -q --junitxml=pytest-qt.xml tests/test_appwindow.py tests/test_plasmoid_qml.py
       - uses: actions/upload-artifact@v4
         if: always()
         with:

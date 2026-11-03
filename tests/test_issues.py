@@ -1,9 +1,9 @@
 from pathlib import Path
 
-from dia.config import parse_config
+from dia.core.config import parse_config
+from dia.core.orchestrator import Orchestrator, publish_body
 from dia.forges import Issue
-from dia.issues import IssueWatcher
-from dia.orchestrator import Orchestrator, publish_body
+from dia.work.issues import IssueWatcher
 
 
 def make(tmp_path: Path, repo: Path) -> Orchestrator:

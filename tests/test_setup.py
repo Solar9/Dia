@@ -2,7 +2,7 @@ import subprocess
 from pathlib import Path
 
 from dia import setup
-from dia.config import load_config
+from dia.core.config import load_config
 
 
 def repo(path: Path) -> Path:
@@ -45,7 +45,7 @@ def test_scripted_run(tmp_path, monkeypatch) -> None:
     monkeypatch.setattr(setup, "find_agents", lambda: {"claude": "claude-code"})
     monkeypatch.setattr(setup, "find_ollama_model", lambda: None)
     monkeypatch.setattr(setup.shutil, "which", lambda name: None)  # no systemd, no KDE
-    monkeypatch.setattr("dia.desktop.desktop_dir", lambda: tmp_path / "Desktop")
+    monkeypatch.setattr("dia.desktop.desktop.desktop_dir", lambda: tmp_path / "Desktop")
     target = tmp_path / "config" / "dia" / "config.toml"
     setup.run(assume=True, target=target)
     assert load_config(target).agents == {"claude": {"type": "claude-code"}}

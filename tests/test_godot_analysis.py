@@ -2,7 +2,7 @@ import struct
 import zlib
 from pathlib import Path
 
-from dia.godot_analysis import _depth, analyze, describe, frame_lookups, image_size
+from dia.release.godot_analysis import _depth, analyze, describe, frame_lookups, image_size
 
 
 def png(path: Path, width: int, height: int) -> None:

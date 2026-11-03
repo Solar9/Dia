@@ -6,8 +6,8 @@ import pytest
 from dia.assistant import Assistant
 from dia.brains import BrainContext, parse_intent
 from dia.brains.rules import RulesBrain
-from dia.config import load_config, save_settings
-from dia.orchestrator import Orchestrator
+from dia.core.config import load_config, save_settings
+from dia.core.orchestrator import Orchestrator
 from dia.persona import persona_prompt
 from dia.skills import builtin
 

@@ -2,9 +2,9 @@ from pathlib import Path
 
 import pytest
 
-from dia.config import parse_config
-from dia.orchestrator import Orchestrator, TaskActionError
-from dia.review import APPROVED, CHANGES_REQUESTED, UNCLEAR, parse_verdict
+from dia.core.config import parse_config
+from dia.core.orchestrator import Orchestrator, TaskActionError
+from dia.core.review_prompts import APPROVED, CHANGES_REQUESTED, UNCLEAR, parse_verdict
 
 # Writes v1 for the task; when asked to address a review, adds the requested line.
 AUTHOR = [

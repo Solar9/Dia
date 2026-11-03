@@ -2,9 +2,9 @@ from pathlib import Path
 
 from dia.assistant import Assistant
 from dia.brains import Brain, BrainContext, Intent, parse_intent
-from dia.config import parse_config
-from dia.orchestrator import Orchestrator
-from dia.shadow import describe_difference, replay
+from dia.core.config import parse_config
+from dia.core.orchestrator import Orchestrator
+from dia.quality.shadow import describe_difference, replay
 
 
 class Cloud(Brain):

@@ -28,10 +28,11 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 from dia.agents.base import find_executable
-from dia.workspace import run
+from dia.core.jsonfile import read_json, write_json
+from dia.core.workspace import run
 
 if TYPE_CHECKING:
-    from dia.orchestrator import Orchestrator
+    from dia.core.orchestrator import Orchestrator
 
 log = logging.getLogger("dia.security")
 
@@ -499,15 +500,11 @@ def new_exposed_ports(dia: Orchestrator, current: list[dict[str, Any]]) -> list[
 
 
 def _baseline(path: Path) -> dict[str, Any]:
-    try:
-        return json.loads(path.read_text())
-    except (OSError, ValueError):
-        return {}
+    return read_json(path, {})
 
 
 def _save_baseline(path: Path, data: dict[str, Any]) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(data))
+    write_json(path, data, indent=None)
 
 
 def new_devices(dia: Orchestrator, found: list[dict[str, str]]) -> list[dict[str, str]]:

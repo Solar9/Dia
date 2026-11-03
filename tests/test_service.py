@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 
-from dia import service
+from dia.desktop import service
 
 
 @pytest.fixture

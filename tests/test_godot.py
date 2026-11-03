@@ -6,8 +6,8 @@ from pathlib import Path
 import pytest
 
 from dia.assistant import Assistant
-from dia.config import parse_config
-from dia.orchestrator import Orchestrator
+from dia.core.config import parse_config
+from dia.core.orchestrator import Orchestrator
 from dia.toolchains.godot import GodotToolchain, read_project
 
 PROJECT_GODOT = """\
@@ -224,7 +224,7 @@ export_path="build/nova.exe"
 async def test_build_and_changelog(tmp_path, game, godot) -> None:
     import subprocess as sp
 
-    from dia.release import Releases
+    from dia.release.release import Releases
 
     binary, log = godot
     # The fake Godot "exports" by writing the target file.

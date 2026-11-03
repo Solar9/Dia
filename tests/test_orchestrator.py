@@ -4,8 +4,8 @@ from pathlib import Path
 import pytest
 
 from dia.agents import Mode
-from dia.config import parse_config
-from dia.orchestrator import Orchestrator, TaskActionError
+from dia.core.config import parse_config
+from dia.core.orchestrator import Orchestrator, TaskActionError
 
 
 def make(tmp_path: Path, repo: Path, agent_argv: list[str], test_command: str | None = None):

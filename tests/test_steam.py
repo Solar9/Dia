@@ -2,10 +2,10 @@ from pathlib import Path
 
 import pytest
 
-from dia.config import parse_config
-from dia.orchestrator import Orchestrator, TaskActionError
-from dia.release import Releases
-from dia.store import TaskRecord
+from dia.core.config import parse_config
+from dia.core.orchestrator import Orchestrator, TaskActionError
+from dia.core.store import TaskRecord
+from dia.release.release import Releases
 
 
 def make(tmp_path: Path, monkeypatch, steam: dict) -> tuple[Releases, TaskRecord, Path]:

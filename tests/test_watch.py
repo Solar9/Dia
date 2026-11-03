@@ -4,9 +4,9 @@ from pathlib import Path
 
 import pytest
 
-from dia.config import parse_config
-from dia.orchestrator import Orchestrator, TaskActionError
-from dia.watch import ProjectWatcher
+from dia.core.config import parse_config
+from dia.core.orchestrator import Orchestrator, TaskActionError
+from dia.work.watch import ProjectWatcher
 
 
 def commit(repo: Path, name: str, content: str) -> None:

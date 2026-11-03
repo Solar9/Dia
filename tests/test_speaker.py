@@ -3,7 +3,7 @@ from pathlib import Path
 
 from test_voice import lines, voice_setup
 
-from dia.config import parse_config
+from dia.core.config import parse_config
 from dia.voice.audio import write_wav
 from dia.voice.speaker import SpeakerEmbedder, Speakers
 

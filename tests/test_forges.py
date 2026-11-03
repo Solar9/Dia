@@ -3,10 +3,10 @@ from pathlib import Path
 
 import pytest
 
-from dia.config import parse_config
+from dia.core.config import parse_config
+from dia.core.orchestrator import Orchestrator, TaskActionError
 from dia.forges import detect
 from dia.forges.builtin import GitLabForge
-from dia.orchestrator import Orchestrator, TaskActionError
 
 
 def git(cwd: Path, *args: str) -> str:

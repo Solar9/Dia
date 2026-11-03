@@ -5,8 +5,8 @@ import pytest
 
 from dia.assistant import Assistant
 from dia.brains import Intent
-from dia.config import parse_config
-from dia.orchestrator import Orchestrator
+from dia.core.config import parse_config
+from dia.core.orchestrator import Orchestrator
 from dia.skills import integrations
 
 ICS = """BEGIN:VCALENDAR
@@ -161,9 +161,9 @@ async def test_unlocking_asks_first(home) -> None:
 
 
 async def test_itch_publish_only_finished_builds(tmp_path: Path, monkeypatch) -> None:
-    from dia.orchestrator import TaskActionError
-    from dia.release import Releases
-    from dia.store import TaskRecord
+    from dia.core.orchestrator import TaskActionError
+    from dia.core.store import TaskRecord
+    from dia.release.release import Releases
 
     bin_dir = tmp_path / "bin"
     bin_dir.mkdir()

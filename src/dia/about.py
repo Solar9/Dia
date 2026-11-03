@@ -13,7 +13,7 @@ from dia import __version__
 from dia.agents.base import find_executable
 
 if TYPE_CHECKING:
-    from dia.config import Config
+    from dia.core.config import Config
 
 AUTHOR = "Solar"
 WEBSITE = "https://solar9.me"

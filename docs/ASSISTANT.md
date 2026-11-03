@@ -17,6 +17,18 @@ The persona goes into every model prompt, so chat answers, plans and spoken
 replies all sound the same. A personality can be any description: "calm,
 dry humour, speaks like a ship's captain".
 
+## What Dia understood
+
+Whatever brain answers, three things hold before an agent starts:
+
+- Dia says what she understood: `code change · nova · claude` (action, project, agent),
+  in chat, Discord, by voice and in `dia say`; a plan's "run it?" starts with it.
+- An agent is used only if you named it (its name, or Claude / ChatGPT for what it is), or
+  it is what `[routing]` would pick anyway. A model's own preference is dropped, and the
+  routing rules and `default_agent` decide.
+- A reply that is a question to you ("which save system?") stays a conversation: no task is
+  created for an agent to guess the answer.
+
 ## Skills: weather, news, markets, briefing
 
 Ask in your own words ("Dia, jaka jutro pogoda w Gdańsku?", "co nowego?",

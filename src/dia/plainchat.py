@@ -37,7 +37,7 @@ from typing import TYPE_CHECKING, Any
 from dia.agents import AgentRequest, Mode
 
 if TYPE_CHECKING:
-    from dia.orchestrator import Orchestrator
+    from dia.core.orchestrator import Orchestrator
 
 DIA = "dia"
 SYSTEM = (

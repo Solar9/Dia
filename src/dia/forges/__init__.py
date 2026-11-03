@@ -13,7 +13,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, ClassVar
 
-from dia.workspace import GitError, git, run
+from dia.core.workspace import GitError, git, run
 
 
 @dataclass

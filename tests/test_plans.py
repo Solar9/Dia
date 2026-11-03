@@ -5,9 +5,9 @@ from pathlib import Path
 import pytest
 
 from dia.assistant import Assistant
-from dia.config import parse_config
-from dia.orchestrator import Orchestrator, TaskActionError
-from dia.plans import Step, parse_plan, step_prompt
+from dia.core.config import parse_config
+from dia.core.orchestrator import Orchestrator, TaskActionError
+from dia.core.plans import Step, parse_plan, step_prompt
 
 DESIGNER = ["sh", "-c", "echo 'use a dict' > DESIGN.md; echo 'wrote DESIGN.md'"]
 # Implements from the design, and proves it saw the earlier step's summary.
@@ -164,8 +164,8 @@ async def test_brain_can_ask_for_a_plan(tmp_path: Path, repo: Path) -> None:
     proposal_reply = await assistant.handle("zaprojektuj i zbuduj cache w demo")
     assert proposal_reply.intent.action == "plan" and proposal_reply.report is None
     assert proposal_reply.text.startswith(
-        "Plan dla demo: 1. Design (designer), 2. Build (builder)."
-    )
+        "plan · demo\nPlan dla demo: 1. Design (designer), 2. Build (builder)."
+    )  # what was understood comes first (DIA-12)
     assert orch.store.get(assistant.pending_plan).status == "planned"  # nothing ran yet
 
     response = await assistant.handle("Dia, tak!")

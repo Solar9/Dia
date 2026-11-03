@@ -15,7 +15,10 @@ injection). So agents do not run with your full account:
   commit on its task branch, but cannot move `main` or add hooks), and Dia's
   secrets are removed from its environment (its own API key stays). Your
   projects' tests run in the same sandbox, because they run code an agent
-  wrote.
+  wrote. A project's Python virtual environment (`.venv` or `venv` in its
+  repository) comes back read-only and first on `PATH`, so `pytest` and the
+  project's other tools work; the worktree's `src` goes first on `PYTHONPATH`,
+  so an editable install tests the agent's code, not the main checkout's.
 - **The guard** (`[sandbox] decoys = true`): the almost empty home holds fake
   keys and tokens with a one-off marker. An agent that reads one and repeats it
   or copies it into the code is stopped: its work is not kept, the task shows

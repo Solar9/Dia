@@ -4,9 +4,9 @@ import pytest
 
 from dia.assistant import Assistant
 from dia.brains.rules import RulesBrain
-from dia.config import parse_config
-from dia.orchestrator import Orchestrator
-from dia.screen import look
+from dia.core.config import parse_config
+from dia.core.orchestrator import Orchestrator
+from dia.desktop.screen import look
 
 
 def make(tmp_path: Path) -> Orchestrator:
@@ -53,7 +53,7 @@ async def test_screen_is_off_until_switched_on(tmp_path: Path) -> None:
 
 
 def test_configured_command_as_text_gets_the_file_name() -> None:
-    from dia.screen import capture_command
+    from dia.desktop.screen import capture_command
 
     assert capture_command("import -window 0x2a") == ["import", "-window", "0x2a", "{output}"]
     assert capture_command(["grim", "{output}"]) == ["grim", "{output}"]

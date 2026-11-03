@@ -5,10 +5,10 @@ from pathlib import Path
 
 import pytest
 
-from dia import health
-from dia.config import parse_config
-from dia.orchestrator import Orchestrator
-from dia.store import TaskRecord
+from dia.core.config import parse_config
+from dia.core.orchestrator import Orchestrator
+from dia.core.store import TaskRecord
+from dia.desktop import health
 
 
 def make(tmp_path: Path, repo: Path) -> Orchestrator:

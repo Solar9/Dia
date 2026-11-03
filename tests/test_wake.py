@@ -8,7 +8,7 @@ from types import ModuleType, SimpleNamespace
 import pytest
 from test_voice import lines, voice_setup, wait_for
 
-from dia import plugins
+from dia.core import plugins
 from dia.voice.wake import OpenWakeWord, WakeWord
 
 CHUNK = 1280

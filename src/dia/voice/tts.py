@@ -179,7 +179,7 @@ class ElevenLabsTTS(TextToSpeech):
             pcm = await asyncio.to_thread(self._request, text)
         except Exception:
             if fallback := self.options.get("fallback"):
-                from dia import plugins
+                from dia.core import plugins
 
                 options = {"type": fallback} if isinstance(fallback, str) else dict(fallback)
                 engine = plugins.load("dia.tts", options.pop("type", "piper"))(options)

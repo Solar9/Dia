@@ -22,7 +22,6 @@ Speaker models: any sherpa-onnx speaker embedding model, e.g. 3D-Speaker
 
 from __future__ import annotations
 
-import json
 import math
 import os
 import wave
@@ -30,8 +29,10 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, ClassVar
 
+from dia.core.jsonfile import read_json, write_json
+
 if TYPE_CHECKING:
-    from dia.config import Config
+    from dia.core.config import Config
 
 # What a voice Dia doesn't know may still do in "limited" mode.
 GUEST_ACTIONS = {"chat", "status", "skill", "cancel"}
@@ -121,7 +122,7 @@ class Speakers:
         options: dict[str, Any] | None = None,
         embedder: SpeakerEmbedder | None = None,
     ) -> None:
-        from dia import plugins
+        from dia.core import plugins
 
         self.options = dict(options or {})
         self.path = config.data_dir / "speakers.json"
@@ -139,15 +140,10 @@ class Speakers:
         return self.embedder.check()
 
     def _load(self) -> dict[str, list[list[float]]]:
-        try:
-            return json.loads(self.path.read_text())
-        except (OSError, ValueError):
-            return {}
+        return read_json(self.path, {})
 
     def _save(self, voices: dict[str, list[list[float]]]) -> None:
-        self.path.parent.mkdir(parents=True, exist_ok=True)
-        self.path.write_text(json.dumps(voices))
-        self.path.chmod(0o600)
+        write_json(self.path, voices, indent=None, mode=0o600)
 
     def names(self) -> list[str]:
         return sorted(self._load())

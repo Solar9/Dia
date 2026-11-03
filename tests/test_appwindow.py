@@ -2,7 +2,7 @@ import os
 
 import pytest
 
-from dia import appwindow
+from dia.desktop import appwindow
 
 
 def test_options_defaults_and_overrides():
@@ -65,7 +65,7 @@ def test_qt_offscreen_window_hides_to_the_tray(monkeypatch, tmp_path):
         pytest.skip("PySide6 (with its system libraries) is not installed")
     if not appwindow.available():
         pytest.skip("QtWebEngine is not installed")
-    from dia import runtime
+    from dia.desktop import runtime
 
     monkeypatch.setattr(
         runtime,
@@ -81,7 +81,8 @@ def test_qt_offscreen_window_hides_to_the_tray(monkeypatch, tmp_path):
     def check():
         window = next(w for w in app.topLevelWidgets() if w.windowTitle() == "Dia")
         tray = next(t for t in app.findChildren(QSystemTrayIcon))
-        statuses = [a for a in tray.tray_menu.actions() if a.text() == "Dia 🟢 | Ollama 🔴"]
+        shown = "Dia 🟢 Działa | Ollama 🔴 Zatrzymana"
+        statuses = [a for a in tray.tray_menu.actions() if a.text() == shown]
         seen["status_count"] = len(statuses)
         seen["no_status_icons"] = all(a.icon().isNull() for a in statuses)
         seen["registered_context_menu"] = tray.contextMenu() is tray.tray_menu
@@ -171,7 +172,10 @@ def test_qt_offscreen_window_hides_to_the_tray(monkeypatch, tmp_path):
         "quick_restore",
     ):
         assert seen[key], key
-    assert seen["menu"][0] == "Otwórz Dia" and seen["menu"][-1] == "Zamknij ikonę i okno"
+    assert (
+        seen["menu"][0] == "Otwórz Dia"
+        and seen["menu"][-1] == "Zamknij okno i ikonę (Dia działa dalej)"
+    )
     assert seen["tabs"] == [
         "Skrzynka",
         "Zadania",
@@ -195,7 +199,8 @@ def test_login_shows_only_tray_and_left_click_toggles(tmp_path):
     script = """
 from PySide6.QtCore import QTimer
 from PySide6.QtWidgets import QApplication, QSystemTrayIcon
-from dia import appwindow, runtime
+from dia.desktop import appwindow
+from dia.desktop import runtime
 import os, threading
 release = threading.Event()
 started = []
@@ -251,14 +256,15 @@ assert seen == [True] * 8, seen
 
 
 def test_offline_page_is_the_title_bar_too() -> None:
-    page = appwindow.offline_page(True, True)
+    page = appwindow.offline_page("pl", True)
     assert "Uruchom Dia" in page and "dia-window:start-services" in page
+    assert "dia-window:show-logs" in page
     for action in ("minimize", "maximize", "close"):
         assert f"call(\\'{action}\\')" in page or f"call('{action}')" in page
     assert page.count("data-edge=") == 8 and "data-drag" in page and "__" not in page
     assert 'src="data:image/svg+xml;base64,' in page  # Dia's icon, served by nobody
     # With the system's own title bar the page draws none.
-    plain = appwindow.offline_page(False, False)
+    plain = appwindow.offline_page("en", False)
     assert "Start Dia" in plain and "call('minimize')" not in plain and 'data-edge="' not in plain
 
 
@@ -277,7 +283,8 @@ import os, tempfile
 from pathlib import Path
 from PySide6.QtCore import QTimer
 from PySide6.QtWidgets import QApplication
-from dia import appwindow, runtime
+from dia.desktop import appwindow
+from dia.desktop import runtime
 runtime.status = lambda: {"available": False}
 appwindow.server_name = lambda: "dia-offline-test-" + str(os.getpid())
 app = QApplication(["test"])
@@ -341,4 +348,4 @@ def test_dias_icon_takes_the_themes_accent(tmp_path) -> None:
     import base64
 
     tinted = base64.b64encode(appwindow.tinted_svg("22d3ee")).decode()
-    assert tinted in appwindow.offline_page(True, True, "22d3ee")
+    assert tinted in appwindow.offline_page("pl", True, "22d3ee")

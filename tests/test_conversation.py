@@ -3,8 +3,8 @@ from pathlib import Path
 from dia.assistant import Assistant
 from dia.brains import Brain, BrainContext, Intent
 from dia.brains.rules import RulesBrain
-from dia.config import parse_config
-from dia.orchestrator import Orchestrator
+from dia.core.config import parse_config
+from dia.core.orchestrator import Orchestrator
 
 
 class Recorder(Brain):
@@ -46,7 +46,7 @@ async def test_quiet_mode_by_phrase(tmp_path: Path) -> None:
 
 
 async def test_one_conversation_across_devices(tmp_path: Path) -> None:
-    from dia.devices import Devices
+    from dia.core.devices import Devices
 
     raw = {
         "dia": {"data_dir": str(tmp_path / "data"), "language": "pl"},

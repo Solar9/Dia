@@ -4,10 +4,10 @@ from pathlib import Path
 
 import pytest
 
-from dia.ci import CIWatcher
-from dia.config import parse_config
+from dia.core.config import parse_config
+from dia.core.orchestrator import Orchestrator, TaskActionError
 from dia.forges.builtin import GitLabForge
-from dia.orchestrator import Orchestrator, TaskActionError
+from dia.quality.ci import CIWatcher
 
 # Writes v1; when asked to fix CI, writes the fix.
 AUTHOR = [
@@ -167,3 +167,30 @@ async def test_gitlab_pipeline_parsing(tmp_path: Path) -> None:
     status = await GitLabForge({"command": str(glab)}).ci_status(tmp_path, "dia/x")
     assert status.state == "failed" and status.url.endswith("/pipelines/9")
     assert status.failed == [{"name": "gut-tests", "id": 2, "url": "u2"}]
+
+
+async def test_a_task_discarded_while_its_ci_was_asked_is_skipped(setup, monkeypatch) -> None:
+    make, set_checks, _ = setup
+    orch = make()
+    events = []
+
+    async def listener(event):
+        events.append(event.kind)
+
+    orch.listeners.append(listener)
+    task_id = await published(orch)
+    set_checks(("tests", "pending"))
+    watcher = CIWatcher(orch)
+    await watcher.poll()  # CI is now known to be pending
+    set_checks(("tests", "fail"))
+    real_get = orch.store.get
+    calls = {"n": 0}
+
+    def vanishing(task):
+        # the poll reads the task, asks the forge, then reads it again: it is gone by then
+        calls["n"] += 1
+        return None if calls["n"] > 1 and task == task_id else real_get(task)
+
+    monkeypatch.setattr(orch.store, "get", vanishing)
+    await watcher.poll()  # used to raise AttributeError: 'NoneType' has no attribute 'project'
+    assert events == []

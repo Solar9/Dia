@@ -4,10 +4,10 @@ from pathlib import Path
 
 import pytest
 
-from dia.ci import CIWatcher
-from dia.config import parse_config
+from dia.core.config import parse_config
+from dia.core.orchestrator import Orchestrator, TaskActionError
 from dia.forges.builtin import GitLabForge
-from dia.orchestrator import Orchestrator, TaskActionError
+from dia.quality.ci import CIWatcher
 
 # Writes v1; asked to address comments, it records the prompt it got.
 AUTHOR = [

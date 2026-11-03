@@ -1,9 +1,9 @@
 import subprocess
 from pathlib import Path
 
-from dia.benchmarks import after_merge, bench, compare, parse_metrics
-from dia.config import parse_config
-from dia.orchestrator import Orchestrator
+from dia.core.config import parse_config
+from dia.core.orchestrator import Orchestrator
+from dia.quality.benchmarks import after_merge, bench, compare, parse_metrics
 
 
 def test_parse_metrics() -> None:

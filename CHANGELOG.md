@@ -5,6 +5,99 @@ before 1.0 a minor version may change the configuration.
 
 ## [Unreleased]
 
+## [0.1.3] — 2026-11-04
+
+A stabilisation release: the refactor of 0.1.2's code base is shipped, the UI audit is closed,
+the web UI, the window and the tray got a long list of small fixes, and Dia speaks five more
+languages. **If you only use Dia, nothing needs to be done; if you write plugins or import `dia`
+modules, read "Internal".**
+
+### Added
+- The web UI is translated into German, French, Spanish, Italian and Portuguese (choose the
+  language in Settings → Dia), in full: every string Polish and English have. The translations were
+  written by the assistant and have **not been reviewed by native speakers**. The service words
+  and the tray menu follow the language; the Plasma widget's own labels and Dia's server messages
+  (answers of `dia say`, voice phrases) are still Polish/English only (`static/js/lang/` is where a
+  language is added).
+- A **System** theme (Settings → Look) for the app and the phone: light or dark as the system says,
+  following it when it changes. The browser's and the PWA's bars take the theme's background.
+- Before an agent starts, Dia says what she understood (`code change · nova · claude`) in chat,
+  Discord, by voice and in `dia say`; a plan's "run it?" starts with it.
+- The Status page opens with a summary row: service, sandbox, agents, running, waiting for you.
+- A "Check for updates" item in the tray that shows the result of the last check.
+- Dia's window remembers its size, position and whether it was maximised, and comes back on a screen
+  that exists (an unplugged monitor or a smaller resolution no longer leaves it off-screen).
+
+### Changed
+- **One count everywhere.** "Running" and "waiting for you" are counted once, by the API (`counts`
+  in `/api/status`, `decision` on each task), so the web UI, the tray and the Plasma widget agree;
+  the widget now also counts failed CI and review comments. Running tasks show how long they run.
+- **One set of service words.** Dia and Ollama show the same state words (Running, Stopped, Error,
+  Starting…, Not installed) in the tray, the widget and Settings. Start/Stop/Restart are enabled only
+  when they make sense for the state, stop/restart ask first, and the result is shown (Settings, a toast,
+  a tray notification, the widget). `dia runtime status` and `/api/desktop` gained `state`, `label`,
+  `actions`, `words` and an operation `label`.
+- **The web UI says what is going on.** Everything it fetches shows "Loading…", an error with a Retry
+  button, or an empty message instead of staying blank when a request fails.
+- **One translation system** in the web UI: task statuses, units and the services card are translated,
+  relative times follow the language, and a test fails when a key is missing in Polish or English.
+- **Own dialogs** (themed, translated, keyboard friendly) replace the browser's confirm/prompt boxes.
+- **Login** is a proper form: a password field, Enter submits, an empty token shows an error.
+- **Chat:** a "Dia is thinking…" bubble while she answers, a multi-line input (Shift+Enter for a new
+  line) and plan buttons that say what they do ("Yes, run the plan").
+- **Accessibility:** icon-only buttons are labelled, toasts are announced by screen readers, and the
+  conversation and session lists work with the keyboard.
+- **Tray:** clearer wording for closing the window (Dia keeps running) versus stopping Dia; every text
+  in the seven interface languages.
+- **"Dia is not running" page** uses the current theme and its own title bar, and says whether Dia is
+  starting, stopped, failed to start (with a button for the logs) or not set up.
+- **Plasma widget:** it polls much less while the popup is closed (a slow look every 30 s keeps the
+  badge true), says what to do when Dia refuses its token, scrolls long answers instead of cutting
+  them off, and never sends an empty prompt.
+
+### Fixed
+- CLI sessions: taken-over and running sessions are listed together, newest first.
+- A timed-out agent or test command no longer leaves helper processes running: the whole process
+  group is ended (on Python 3.11 they also held the call up until they quit).
+- Agents (and project tests) can run `pytest` and the project's other Python tools inside the sandbox:
+  the repository's `.venv`/`venv` is available read-only and first on `PATH`, and the worktree's `src`
+  goes first on `PYTHONPATH`, so an editable install tests the agent's code. No access to your secrets
+  or the rest of your home was added.
+- A model's own choice of agent no longer overrides routing and the default: an agent is used only if
+  you named it or routing picks it. A clarifying question from the model stays a conversation and no
+  longer creates a read-only task.
+- When a request needs a project and the model gave none (debug, impact, goal, scenario…), Dia asks
+  "Which project is this about?" instead of failing with "unknown project 'None'"; a missing prompt
+  falls back to what you said.
+- Answering a waiting plan with yes or no works in German, French, Spanish, Italian and Portuguese
+  ("ja", "oui", "sí"…); before, only Polish and English words were understood.
+- The CI watcher no longer stops on a task that was discarded while its CI was being asked; `dia comments`
+  and `dia goal review` on an unknown id say so instead of a traceback; the background memory-index
+  refresher no longer fails with a memory backend that has no semantic index.
+
+### Internal
+- **Import paths changed, plugin entry points did not.** The flat `dia/*.py` modules moved into
+  `dia.core`, `dia.quality`, `dia.knowledge`, `dia.work`, `dia.desktop` and `dia.release` (no shims;
+  `dia.limits` is now `dia.core.limits`, and so on). Code that imports Dia's internals must follow;
+  plugins registered through entry points (`dia.agents`, `dia.brains`, `dia.channels`, …) are unaffected,
+  and the CLI, the HTTP routes and the TOML keys are unchanged (pinned by `tests/test_surface.py`).
+- Refactor phases 0–9: `dia.cli` and `dia.channels.api` are packages of small modules; the Orchestrator
+  is a façade over collaborators in `dia.core` (689 lines, was 1663); state files go through
+  `dia.core.jsonfile`, the SQLite schema is versioned; the web UI's `app.js` is split into native ES
+  modules (`static/js`, no build step); the Discord and voice channels are packages and the assistant
+  dispatches intents through an action table; the Plasma widget's `main.qml` is split into components;
+  `lint-imports` keeps `dia.core` free of interface imports; `mypy` runs in CI (strict for `dia.core`).
+  A task without a branch now fails publishing with a clear message instead of passing `None` on.
+- mypy: 20 more modules are type-checked (31 had `ignore_errors`, 11 are left; the list is in
+  `pyproject.toml`).
+- Tests: direct tests for the assistant's action table, the store, release and update logic, the persona
+  prompt and the Discord channel (no network); coverage of those modules went from 41–99 % to 96–100 %,
+  the whole package from 77 % to 79 %. CI now reports coverage (`coverage.xml`, no gate yet).
+- `scripts/ui_smoke.py` runs an offscreen smoke test of every web UI view in any language (also with
+  failing requests); the manual checklist for the window and the widget is in
+  `docs/test-reports/2026-11-03-ui-smoke-0.1.3.md`.
+- `docs/test-raports` was merged into `docs/test-reports`; CONTRIBUTING says where new code goes.
+
 ## [0.1.2] — 2026-10-30
 
 ### Added

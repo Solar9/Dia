@@ -17,7 +17,7 @@ from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any, ClassVar
 
 if TYPE_CHECKING:
-    from dia.config import Config
+    from dia.core.config import Config
 
 ACTIONS = (
     "run",
@@ -247,6 +247,60 @@ def guard_irreversible(intent: Intent, text: str, language: str = "en") -> Inten
         text=intent.text or text,
         conversation=intent.conversation,
         brain=intent.brain or "guard",
+    )
+
+
+# What a person may call an agent besides its configured name (DIA-13): the kind of agent
+# behind it. "claude-code" is "Claude", "codex" is "ChatGPT", and endings may be inflected.
+AGENT_WORDS = {
+    "claude-code": ("claude",),
+    "codex": ("codex", "chatgpt", "gpt"),
+    "cursor": ("cursor",),
+}
+
+
+def agent_mentioned(text: str, name: str, kind: str | None = None) -> bool:
+    """Whether the user's own words name this agent (its name, or what it is: Claude, ChatGPT...).
+
+    A word may continue ("claudem", "codexa"), but only from three letters up: an agent
+    called "a" is not named by every word that starts with "a"."""
+    words = {name.lower(), *(w.lower() for w in AGENT_WORDS.get(kind or name, ()))}
+    for word in words:
+        pattern = rf"\b{re.escape(word)}" + (r"\w*" if len(word) >= 3 else r"\b")
+        if re.search(pattern, text, re.IGNORECASE):
+            return True
+    return False
+
+
+def guard_agent(
+    intent: Intent, text: str, kinds: dict[str, str], routed: str | None = None
+) -> Intent:
+    """Keep an agent only if the user named it, or it is what routing would pick anyway
+    (DIA-13): a model that invents a preference must not override ``[routing]`` and the
+    defaults. ``kinds`` maps each configured agent to its kind of agent."""
+    if not intent.agent:
+        return intent
+    if intent.agent == routed or agent_mentioned(text, intent.agent, kinds.get(intent.agent)):
+        return intent
+    intent.agent = None  # run_task now routes, then falls back to the default agent
+    return intent
+
+
+# Actions that start an agent on a project; a reply that asks the user something is no task.
+_STARTS_AGENT = ("run", "ask", "plan", "mission")
+
+
+def guard_clarifying(intent: Intent) -> Intent:
+    """A reply that is a question to the user stays a conversation (DIA-14): "which save system
+    do you mean?" must not become an ``ask`` task that makes an agent guess."""
+    if intent.action not in _STARTS_AGENT or not intent.reply.rstrip().endswith(("?", "？")):
+        return intent
+    return Intent(
+        "chat",
+        reply=intent.reply,
+        text=intent.text,
+        conversation=intent.conversation,
+        brain=intent.brain,
     )
 
 

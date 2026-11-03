@@ -6,9 +6,9 @@ import pytest
 
 from dia.assistant import Assistant
 from dia.brains.rules import RulesBrain
-from dia.config import parse_config
-from dia.orchestrator import Orchestrator
-from dia.tidy import Tidy, TidyError
+from dia.core.config import parse_config
+from dia.core.orchestrator import Orchestrator
+from dia.desktop.tidy import Tidy, TidyError
 
 
 def make(tmp_path: Path) -> tuple[Orchestrator, Path]:
@@ -80,7 +80,7 @@ async def test_by_voice_it_asks_first(tmp_path: Path) -> None:
 
 
 def test_polish_plural() -> None:
-    from dia.tidy import files_pl
+    from dia.desktop.tidy import files_pl
 
     assert [files_pl(n) for n in (1, 2, 5, 12, 22, 25)] == [
         "1 plik",

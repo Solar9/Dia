@@ -1,8 +1,8 @@
 from pathlib import Path
 
-from dia.config import parse_config
-from dia.orchestrator import Orchestrator
-from dia.task_limits import TaskLimits
+from dia.core.config import parse_config
+from dia.core.orchestrator import Orchestrator
+from dia.core.task_limits import TaskLimits
 
 
 def make(tmp_path: Path, repo: Path, agent: list[str], limits: dict) -> Orchestrator:
@@ -52,3 +52,29 @@ async def test_the_minute_budget_bounds_a_call(tmp_path, repo) -> None:
     task = (await dia.run_task("demo", "slow")).task
     assert time.monotonic() - started < 3  # 0.6 s of budget, not the 5 s timeout
     assert task.status == "failed" and "timed out after 0.6" in (task.error or "")
+
+
+async def test_a_timeout_ends_the_helpers_of_the_agent_too(tmp_path, repo) -> None:
+    """proc.kill() alone left a child holding the pipes: Python 3.11 then waited for it."""
+    import os
+    import time
+
+    pidfile = tmp_path / "helper.pid"
+    dia = make(
+        tmp_path,
+        repo,
+        ["sh", "-c", f"sleep 30 & echo $! > {pidfile}; wait"],
+        {"agent_timeout": 0.5},
+    )
+    dia.config.project("demo").test_command = None
+    started = time.monotonic()
+    task = (await dia.run_task("demo", "slow")).task
+    assert time.monotonic() - started < 5 and task.status == "failed"
+    helper = int(pidfile.read_text())
+    time.sleep(0.2)
+    try:
+        os.kill(helper, 0)
+    except ProcessLookupError:
+        return
+    os.kill(helper, 9)
+    raise AssertionError("the helper of a timed-out agent is still running")

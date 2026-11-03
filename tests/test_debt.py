@@ -1,9 +1,9 @@
 import subprocess
 from pathlib import Path
 
-from dia import debt
-from dia.config import parse_config
-from dia.orchestrator import Orchestrator
+from dia.core.config import parse_config
+from dia.core.orchestrator import Orchestrator
+from dia.quality import debt
 
 LONG = "func huge():\n" + "".join(f"\tvar x{i} = {i}\n" for i in range(70))
 NESTED = "def deep():\n" + "".join("    " * (i + 1) + f"if a{i}:\n" for i in range(7))
